@@ -28,4 +28,11 @@ body {
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
+
+  .hover-styles:hover {
+    @apply bg-[#d6ac5f] p-1 rounded-xl transition duration-200;
+  }
+  .navbar-active-styles:active {
+    @apply bg-[#cf9e45] p-1
+  }
 }
