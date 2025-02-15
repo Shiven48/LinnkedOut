@@ -1,9 +1,8 @@
-export default async function Page({params}:{params:{category:string}}){
-    const category = decodeURIComponent(params.category);
-    console.log(`category : ${category}`)
-    return(
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-            <span> Hello this is {category} </span>
-        </div>
-    )
+export default async function Page({params}: {params: {category: string}}) {
+    const { category } = await params;
+    const decodedCategory = decodeURIComponent(category);
+
+    return (
+        <span className="bg-red-300 mx-8 text-black">Hello, this is {decodedCategory}</span>
+    );
 }

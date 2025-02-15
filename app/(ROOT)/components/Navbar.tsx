@@ -9,6 +9,7 @@ import {
 } from "@heroui/react";
 import { Helper } from "../utils/helper_data";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
 
 export default function App() {
     const [isMenuOpen, setIsMenuOpen] = React.useState(false);
@@ -18,29 +19,39 @@ export default function App() {
 
     useEffect(() => {
         const currentCategory = Helper.navComponents().find(
-            category => category.url === pathname
-        )
-        console.log(pathname)
-        currentCategory ? setActiveNavComponent(currentCategory.title) : setActiveNavComponent('')
-    },[activeNavComponent])
+            category => {
+                return category.url === pathname
+            });
+            setActiveNavComponent(currentCategory ? currentCategory.title : '')
+    },[pathname])
 
     return (
         <Navbar 
             onMenuOpenChange={setIsMenuOpen}
-            className="bg-[#2b2b2b] border border-white h-12 rounded-xl w-full flex"
+            className="bg-[#2b2b2b] border border-white h-12 rounded-lg w-full"
         >
             <NavbarContent className="text-white">
-                <NavbarMenuToggle
-                    aria-label={isMenuOpen ? "Close menu" : "Open menu"}
-                    className="sm:hidden"
+                <a
+                    href="/"
+                    className="mb-5"
+                >
+                <Image
+                    src='/home.svg'
+                    alt='home'
+                    width={25}
+                    height={25}
+                    className="absolute left-0 -ml-60"
                 />
+                </a>
             </NavbarContent>
             <NavbarContent className="hidden sm:flex gap-4 text-white" justify="center">
                 {
                     Helper.navComponents() ?
                     Helper.navComponents().map( (nav) => (
                         <NavbarItem key={nav.title}>
-                        <span className="hover-styles navbar-active-styles">
+                        <span className={`hover-styles hover:bg-white hover:text-black 
+                            ${activeNavComponent === nav.title? 'nav-styles-active':''}`
+                        }>
                             <Link color="foreground" href={nav.url}>
                                 {nav.title}
                             </Link>
