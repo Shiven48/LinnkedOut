@@ -6,14 +6,13 @@ import Navbar from "../(ROOT)/components/Navbar";
 import "../globals.css"
 
 export default function Layout({ children }: { children: ReactNode }) {
-    console.log(`Hello Am i visible`)
     return (
         <SidebarProvider>
-            <div className="min-h-screen w-screen bg-[#181818] flex-1 fixed">
+            <div className="min-h-screen w-full bg-[#181818] fixed">
                 <Navbar/>
                 <aside className="flex">
                     <AppSidebar/>
-                    <main className="flex-1 overflow-auto">
+                    <main className="w-full">
                         {children}
                     </main>
                 </aside>
