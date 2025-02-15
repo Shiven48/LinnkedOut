@@ -27,7 +27,7 @@ export class Helper{
                 icon: 'mindset'
             },
             {
-                title: "Descision Making & Strategy",
+                title: "Descision Making",
                 url: `/categories/${encodeURIComponent('Descision Making & Strategy')}`,
                 icon: 'strategy'
             },
