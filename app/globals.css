@@ -4,6 +4,7 @@
 
 body {
   font-family: Arial, Helvetica, sans-serif;
+  overflow-x: hidden;
 }
 
 @layer base {
@@ -30,9 +31,44 @@ body {
   }
 
   .hover-styles:hover {
-    @apply bg-[#d6ac5f] p-1 rounded-xl transition duration-200;
+    @apply bg-gray-800 rounded-xl transition duration-200 relative;
   }
-  .navbar-active-styles:active {
-    @apply bg-[#cf9e45] p-1
+
+.hover-styles:hover::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 3px solid transparent;
+    background: linear-gradient(90deg, violet, indigo, blue, green, yellow, orange, red) border-box;
+    -webkit-mask:
+        linear-gradient(#000 0 0) padding-box,
+        linear-gradient(#000 0 0);
+    mask:
+        linear-gradient(#000 0 0) padding-box,
+        linear-gradient(#000 0 0);
+    -webkit-mask-composite: destination-out;
+    mask-composite: exclude;
+    border-radius: inherit;
+}
+
+  .nav-styles-active {
+    @apply  p-1 rounded-xl bg-white text-black relative;
+  }
+
+  .nav-styles-active::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 3px solid transparent;
+    background: linear-gradient(90deg, violet, indigo, blue, green, yellow, orange, red) border-box;
+    -webkit-mask: 
+      linear-gradient(#fff 0 0) padding-box, 
+      linear-gradient(#fff 0 0);
+    mask: 
+      linear-gradient(#fff 0 0) padding-box,
+      linear-gradient(#fff 0 0);
+      -webkit-mask-composite: destination-out;
+      mask-composite: exclude;
+      border-radius: inherit;
   }
 }

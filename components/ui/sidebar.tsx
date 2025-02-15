@@ -182,7 +182,7 @@ const Sidebar = React.forwardRef<
       return (
         <div
           className={cn(
-            "h-full w-[--sidebar-width] flex-col bg-sidebar text-sidebar-foreground",
+            "h-full flex-col bg-sidebar text-sidebar-foreground",
             className
           )}
           ref={ref}
@@ -225,7 +225,7 @@ const Sidebar = React.forwardRef<
         {/* This is what handles the sidebar gap on desktop */}
         <div
           className={cn(
-            "relative h-svh w-[--sidebar-width] bg-transparent transition-[width] duration-200 ease-linear",
+            "h-svh bg-transparent transition-[width] duration-200 ease-linear",
             "group-data-[collapsible=offcanvas]:w-0",
             "group-data-[side=right]:rotate-180",
             variant === "floating" || variant === "inset"
@@ -235,7 +235,7 @@ const Sidebar = React.forwardRef<
         />
         <div
           className={cn(
-            "absolute top-0 h-full w-[--sidebar-width] transition-[width] duration-200 ease-linear md:flex",
+            "absolute top-0 h-full transition-[width] duration-200 ease-linear md:flex",
             side === "left"
               ? "left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]"
               : "right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]",
@@ -247,9 +247,10 @@ const Sidebar = React.forwardRef<
           )}
           {...props}
         >
+          {/* Try changing here */}
           <div
             data-sidebar="sidebar"
-            className="flex h-full w-full flex-col bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow"
+            className="flex h-full group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border  group-data-[variant=floating]:shadow"
           >
             {children}
           </div>
