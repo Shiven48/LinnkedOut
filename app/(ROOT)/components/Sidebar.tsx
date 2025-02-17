@@ -9,8 +9,8 @@ import {
     SidebarMenuButton,
     SidebarMenuItem
   } from "@/components/ui/sidebar"
-  import { Helper } from "../utils/helper_data";
-  import { Category } from "../utils/helper_data";
+  import { Helper } from "../_lib/helper_data";
+  import { Category } from "../_lib/helper_data";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
