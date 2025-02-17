@@ -7,7 +7,7 @@ import {
     NavbarMenuToggle,
     Link,
 } from "@heroui/react";
-import { Helper } from "../utils/helper_data";
+import { Helper } from "../_lib/helper_data";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 
