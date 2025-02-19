@@ -1,34 +1,25 @@
+import { fetchVideoFromYoutubeURL } from "@/src/services/youtubeService";
 import { Helper } from "./helper_data";
 
 export class HelperFunctions{
 
+    // Here the bot will give the url
+    public static async fetchVideoFromBot(){
+        const link:string = 'someURL'
+        return () => fetchVideoFromYoutubeURL(link);
+    }
+
     public static parseYoutubeEmbeddedLink(link:string){
         const url = new URL(Helper.Resources()[0].link).pathname
         const trimmedUrl = url.trim()
-        // This would be the splitted portions of url -> 'https://youtu.be' 'ECycCnPy1Qw'
         return trimmedUrl.split('/')[1]
     }
 
-    public static async fetchData() {
-        const videoId = HelperFunctions.parseYoutubeEmbeddedLink(Helper.Resources()[0].link)
-        const response = await fetch(`/api/hello/${videoId}`);
-        if (response.ok) {
-            return await response.json();
-        }
-    }
-    
-    public static async postDataInDB(data:any) {
-        try{
-            console.log('Posted Data in database')
-        } catch(error){
-            console.error(error)
-        }
+    public static youtubeVideoDetails(id:string){
+        return `https://www.googleapis.com/youtube/v3/videos?id=${id}&key=${process.env.YOUTUBE_API_KEY}&part=snippet,contentDetails,statistics,status`
     }
 
-    public static async fetchURL(){
-        // Here the bot will give me the url
-        const link:string = 'someURL'
-        const videoId = HelperFunctions.parseYoutubeEmbeddedLink(link)
-        return videoId
+    public static youtubeVideo(id:string){
+        return `https://www.youtube.com/embed/${id}` 
     }
 }
