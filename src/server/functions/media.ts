@@ -33,7 +33,7 @@ export const insertMedia = async (sharedMedia:Media) => {
         const currentTimestamp = new Date();
         return await db.insert(media)
                        .values([{
-                            type: sharedMedia.type as "short" | "image" | "video",
+                            type: sharedMedia.type as "short" | "image" | "video" | "photo",
                             platform: sharedMedia.platform,
                             createdAt: currentTimestamp,
                             updatedAt: currentTimestamp

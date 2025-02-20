@@ -14,7 +14,7 @@ export interface Resource {
 
 export interface Media {
     id?: number;
-    type: 'short' | 'image' | 'video';
+    type: 'short' | 'image' | 'video' | 'photo';
     platform: string;
     createdAt: string;
     updatedAt: string;
