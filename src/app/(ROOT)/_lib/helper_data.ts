@@ -68,6 +68,10 @@ export class Helper{
             {
                 'id':4,
                 'link':'https://youtu.be/xirQ7AMyTM8?si=GOyz0tQkYhC7QmNQ'
+            },
+            {
+                'id':5,
+                'link':'https://x.com/ayshriv/status/1891376873831100475?ref_url=https%3A%2F%2Fpublish.twitter.com%2F%3Furl%3Dhttps%3A%2F%2Ftwitter.com%2Fayshriv%2Fstatus%2F1891376873831100475'
             }
         ]
         return resos as Resource[];
