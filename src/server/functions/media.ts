@@ -1,7 +1,6 @@
-import { drizzle } from 'drizzle-orm/postgres-js';
 import { db, queryDb } from '../db/index'
-import { media, youtubeMedia } from '../db/schema' 
-import { Media, YoutubeMedia } from '@/types';
+import { media, twitterMedia, youtubeMedia } from '../db/schema' 
+import { Media, TwitterMedia, YoutubeMedia } from '@/types';
 
 // ORM layer
 export const getAllMedia = async () => {
@@ -71,5 +70,29 @@ export const insertYoutubeMedia = async (ytMedia:YoutubeMedia) => {
     } catch(error){
         console.error('Failed to insert youtube media model', error);
         throw new Error('Failed to insert youtube media model'); 
+    }
+}
+
+export const insertTwitterMedia = async (tm:TwitterMedia) => {
+    'use server'
+    try {
+        if (!tm.mediaId) {
+            throw new Error('mediaId is required');
+        }
+        
+        return await db.insert(twitterMedia)
+                       .values([{
+                            mediaId: tm.mediaId,
+                            tweetId: tm.tweetId,
+                            text: tm.text,
+                            tweetMediaKey: tm.tweet_media_key,
+                            mediaUrl: tm.media_url,
+                            authorUsername: tm.username,
+                            durationMS: tm.duration_ms
+                       }])
+                       .returning({ id: twitterMedia.id });
+    } catch(error) {
+        console.error('Failed to insert twitter media model', error);
+        throw new Error('Failed to insert twitter media model'); 
     }
 }

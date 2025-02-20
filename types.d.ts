@@ -35,6 +35,24 @@ export interface YoutubeMedia {
     tags: string[] | null;
 }
 
+export interface TwitterMedia {
+    id?:number;
+    mediaId?: number;
+    tweetId: string;
+    text: string | null;
+    tweet_media_key: string; 
+    media_url: string;
+    username: string | null;
+    duration_ms: string;
+    // varients: Varient
+}
+
+export interface Varient {
+    type: string;
+    url: string;
+    bitrate: number;
+}
+
 export interface MediaRelations {
     youtubeDetails?: YoutubeMedia;  
     twitterDetails?: TwitterMedia;  
