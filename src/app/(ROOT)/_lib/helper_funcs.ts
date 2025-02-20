@@ -21,7 +21,7 @@ export class HelperFunctions{
         return new URL(link).pathname
                 .split('/')
                 .pop()
-                ?.trim()
+                ?.trim()                 
     }
 
     public static youtubeVideoDetails(id:string){

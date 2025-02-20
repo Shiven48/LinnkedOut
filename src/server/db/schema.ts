@@ -1,7 +1,7 @@
 import { relations} from "drizzle-orm";
 import { boolean, integer, pgEnum, pgTable, serial, text, timestamp, varchar } from "drizzle-orm/pg-core";
 
-export const mediaTypeEnum = pgEnum('type', ['short', 'image', 'video']);
+export const mediaTypeEnum = pgEnum('type', ['short', 'image', 'video', 'photo']);
 
 // export const twitterVarients = pgTable('twitter_varients', {
 //     id: serial('id').primaryKey(),
@@ -59,7 +59,7 @@ export const media = pgTable('media', {
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-export const mediaRelations = relations(media, ({ one, many }) => ({
+export const mediaRelations = relations(media, ({ one }) => ({
     youtubeDetails: one(youtubeMedia,{
         fields: [media.id],
         references: [youtubeMedia.mediaId]
