@@ -15,6 +15,13 @@
       "when": 1739964185620,
       "tag": "0001_square_sharon_ventura",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1740075281270,
+      "tag": "0002_goofy_kylun",
+      "breakpoints": true
     }
   ]
 }
