@@ -1,7 +1,15 @@
-import { relations } from "drizzle-orm";
+import { relations} from "drizzle-orm";
 import { boolean, integer, pgEnum, pgTable, serial, text, timestamp, varchar } from "drizzle-orm/pg-core";
 
 export const mediaTypeEnum = pgEnum('type', ['short', 'image', 'video']);
+
+// export const twitterVarients = pgTable('twitter_varients', {
+//     id: serial('id').primaryKey(),
+//     mediaId: integer('media_id').references(() => twitterMedia.id),
+//     type: varchar('type', { length: 30 }).notNull(),
+//     url: text('url').notNull(),
+//     bitrate: integer('bitrate')
+// });
 
 export const youtubeMedia = pgTable('youtube_media', {
     id: serial('id').primaryKey(),
@@ -37,24 +45,21 @@ export const twitterMedia = pgTable('twitter_media', {
     mediaId: integer('media_id').references(() => media.id).notNull().unique(),
     tweetId: varchar('tweet_id', { length: 30 }).notNull().unique(),
     text: text('text'),
-    url: text('url').notNull(),
-    mediaUrl: text('media_url'),
-    authorId: varchar('author_id', { length: 30 }),
+    tweetMediaKey: text('tweet_media_key'),
+    mediaUrl: text('media_url').notNull(),
     authorUsername: varchar('author_username', { length: 50 }),
-    likeCount: integer('like_count'),
-    retweetCount: integer('retweet_count'),
-    replyCount: integer('reply_count'),
-  });
+    durationMS: text('durationMS')
+});
 
 export const media = pgTable('media', {
     id: serial('id').primaryKey(),
-    type: mediaTypeEnum('type').notNull(), // short, image, video
+    type: mediaTypeEnum('type').notNull(),
     platform: varchar('platform', { length: 30 }).notNull(), // youtube, twitter, instagram
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-export const mediaRelations = relations(media, ({ one }) => ({
+export const mediaRelations = relations(media, ({ one, many }) => ({
     youtubeDetails: one(youtubeMedia,{
         fields: [media.id],
         references: [youtubeMedia.mediaId]
@@ -68,3 +73,8 @@ export const mediaRelations = relations(media, ({ one }) => ({
       references: [instagramMedia.mediaId],
     }),
   }));
+
+// Add separate relations for Twitter media
+// export const twitterMediaRelations = relations(twitterMedia, ({ many }) => ({
+//     variants: many(twitterVarients)
+// }));
