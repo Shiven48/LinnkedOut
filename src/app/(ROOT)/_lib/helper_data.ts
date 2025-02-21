@@ -72,6 +72,10 @@ export class Helper{
             {
                 'id':5,
                 'link':'https://x.com/ayshriv/status/1891376873831100475?ref_url=https%3A%2F%2Fpublish.twitter.com%2F%3Furl%3Dhttps%3A%2F%2Ftwitter.com%2Fayshriv%2Fstatus%2F1891376873831100475'
+            },
+            {
+                'id':6,
+                'link':'https://www.reddit.com/r/Azoozkie/comments/1htzxhh/ab_iski_gnd_maregi/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button'
             }
         ]
         return resos as Resource[];
