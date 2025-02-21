@@ -51,6 +51,22 @@ export const twitterMedia = pgTable('twitter_media', {
     durationMS: text('durationMS')
 });
 
+export const redditMedia = pgTable('reddit', {
+  id: serial('id').primaryKey(),
+  mediaId: integer('mediaId').references(() => media.id).notNull().unique(),
+  subreddit: text('subreddit'),
+  title: text('title').notNull(),
+  type: varchar('type', { length : 20 }),
+  redditPostId: varchar('redditPostId', { length : 30 }),
+  author: text('author').notNull(),
+  imageUrl: text('imageUrl').notNull(),
+  imageWidth: integer('imageWidth'),
+  imageHeight: integer('imageHeight'),
+  videoUrl: text('videoUrl').notNull(),
+  videoWidth: integer('videoWidth'),
+  videoHeight: integer('videoHeight'),
+})
+
 export const media = pgTable('media', {
     id: serial('id').primaryKey(),
     type: mediaTypeEnum('type').notNull(),
@@ -72,6 +88,10 @@ export const mediaRelations = relations(media, ({ one }) => ({
       fields: [media.id],
       references: [instagramMedia.mediaId],
     }),
+    redditDetails: one(redditMedia, {
+      fields: [media.id],
+      references: [redditMedia.mediaId],
+    })
   }));
 
 // Add separate relations for Twitter media

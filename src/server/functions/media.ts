@@ -1,6 +1,6 @@
 import { db, queryDb } from '../db/index'
-import { media, twitterMedia, youtubeMedia } from '../db/schema' 
-import { Media, TwitterMedia, YoutubeMedia } from '@/types';
+import { media, redditMedia, twitterMedia, youtubeMedia } from '../db/schema' 
+import { Media, RedditMedia, TwitterMedia, YoutubeMedia } from '@/types';
 
 // ORM layer
 export const getAllMedia = async () => {
@@ -94,5 +94,34 @@ export const insertTwitterMedia = async (tm:TwitterMedia) => {
     } catch(error) {
         console.error('Failed to insert twitter media model', error);
         throw new Error('Failed to insert twitter media model'); 
+    }
+}
+
+export const insertRedditMedia = async (reddit:RedditMedia) => {
+    'use server'
+    try {
+        if (!reddit.mediaId) {
+            throw new Error('mediaId is required');
+        }
+        
+        return await db.insert(redditMedia)
+                       .values([{
+                            mediaId: reddit.mediaId,
+                            subreddit: reddit.subreddit,
+                            title: reddit.title,
+                            type: reddit.type,
+                            redditPostId: reddit.redditPostId,
+                            author: reddit.author,
+                            imageUrl: reddit.imageUrl,
+                            imageWidth: reddit.imageWidth,
+                            imageHeight: reddit.imageHeight,
+                            videoUrl: reddit.videoUrl,
+                            videoWidth: reddit.videoWidth,
+                            videoHeight: reddit.videoHeight,
+                       }])
+                       .returning({ id: redditMedia.id });
+    } catch(error) {
+        console.error('Failed to insert reddit media model', error);
+        throw new Error('Failed to insert reddit media model'); 
     }
 }
