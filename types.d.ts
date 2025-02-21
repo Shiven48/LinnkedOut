@@ -47,6 +47,22 @@ export interface TwitterMedia {
     // varients: Varient
 }
 
+export interface RedditMedia {
+    id?: number;
+    mediaId?: number;
+    subreddit: string;
+    title: string;
+    type: string;
+    redditPostId: string;
+    author: string;
+    imageUrl: string;
+    imageWidth: number | null;
+    imageHeight: number | null;
+    videoUrl: string;
+    videoWidth: number | null;
+    videoHeight: number | null;
+} 
+
 export interface Varient {
     type: string;
     url: string;
