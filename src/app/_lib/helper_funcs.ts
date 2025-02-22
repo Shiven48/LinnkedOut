@@ -1,4 +1,4 @@
-import { fetchVideoFromYoutubeURL } from "@/src/services/youtubeService";
+import { fetchVideoFromYoutubeURL } from "../../../../src/services/youtubeService";
 import { Helper } from "./helper_data";
 
 export class HelperFunctions {

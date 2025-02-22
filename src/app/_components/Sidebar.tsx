@@ -1,16 +1,16 @@
 'use client'
 import {
     Sidebar,
-    SidebarContent,
+    // SidebarContent,
     SidebarGroup,
     SidebarGroupContent,
     SidebarGroupLabel,
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem
-  } from "@/components/ui/sidebar"
+  } from "../../../components/ui/sidebar"
   import { Helper } from "../_lib/helper_data";
-  import { Category } from "../_lib/helper_data";
+  import { Category } from "../../../types";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
