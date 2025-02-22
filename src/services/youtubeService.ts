@@ -1,5 +1,5 @@
-import { HelperFunctions } from "@/src/app/(ROOT)/_lib/helper_funcs";
-import { Media, YoutubeMedia } from "@/types";
+import { HelperFunctions } from "../../src/app/_lib/helper_funcs";
+import { Media, YoutubeMedia } from "../../types";
 import { NextResponse } from "next/server"
 import { insertMedia, insertYoutubeMedia } from "../server/functions/media";
 
