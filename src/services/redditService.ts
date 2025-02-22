@@ -1,5 +1,5 @@
-import { Media, RedditMedia } from "@/types";
-import { HelperFunctions } from "../app/(ROOT)/_lib/helper_funcs"
+import { Media, RedditMedia } from "../../types";
+import { HelperFunctions } from "../../src/app/_lib/helper_funcs"
 import { insertMedia, insertRedditMedia } from "../server/functions/media";
 
 export const fetchVideoFromRedditURL = async (embeddedLink:string) => {

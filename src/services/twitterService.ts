@@ -1,5 +1,5 @@
-import { HelperFunctions } from "../app/(ROOT)/_lib/helper_funcs";
-import { Media, TwitterMedia} from "@/types";
+import { HelperFunctions } from "../../src/app/_lib/helper_funcs";
+import { Media, TwitterMedia} from "../../types";
 import { insertMedia, insertTwitterMedia } from "../server/functions/media";
 
 export const fetchVideoFromTwitterURL = async (link:string) => {
