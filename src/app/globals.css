@@ -30,45 +30,11 @@ body {
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
-  .hover-styles:hover {
-    @apply bg-gray-800 rounded-xl transition duration-200 relative;
-  }
+ .hover-nav:hover {
+  @apply bg-[#73747e] rounded-xl py-1 h-8
+ }
 
-.hover-styles:hover::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border: 3px solid transparent;
-    background: linear-gradient(90deg, violet, indigo, blue, green, yellow, orange, red) border-box;
-    -webkit-mask:
-        linear-gradient(#000 0 0) padding-box,
-        linear-gradient(#000 0 0);
-    mask:
-        linear-gradient(#000 0 0) padding-box,
-        linear-gradient(#000 0 0);
-    -webkit-mask-composite: destination-out;
-    mask-composite: exclude;
-    border-radius: inherit;
-}
-
-  .nav-styles-active {
-    @apply  p-1 rounded-xl bg-white text-black relative;
-  }
-
-  .nav-styles-active::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border: 3px solid transparent;
-    background: linear-gradient(90deg, violet, indigo, blue, green, yellow, orange, red) border-box;
-    -webkit-mask: 
-      linear-gradient(#fff 0 0) padding-box, 
-      linear-gradient(#fff 0 0);
-    mask: 
-      linear-gradient(#fff 0 0) padding-box,
-      linear-gradient(#fff 0 0);
-      -webkit-mask-composite: destination-out;
-      mask-composite: exclude;
-      border-radius: inherit;
-  }
+ .hover-side:hover {
+  @apply bg-[#73747e]
+ }
 }

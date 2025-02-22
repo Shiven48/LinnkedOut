@@ -1,4 +1,4 @@
-import { Category,NavComponent,Resource } from '@/types'
+import { Category,NavComponent,Resource } from '../../../types'
 
 export class Helper{
 
