@@ -35,7 +35,7 @@ export default function App() {
 
             <div className="flex items-center gap-4">
                 {Helper.navComponents()?.map((nav) => (
-                    <div key={nav.title} className="h-8 flex items-center bg-[#858795] rounded-xl text-black shadow shadow-white border border-[#d4d450]">
+                    <div key={nav.title} className="h-8 flex items-center bg-[#858795] rounded-xl text-black shadow shadow-[#d4d450] border border-[#d4d450]">
                         <Link 
                             href={nav.url}
                             className={`px-4 py-2 rounded-lg
