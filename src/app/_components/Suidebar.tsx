@@ -46,11 +46,13 @@ export default function AppSidebar() {
 
       <nav className="mt-6 space-y-2">
         {Helper.categories().map((category: Category) => (
-          <div key={category.title} className="bg-[#858795] rounded-xl border border-[#d4d450] w-full shadow shadow-gray-400 hover-side">
+          <div key={category.title} className={`bg-gray-color rounded-xl border border-color w-full hover-side transition ease-out 0.3s
+            ${activeCategory!==category.title ? 'shadow shadow-[#d4d450]' : 'shadow shadow-black'}
+          `}>
             <a
               href={category.url}
               className={`flex items-center py-1 px-4 rounded-xl transition-all duration-200 ease-in-out relative text-black
-                ${activeCategory === category.title ? '' : ''}`}
+                ${activeCategory === category.title ? 'bg-primary-color border-2 border-black' : ''}`}
             >
               <div className={`w-7 h-7 rounded-xl flex justify-center relative bg-white border-2 border-black flex-shrink-0
               ${!isOpen ? 'right-3' : ''}`}>

@@ -17,6 +17,11 @@ body {
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    --col-dark: black;
+    --col-gray: #858795;
+    --col-dark-gray: #686a75;
+    --col-light: white;
+    --col-primary: #d4d450;
   }
 
   .dark {
@@ -31,10 +36,32 @@ body {
   }
 
  .hover-nav:hover {
-  @apply bg-[#73747e] rounded-xl py-1 h-8
+  background-color: var(--col-dark-gray);
+  @apply  rounded-xl py-1 h-8
  }
 
  .hover-side:hover {
-  @apply bg-[#73747e]
+  background-color: var(--col-dark-gray);
+  @apply -translate-y-1
+ }
+
+ .border-color {
+    border-color: var(--col-primary);
+ }
+
+ .bg-black-color{
+  background-color: var(--col-dark);
+ }
+
+ .bg-white-color{
+  background-color: var(--col-light);
+ }
+
+ .bg-primary-color{
+  background-color: var(--col-primary);
+ }
+
+ .bg-gray-color{
+  background-color: var(--col-gray);
  }
 }
