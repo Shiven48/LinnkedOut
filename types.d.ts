@@ -18,6 +18,7 @@ export interface Media {
     platform: string;
     createdAt: string;
     updatedAt: string;
+    thumbnailUrl: string;
 }
 
 export interface YoutubeMedia {
