@@ -17,11 +17,11 @@ body {
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
-    --col-dark: black;
-    --col-gray: #858795;
-    --col-dark-gray: #686a75;
-    --col-light: white;
-    --col-primary: #d4d450;
+    --col-dark: #181818;
+    --col-golden: #9d9d39;
+    --col-special: #A7E600;
+    --col-dark-golden: #e3ec58;
+    /* --col-primary: #d4d450; */
   }
 
   .dark {
@@ -36,32 +36,39 @@ body {
   }
 
  .hover-nav:hover {
-  background-color: var(--col-dark-gray);
+  background-color: var(--col-dark-golden);
   @apply  rounded-xl py-1 h-8
  }
 
  .hover-side:hover {
-  background-color: var(--col-dark-gray);
+  background-color: var(--col-dark-golden);
   @apply -translate-y-1
  }
 
- .border-color {
-    border-color: var(--col-primary);
+ .hover-page-card:hover {
+  background-color: var(--col-dark-golden);
+  @apply -translate-y-3
  }
 
- .bg-black-color{
+ .bg-dark {
   background-color: var(--col-dark);
  }
 
- .bg-white-color{
-  background-color: var(--col-light);
+ .bg-dark-golden {
+  background-color: var(--col-dark-golden);
  }
 
- .bg-primary-color{
-  background-color: var(--col-primary);
+ .bg-golden {
+  background-color: var(--col-golden);
  }
 
- .bg-gray-color{
-  background-color: var(--col-gray);
+ .bg-special{
+  background-color: var(--col-special);
  }
+
+ .stick {
+  position: sticky;
+  top: 12px;
+ }
+
 }

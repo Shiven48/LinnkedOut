@@ -1,4 +1,4 @@
-import { fetchVideoFromYoutubeURL } from "../../../../src/services/youtubeService";
+import { fetchVideoFromYoutubeURL } from "../../../src/services/youtubeService";
 import { Helper } from "./helper_data";
 
 export class HelperFunctions {
@@ -49,11 +49,11 @@ export class HelperFunctions {
         }
     }
 
-    public static youtubeVideoDetails(id: string) {
-        return `https://www.googleapis.com/youtube/v3/videos?id=${id}&key=${process.env.YOUTUBE_API_KEY}&part=snippet,contentDetails,statistics,status`
-    }
+    // public static youtubeVideoDetails(id: string) {
+    //     return `https://www.googleapis.com/youtube/v3/videos?id=${id}&key=${process.env.YOUTUBE_API_KEY}&part=snippet,contentDetails,statistics,status`
+    // }
 
-    public static youtubeVideo(id: string) {
-        return `https://www.youtube.com/embed/${id}`
-    }
+    // public static youtubeVideo(id: string) {
+    //     return `https://www.youtube.com/embed/${id}`
+    // }
 }

@@ -76,6 +76,10 @@ export class Helper{
             {
                 'id':6,
                 'link':'https://www.reddit.com/r/Azoozkie/comments/1htzxhh/ab_iski_gnd_maregi/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button'
+            },
+            {
+                'id':7,
+                'link':`https://x.com/memelordtech/status/1878228778561786021?ref_src=twsrc%5Etfw%7Ctwcamp%5Etweetembed%7Ctwterm%5E1878228778561786021%7Ctwgr%5E3b9c6fe184f5747f952b3ed09a6de8f8f78796f1%7Ctwcon%5Es1_c10&ref_url=https%3A%2F%2Fpublish.twitter.com%2F%3Furl%3Dhttps%3A%2F%2Ftwitter.com%2Fmemelordtech%2Fstatus%2F1878228778561786021`
             }
         ]
         return resos as Resource[];
