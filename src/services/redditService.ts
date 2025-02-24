@@ -53,9 +53,10 @@ export const saveRedditPostToDatabase = async (redditPostMetaData:any) => {
         type: type,
         platform: 'reddit',
         createdAt: currentTimestamp,
-        updatedAt: currentTimestamp
+        updatedAt: currentTimestamp,
+        thumbnailUrl: imageUrl
     }
-
+    console.log(generalisedMedia)
     const returnedMedia = await insertMedia(generalisedMedia);
     console.log(`inserted Media`)
     const mediaId = returnedMedia[0].id; 
