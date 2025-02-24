@@ -43,6 +43,34 @@
       "when": 1740180167068,
       "tag": "0005_majestic_bedlam",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1740358960495,
+      "tag": "0006_material_zarek",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1740359091879,
+      "tag": "0007_tough_bug",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1740361868403,
+      "tag": "0008_massive_joshua_kane",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1740362133285,
+      "tag": "0009_bizarre_anita_blake",
+      "breakpoints": true
     }
   ]
 }
