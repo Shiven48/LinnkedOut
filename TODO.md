@@ -1,8 +1,9 @@
 - [X] Create a button on sidebar to toggle sidebar
-- [] Create handler for fetching data from different platform apis
-- [] Create a content area and fetch data and design as u need
+- [X] Create handler for fetching data from different platform apis
+- [X] Create a content area and fetch data and design as u need
+- []  Find a way to extend the expiration period of reddit access token of reddit api 
 - [] Create a seperate page to display the embedded video and use specific strategies that nextJS offers(SSG,SSR,etc)
 - [] A toggle button to blur side except the video
-- [] Create a solution to get data from every platform
+- [X] Create a solution to get data from every platform
 - [] generate weekly reports
 - [] generate summary from the transcripts of the video from its metadata using OPENAI key
