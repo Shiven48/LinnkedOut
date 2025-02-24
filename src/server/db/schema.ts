@@ -73,6 +73,7 @@ export const media = pgTable('media', {
     platform: varchar('platform', { length: 30 }).notNull(), // youtube, twitter, instagram
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
+    thumbnailUrl: varchar('ImageUrl', { length: 200 })
 });
 
 export const mediaRelations = relations(media, ({ one }) => ({

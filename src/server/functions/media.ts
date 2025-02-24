@@ -1,6 +1,6 @@
 import { db, queryDb } from '../db/index'
 import { media, redditMedia, twitterMedia, youtubeMedia } from '../db/schema' 
-import { Media, RedditMedia, TwitterMedia, YoutubeMedia } from '@/types';
+import { Media, RedditMedia, TwitterMedia, YoutubeMedia } from '../../../types';
 
 // ORM layer
 export const getAllMedia = async () => {
@@ -36,7 +36,8 @@ export const insertMedia = async (sharedMedia:Media) => {
                             type: sharedMedia.type as "short" | "image" | "video" | "photo",
                             platform: sharedMedia.platform,
                             createdAt: currentTimestamp,
-                            updatedAt: currentTimestamp
+                            updatedAt: currentTimestamp,
+                            thumbnailUrl: sharedMedia.thumbnailUrl,
                        }])
                        .returning({ id: media.id });
     } catch(error){
