@@ -20,11 +20,6 @@ export const fetchVideoFromYoutubeURL = async (link:string) => {
             return NextResponse.json({message:'Unable to fetch video metadata'},{status:400}) 
         }
         const videoMetaData = await fetchedVideo.json();
-        // if (!videoData || !videoData.items || videoData.items.length === 0) {
-        //     return NextResponse.json({ message: 'No video data found' }, { status: 404 });
-        // }
-        // const savedVideo = await saveYoutubeVideoToDatabase(videoMetaData);
-        // return NextResponse.json({ message: 'Video saved successfully', video: videoMetaData },  { status: 200 });
         return saveToDatabase(videoMetaData)
     } catch (error) {
         console.error(error);
@@ -63,7 +58,8 @@ export const saveToDatabase = async (videoMetaData:any) => {
         type: 'video', // temporary
         platform: 'youtube',
         createdAt: currentTimestamp,
-        updatedAt: currentTimestamp
+        updatedAt: currentTimestamp,
+        thumbnailUrl: mappedData.thumbnailUrl || '',
     }
 
     const returnedMedia = await insertMedia(media);

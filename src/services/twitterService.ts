@@ -40,6 +40,8 @@ export const fetchVideoFromTwitterURL = async (link:string) => {
 export const saveTweetToDatabase = async (tweetMetaData:any) => {
     const { data, includes } =  tweetMetaData
     const { text,id } = data
+
+    console.log(`Here : ${JSON.stringify(tweetMetaData)}`)
     
     const mediaItem = includes?.media?.[0];
         if (!mediaItem) {
@@ -58,7 +60,8 @@ export const saveTweetToDatabase = async (tweetMetaData:any) => {
         type: type,
         platform: 'twitter',
         createdAt: currentTimestamp,
-        updatedAt: currentTimestamp
+        updatedAt: currentTimestamp,
+        thumbnailUrl: url,
     }
 
     const returnedMedia = await insertMedia(media);
