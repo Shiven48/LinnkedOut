@@ -1,6 +1,6 @@
 'use client'
 import React, { useEffect, useState } from "react";
-import { Link } from "@heroui/react";
+import Link from "next/link";  // Use Next.js Link component
 import { Helper } from "../_lib/helper_data";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
@@ -8,41 +8,44 @@ import Image from "next/image";
 export default function App() {
     const [activeNavComponent, setActiveNavComponent] = useState<string | null>(null);
     const pathname = usePathname();
+    
+    // Fetch the navigation components only once
+    const navComponents = Helper.navComponents();
 
     useEffect(() => {
-        const currentCategory = Helper.navComponents().find(
+        const currentCategory = navComponents.find(
             category => category.url === pathname
         );
         setActiveNavComponent(currentCategory ? currentCategory.title : '');
-    }, [pathname]);
+    }, [pathname, navComponents]);
 
     return (
-        <nav className="h-12 bg-[#181818] fixed top-0 w-full flex items-center justify-between px-4 border border-white">
+        <nav className="h-12 bg-dark sticky-top-0 w-full flex items-center justify-between px-4 border border-white z-10">
             <div className="flex items-center h-full">
                 <a
                     href="/"
-                    className="flex items-center hover:bg-white/10 p-1 transition-colors duration-200 bg-white rounded-xl nav-hover hover:border hover:border-white"
+                    className="flex items-center p-1 transition duration-200 bg-golden rounded-xl hover-nav border border-white"
                 >
                     <Image
                         src='/home.svg'
                         alt='home'
                         width={25}
                         height={25}
-                        className="min-w-[25px] nav-hover"
+                        className="min-w-[25px]"
                     />
                 </a>
             </div>
 
-            <div className="flex items-center gap-4">
-                {Helper.navComponents()?.map((nav) => (
-                    <div key={nav.title} className="h-8 flex items-center bg-[#858795] rounded-xl text-black shadow shadow-[#d4d450] border border-[#d4d450]">
+            <div className="flex items-center gap-4 bg-golden rounded-xl hover-side">
+                {navComponents.map((nav) => (
+                    <div key={nav.title} className="h-8 flex items-center bg-gray-color rounded-xl border border-black text-black shadow shadow-white transition ease-out 0.3">
                         <Link 
                             href={nav.url}
-                            className={`px-4 py-2 rounded-lg
+                            className={`px-2 py-1 rounded-lg
                                 hover-nav hover:text-black
                                 ${activeNavComponent === nav.title 
-                                    ? 'bg-white text-black' 
-                                    : 'text-black'
+                                    ? ' bg-dark-golden h-8 rounded-xl border-2 border-black shadow shadow-[#d4d450]' 
+                                    : ''
                                 }`
                             }
                         >

@@ -1,25 +1,14 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import { getLatestVideos } from "@/src/server/functions/media";
+import { getLatestVideos } from "../../../server/functions/media";
+import { NextRequest, NextResponse } from 'next/server';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    if (req.method === 'GET') {
+export async function GET(
+    request:NextRequest
+) {
         try {
             const videos = await getLatestVideos();
-            res.status(200).json(videos);
+            return NextResponse.json({body:videos},{status:200})
         } catch (error) {
-            res.status(500).json({ message: 'Error fetching videos' });
+            console.error(error)
+            return NextResponse.json({ message: 'Error fetching videos',error}, {status:500});
         }
-    } else {
-        res.status(405).json({ message: 'Method Not Allowed' });
-    }
-
-    if(req.method === 'POST') {
-        try{
-            
-        } catch(error){
-
-        }
-    } else{
-        res.status(405).json({ message: 'Method Not Allowed' });
-    }
 }

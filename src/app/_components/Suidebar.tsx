@@ -5,6 +5,7 @@ import { Category } from "../../../types";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useSidebarState } from "../../../hooks/useSideBarState";
+import clsx from "clsx";
 
 export default function AppSidebar() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
@@ -21,12 +22,12 @@ export default function AppSidebar() {
 
   return (
     <aside 
-      className={`h-screen bg-[#181818] p-5 left-0 transition-all duration-200 ease-in-out
-        ${isOpen ? 'w-72' : 'w-20'} mt-12 border border-white`}
+      className={`h-[calc(100vh-48px)] flex-shrink-0 overflow-y-auto p-5 transition-all duration-200 ease-in-out
+        ${isOpen ? 'w-72' : 'w-20'} border border-white bg-dark`}
     >
-      <div className="relative flex items-center h-8 mb-4">
+      <div className="relative flex items-center h-8 mb-4 ">
         {isOpen && (
-          <span className="text-md text-white">Categories</span>
+          <span className="text-md text-white">Explore</span>
         )}
         <button
           className={`bg-white rounded-xl w-8 h-8 absolute transition-all duration-200 ease-in-out flex items-center justify-center hover-side
@@ -46,13 +47,13 @@ export default function AppSidebar() {
 
       <nav className="mt-6 space-y-2">
         {Helper.categories().map((category: Category) => (
-          <div key={category.title} className={`bg-gray-color rounded-xl border border-color w-full hover-side transition ease-out 0.3s
-            ${activeCategory!==category.title ? 'shadow shadow-[#d4d450]' : 'shadow shadow-black'}
+          <div key={category.title} className= {`rounded-xl w-full hover-side transition ease-out 0.3s shadow shadow-white
+            ${activeCategory===category.title ? 'active:bg-' : ''}
           `}>
             <a
               href={category.url}
-              className={`flex items-center py-1 px-4 rounded-xl transition-all duration-200 ease-in-out relative text-black
-                ${activeCategory === category.title ? 'bg-primary-color border-2 border-black' : ''}`}
+              className={`bg-golden flex items-center py-1 px-4 rounded-xl transition-all duration-200 ease-in-out relative hover-side text-black shadow border border-black
+                ${activeCategory === category.title ? 'bg-[#e3ec58] shadow shadow-[#e3ec58]' : 'shadow-white'}`}
             >
               <div className={`w-7 h-7 rounded-xl flex justify-center relative bg-white border-2 border-black flex-shrink-0
               ${!isOpen ? 'right-3' : ''}`}>

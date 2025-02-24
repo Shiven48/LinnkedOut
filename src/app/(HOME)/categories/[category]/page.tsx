@@ -9,7 +9,7 @@ export default function Category({params} : {params : Promise<{
     const param = React.use(params)
     const category = decodeURIComponent(param.category)
     return (
-        <div className="h-screen w-full mt-12 bg-[#181818]">
+        <div className="h-screen w-full bg-[#181818]">
             <span className="text-white">
                 This is the {category} page
             </span>
