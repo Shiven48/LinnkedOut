@@ -2,13 +2,29 @@
 @tailwind components;
 @tailwind utilities;
 
+/* @import url('https://fonts.googleapis.com/css?family=Manrope:700|Manrope:400'); */
+
 body {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Manrope', Arial, Helvetica, sans-serif;
   overflow-x: hidden;
+  background-color: var(--background);
+  color: var(--text);
+  padding: 0 10%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100vh;
+  overflow: hidden;
 }
 
 @layer base {
   :root {
+    --text: hsl(0, 0%, 99%);
+    /* --textDim: hsl(0, 0%, 60%); */
+    --textDim: hsl(68, 61%, 45%);
+    --accentHi: hsla(155, 100%, 100%, 25%);
+    --hover-color: hsla(64, 64%, 33%, 0.25);
+    
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
@@ -21,7 +37,6 @@ body {
     --col-golden: #9d9d39;
     --col-special: #A7E600;
     --col-dark-golden: #e3ec58;
-    /* --col-primary: #d4d450; */
   }
 
   .dark {
@@ -34,41 +49,65 @@ body {
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
+}
 
- .hover-nav:hover {
+/* Navigation hover effects */
+.hover-nav:hover {
   background-color: var(--col-dark-golden);
-  @apply  rounded-xl py-1 h-8
- }
+  @apply rounded-xl py-1 h-8;
+}
 
- .hover-side:hover {
+.hover-side:hover {
   background-color: var(--col-dark-golden);
-  @apply -translate-y-1
- }
+  @apply -translate-y-1;
+}
 
- .hover-page-card:hover {
-  background-color: var(--col-dark-golden);
-  @apply -translate-y-3
- }
+/* Card hover effect if want to revert to basic styling again*/
+.hover-page-card:hover {
+  border-color: var(--col-dark-golden);
+  border-width: 2px;
+  @apply -translate-y-3;
+}
+/* New green glass card component */
+.card-green-glass {
+  background-color: hsla(63, 18%, 51%, 0.242);
+  border: 1px solid hsla(62, 100%, 50%, 0.2);
+  border-radius: 13px;
+  box-shadow: 0px -3px 4px 0px var(--textDim) inset,
+              0px 5px 15px rgba(0, 0, 0, 0.1);
+  color: var(--primaryFg);
+  backdrop-filter: blur(8px);
+  transition: all 0.3s ease;
+}
 
- .bg-dark {
+.card-green-glass:hover {
+  background-color: hsla(64, 44%, 47%, 0.495);
+  box-shadow: 0px -3px 8px 0px var(--col-golden) inset,
+              0px 8px 20px rgba(0, 0, 0, 0.15);
+  border-width: 1px;
+  border-color: aliceblue;
+  transform: translateY(-3px);
+}
+
+/* Background color classes */
+.bg-dark {
   background-color: var(--col-dark);
- }
+}
 
- .bg-dark-golden {
+.bg-dark-golden {
   background-color: var(--col-dark-golden);
- }
+}
 
- .bg-golden {
+.bg-golden {
   background-color: var(--col-golden);
- }
+}
 
- .bg-special{
+.bg-special {
   background-color: var(--col-special);
- }
+}
 
- .stick {
+/* Sticky positioning helper */
+.stick {
   position: sticky;
   top: 12px;
- }
-
 }

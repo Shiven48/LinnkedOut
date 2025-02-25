@@ -49,12 +49,14 @@ export const saveRedditPostToDatabase = async (redditPostMetaData:any) => {
                 : post_hint === 'hosted:image' ? 'image'
                 : 'photo';
 
+    const parsedImageUrl = parseImage(imageUrl);
+
     const generalisedMedia:Media = {
         type: type,
         platform: 'reddit',
         createdAt: currentTimestamp,
         updatedAt: currentTimestamp,
-        thumbnailUrl: imageUrl
+        thumbnailUrl: parsedImageUrl
     }
     console.log(generalisedMedia)
     const returnedMedia = await insertMedia(generalisedMedia);
@@ -79,4 +81,13 @@ export const saveRedditPostToDatabase = async (redditPostMetaData:any) => {
     const returnedRedditMedia = await insertRedditMedia(RedditMedia);
     console.log(`inserted reddit media`)
     return returnedRedditMedia;
+}
+
+export function parseImage(unParsedImageUrl: string): string {
+    try {
+        return decodeURIComponent(unParsedImageUrl).replace(/&amp;/g, '&');
+    } catch (error) {
+        console.error("Error parsing image:", error);
+        return '';
+    }
 }
