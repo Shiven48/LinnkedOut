@@ -4,17 +4,17 @@ import { Media } from "../../../types";
 export default function Card({ media }: { media: Media }){
     return(
         // This styling is just temporary
-        <div className="text-black m-2 font-serif font-thin flex gap-4 absolute bottom-4 items-center">
+        <div className="text-black font-serif font-thin flex gap-4 justify-center">
+            <div className='w-full h-full absolute -z-90 rounded-xl flex top-0'>
             <Image
                 src={media.thumbnailUrl}
                 alt="Media thumbnail"
                 width={100}
                 height={100}
                 style={{ objectFit: 'cover' }}
+                className='h-full w-full opacity-80 rounded-2xl'
             />
-            <span className="px-1 bg-green-400 rounded-xl flex justify-center border border-black">{media.platform}</span>
-            <span className="px-1 bg-orange-400 rounded-xl flex justify-center border border-black"> {media.type}</span>
-            <span className="px-1 bg-gray-400 rounded-xl flex justify-center border border-black"> {new Date(media.createdAt).toDateString()}</span>
+            </div>
         </div>
     )
 }
