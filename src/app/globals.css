@@ -19,36 +19,19 @@ body {
 
 @layer base {
   :root {
-    --text: hsl(0, 0%, 99%);
-    /* --textDim: hsl(0, 0%, 60%); */
     --textDim: hsl(68, 61%, 45%);
     --accentHi: hsla(155, 100%, 100%, 25%);
-    --hover-color: hsla(64, 64%, 33%, 0.25);
-    
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
     --col-dark: #181818;
     --col-golden: #9d9d39;
     --col-special: #A7E600;
     --col-dark-golden: #e3ec58;
   }
 
-  .dark {
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
+}
+
+.text-golden {
+  box-shadow: 0px 2px 1px  var(--col-golden);
+  color: var(--col-dark-golden);
 }
 
 /* Navigation hover effects */
@@ -68,7 +51,7 @@ body {
   border-width: 2px;
   @apply -translate-y-3;
 }
-/* New green glass card component */
+/* New golden glass card component */
 .card-green-glass {
   background-color: hsla(63, 18%, 51%, 0.242);
   border: 1px solid hsla(62, 100%, 50%, 0.2);
@@ -85,10 +68,13 @@ body {
   box-shadow: 0px -3px 8px 0px var(--col-golden) inset,
               0px 8px 20px rgba(0, 0, 0, 0.15);
   border-width: 1px;
-  border-color: aliceblue;
+  border-color: var(--col-dark-golden);
   transform: translateY(-3px);
 }
 
+.span-prop {
+  @apply absolute top-8 px-2 text-golden bg-opacity-45 bg-black rounded-xl flex justify-center border border-white 
+}
 /* Background color classes */
 .bg-dark {
   background-color: var(--col-dark);
