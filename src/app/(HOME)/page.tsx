@@ -36,9 +36,15 @@ export default function Home() {
                     media.map((video: Media) => (
                         <div
                             key={video.id}
-                            className="card-green-glass relative w-[30%] h-72 p-4 m-4 flex flex-col items-center"
+                            className="card-green-glass w-[30%] h-64 p-4 m-4"
                         >
                             <Card media={video} />
+                            {/* Solve this issue of width*/}
+                            <div className='flex absolute bottom-4 w-full justify-center card-green-glass h-20 w-20'>
+                                <span className="span-prop mr-80">{video.platform}</span>
+                                <span className="span-prop mr-20"> {video.type}</span>
+                                <span className="span-prop ml-60"> {new Date(video.createdAt).toDateString()}</span>
+                            </div>
                         </div>
                     ))
                 ) : (
