@@ -7,3 +7,5 @@
 - [X] Create a solution to get data from every platform
 - [] generate weekly reports
 - [] generate summary from the transcripts of the video from its metadata using OPENAI key
+- [] create a category of platforms like reddit twitter and yt and show all the platforms on sidebar
+- [] make all the content of sidebar as an accordian
