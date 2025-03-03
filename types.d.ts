@@ -31,6 +31,7 @@ export interface YoutubeMedia {
     thumbnailUrl: string | null;
     thumbnailMediumUrl: string | null;
     thumbnailHighUrl: string | null;
+    thumbnailMaxRes?: string | null;
     duration: string | null;
     definition: string | null;
     hasCaption: boolean | null;
