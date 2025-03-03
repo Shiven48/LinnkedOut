@@ -35,10 +35,12 @@ export const saveToDatabase = async (videoMetaData:any) => {
         throw new Error('No video data found in the YouTube response');
     }
 
+    // Destructure the video data
     const { id } = video
     const { title, description, thumbnails, tags } = video.snippet
     const { duration, definition, caption } = video.contentDetails
 
+    // Map the data to YoutubeMedia object
     const mappedData:YoutubeMedia = {
         videoId:id,
         title: title,
@@ -46,26 +48,28 @@ export const saveToDatabase = async (videoMetaData:any) => {
         thumbnailUrl: thumbnails.default.url,
         thumbnailMediumUrl: thumbnails.medium.url,
         thumbnailHighUrl: thumbnails.high.url,
+        thumbnailMaxRes: thumbnails.maxres.url,
         duration: duration,
         definition: definition,
         hasCaption: caption,
         tags: tags
     }
-
-    const currentTimestamp = new Date().toISOString();
-    // Insert media first 
+    
+    // Map the data to Media object
     const media:Media = {
         type: 'video', // temporary
         platform: 'youtube',
-        createdAt: currentTimestamp,
-        updatedAt: currentTimestamp,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
         thumbnailUrl: mappedData.thumbnailUrl || '',
+        hdThumbnailUrl: mappedData.thumbnailMaxRes || ''
     }
 
     const returnedMedia = await insertMedia(media);
     console.log(`inserted Media`)
     const mediaId = returnedMedia[0].id;  
 
+    // Mapping the data from mappedData to ytMedia
     const ytMedia:YoutubeMedia = {
         mediaId: mediaId,
         videoId: mappedData.videoId,
@@ -74,6 +78,7 @@ export const saveToDatabase = async (videoMetaData:any) => {
         thumbnailUrl: mappedData.thumbnailUrl,
         thumbnailMediumUrl: mappedData.thumbnailMediumUrl,
         thumbnailHighUrl: mappedData.thumbnailHighUrl,
+        thumbnailMaxRes: mappedData.thumbnailMaxRes,
         duration: mappedData.duration,
         definition: mappedData.definition,
         hasCaption: mappedData.hasCaption,

@@ -12,7 +12,8 @@ export default {
   theme: {
   	extend: {
       spacing: {
-		'65': '260px',
+		'53': '212px',
+		'54': '216px',
         '66': '264px',
 		'68': '17rem'
       },
