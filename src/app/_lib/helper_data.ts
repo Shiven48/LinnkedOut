@@ -1,4 +1,4 @@
-import { Category,NavComponent,Resource } from '../../../types'
+import { Category,NavComponent,Platfrom,Resource } from '../../../types'
 
 export class Helper{
 
@@ -38,6 +38,27 @@ export class Helper{
             }
         ];
         return categories as Category[];
+    }
+
+    public static Platforms():Platfrom[] {
+        const platforms: Platfrom[] = [
+            {
+                name: 'Youtube', 
+                url: `/platforms/${encodeURIComponent('Youtube')}`,
+                icon: `youtube`
+            },
+            {
+                name: 'Reddit', 
+                url: `/platforms/${encodeURIComponent('Reddit')}`,
+                icon: `reddit`
+            },
+            {
+                name: 'Twitter', 
+                url: `/platforms/${encodeURIComponent('Twitter')}`,
+                icon:`twitter`
+            }
+        ]
+        return platforms as Platfrom[];
     }
 
     public static navComponents():NavComponent[] {
@@ -88,6 +109,22 @@ export class Helper{
             {
                 'id':9,
                 'link':'https://www.youtube.com/watch?v=XeGsq5yQOXw'
+            },
+            {
+                'id':10,
+                'link':'https://youtu.be/6YzGOq42zLk?si=3TS6QIvk4dKQPYLs'
+            },
+            {
+                'id':11,
+                'link':'https://youtu.be/Fj6cr3FO2JI?si=7lL3nGGUa7UcCqJw'
+            },
+            {
+                'id':12,
+                'link':'https://www.reddit.com/r/cartoons/comments/1j269lv/flow_has_won_best_animated_film_at_the_oscars/?utm_source=share&utm_medium=mweb3x&utm_name=post_embed&utm_term=1&utm_content=1'
+            },
+            {
+                'id':9,
+                'link':'https://x.com/TheCartoonBase/status/1896398374439694547?ref_src=twsrc%5Etfw%7Ctwcamp%5Etweetembed%7Ctwterm%5E1896398374439694547%7Ctwgr%5E2c9c3aa1729a9690d8699fc3b6c38ca15ddfc53d%7Ctwcon%5Es1_c10&ref_url=https%3A%2F%2Fpublish.twitter.com%2F%3Furl%3Dhttps%3A%2F%2Ftwitter.com%2FTheCartoonBase%2Fstatus%2F1896398374439694547'
             }
         ]
         return resos as Resource[];
