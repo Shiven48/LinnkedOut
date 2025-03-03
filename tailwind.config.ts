@@ -11,6 +11,11 @@ export default {
   ],
   theme: {
   	extend: {
+      spacing: {
+		'65': '260px',
+        '66': '264px',
+		'68': '17rem'
+      },
   		colors: {
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',

@@ -19,6 +19,7 @@ export interface Media {
     createdAt: string;
     updatedAt: string;
     thumbnailUrl: string;
+    hdThumbnailUrl?: string;
 }
 
 export interface YoutubeMedia {
@@ -57,6 +58,7 @@ export interface RedditMedia {
     redditPostId: string;
     author: string;
     imageUrl: string;
+    hdImageUrl: string | null;
     imageWidth: number | null;
     imageHeight: number | null;
     videoUrl: string;
@@ -75,3 +77,8 @@ export interface MediaRelations {
     twitterDetails?: TwitterMedia;  
     instagramDetails?: InstagramMedia;
   }
+
+export interface Urls {
+    sdUrl?: string;
+    hdUrl?: string;
+}
