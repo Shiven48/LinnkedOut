@@ -63,6 +63,7 @@ export const insertYoutubeMedia = async (ytMedia:YoutubeMedia) => {
                             thumbnailUrl: ytMedia.thumbnailUrl,
                             thumbnailMediumUrl: ytMedia.thumbnailMediumUrl,
                             thumbnailHighUrl: ytMedia.thumbnailHighUrl,
+                            thumbnailMaxRes: ytMedia.thumbnailMaxRes,
                             duration: ytMedia.duration,
                             definition: ytMedia.definition,
                             hasCaption: ytMedia.hasCaption,

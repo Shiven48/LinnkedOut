@@ -20,6 +20,7 @@ export const youtubeMedia = pgTable('youtube_media', {
     thumbnailUrl: text('thumbnailUrl'),
     thumbnailMediumUrl: text('thumbnailMediumUrl'),
     thumbnailHighUrl: text('thumbnailHighUrl'),
+    thumbnailMaxRes: text('thumbnailMaxResUrl'),
     duration: varchar('duration', { length: 20 }),
     definition: varchar('definition', { length: 10 }),
     hasCaption: boolean('hasCaption'),
