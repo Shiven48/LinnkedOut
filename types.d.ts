@@ -83,3 +83,9 @@ export interface Urls {
     sdUrl?: string;
     hdUrl?: string;
 }
+
+export interface Platfrom {
+    name: string, 
+    url: string,
+    icon: string
+}
