@@ -4,6 +4,7 @@ import { useSidebarState } from "../../../hooks/useSideBarState";
 import { Media } from "../../../types";
 import Image from "next/image";
 import Card from "../_components/Card";
+import Link from "next/link";
 
 export default function Home() {
     // const isOpen = useSidebarState(state => state.isOpen) 
@@ -36,19 +37,29 @@ export default function Home() {
                     media.map((video: Media) => (
                         <div
                             key={video.id}
-                            className="card-green-glass w-[30%] h-64 p-4 m-4"
+                            className="card-green-glass w-[30%] h-53 m-4"
                         >
                             <Card media={video} />
-                            {/* Solve this issue of width*/}
-                            <div className='flex absolute bottom-4 w-full justify-center card-green-glass h-20 w-20'>
-                                <span className="span-prop mr-80">{video.platform}</span>
-                                <span className="span-prop mr-20"> {video.type}</span>
-                                <span className="span-prop ml-60"> {new Date(video.createdAt).toDateString()}</span>
+                            <div className='flex justify-evenly'>
+                                <div className="gap-5 rounded-2xl w-full h-full py-1 flex justify-evenly relative top-54">
+                                    <Link 
+                                        className="span-prop basic-text button-hover"
+                                        href='#'
+                                        > 
+                                        {video.type}
+                                    </Link>
+                                    <Link
+                                        className="span-prop basic-text button-hover"
+                                        href="#"
+                                        >
+                                        {video.platform}
+                                    </Link>
+                                </div>
                             </div>
                         </div>
                     ))
                 ) : (
-                    <div>No videos available</div>  // Display fallback message if no media is available
+                    <div>No videos available</div>
                 )}
             </div>
         </div>
