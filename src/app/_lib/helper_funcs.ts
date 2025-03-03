@@ -10,7 +10,7 @@ export class HelperFunctions {
     }
 
     public static parseYoutubeEmbeddedLink(link: string) {
-        // change here -> currently i am using data that i have declared not using the data provided by the bot 
+        // change here -> currently i am using data that i have declared, but not the data provided by the bot 
         const url = new URL(Helper.Resources()[0].link).pathname
         const trimmedUrl = url.trim()
         return trimmedUrl.split('/')[1]
@@ -48,12 +48,4 @@ export class HelperFunctions {
             throw new Error(`Failed to parse Reddit embedded link: ${errorMessage}`);
         }
     }
-
-    // public static youtubeVideoDetails(id: string) {
-    //     return `https://www.googleapis.com/youtube/v3/videos?id=${id}&key=${process.env.YOUTUBE_API_KEY}&part=snippet,contentDetails,statistics,status`
-    // }
-
-    // public static youtubeVideo(id: string) {
-    //     return `https://www.youtube.com/embed/${id}`
-    // }
 }
