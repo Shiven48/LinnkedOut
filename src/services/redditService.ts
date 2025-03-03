@@ -1,4 +1,4 @@
-import { Media, RedditMedia } from "../../types";
+import { Media, RedditMedia, Urls } from "../../types";
 import { HelperFunctions } from "../../src/app/_lib/helper_funcs"
 import { insertMedia, insertRedditMedia } from "../server/functions/media";
 
@@ -38,31 +38,45 @@ export const fetchVideoFromRedditURL = async (embeddedLink:string) => {
 }
 
 export const saveRedditPostToDatabase = async (redditPostMetaData:any) => {
+    // Destructuring the fetched data
     const postData = redditPostMetaData[0].data.children[0].data;  
     const { subreddit, title, post_hint, id, author, media, preview } = postData
     const { source } = preview?.images[0] || {};  
-    const { url: imageUrl, width: imageWidth, height: imageHeight } = source || {};
+
+    const resolutions = preview?.images[0]?.resolutions || [];
+    const previewHdUrl = resolutions.length ? resolutions[resolutions.length - 1].url : undefined;
+    
+    const { url: previewImageUrl, width: imageWidth, height: imageHeight } = source || {};
     const { fallback_url, width: videoWidth, height: videoHeight } = media?.reddit_video || {};
+
+    // Mapping the urls that are destructured into the url object
+    const urls: Urls = {
+        sdUrl: previewImageUrl,
+        hdUrl: previewHdUrl
+    };
 
     const currentTimestamp = new Date().toISOString();
     const type = post_hint === 'hosted:video' ? 'video' 
                 : post_hint === 'hosted:image' ? 'image'
                 : 'photo';
 
-    const parsedImageUrl = parseImage(imageUrl);
+    const parsedImageUrl = parseImage(urls);
 
+    // Mapping the media Object to the data we just destructured
     const generalisedMedia:Media = {
         type: type,
         platform: 'reddit',
         createdAt: currentTimestamp,
         updatedAt: currentTimestamp,
-        thumbnailUrl: parsedImageUrl
+        thumbnailUrl: parsedImageUrl.sdUrl || '',
+        hdThumbnailUrl: parsedImageUrl.hdUrl
     }
     console.log(generalisedMedia)
     const returnedMedia = await insertMedia(generalisedMedia);
     console.log(`inserted Media`)
     const mediaId = returnedMedia[0].id; 
 
+    // Mapping the Redditmedia Object to the data we just destructured
     const RedditMedia:RedditMedia = {
         mediaId: mediaId,
         subreddit: subreddit,
@@ -70,7 +84,8 @@ export const saveRedditPostToDatabase = async (redditPostMetaData:any) => {
         type: type,
         redditPostId: id,
         author: author,
-        imageUrl: imageUrl,
+        imageUrl: parsedImageUrl.sdUrl || '',
+        hdImageUrl: parsedImageUrl.hdUrl || '',
         imageWidth: imageWidth, 
         imageHeight: imageHeight,
         videoUrl: fallback_url,
@@ -80,14 +95,22 @@ export const saveRedditPostToDatabase = async (redditPostMetaData:any) => {
 
     const returnedRedditMedia = await insertRedditMedia(RedditMedia);
     console.log(`inserted reddit media`)
+    console.log(returnedRedditMedia)
     return returnedRedditMedia;
 }
-
-export function parseImage(unParsedImageUrl: string): string {
+export function parseImage(unParsedImageUrls: Urls): Urls {
     try {
-        return decodeURIComponent(unParsedImageUrl).replace(/&amp;/g, '&');
+        const parsedUrls: Urls = { ...unParsedImageUrls };
+        
+        if (parsedUrls.sdUrl) {
+            parsedUrls.sdUrl = decodeURIComponent(parsedUrls.sdUrl).replace(/&amp;/g, '&');
+        }
+        if (parsedUrls.hdUrl) {
+            parsedUrls.hdUrl = decodeURIComponent(parsedUrls.hdUrl).replace(/&amp;/g, '&');
+        }
+        return parsedUrls;
     } catch (error) {
         console.error("Error parsing image:", error);
-        return '';
+        return unParsedImageUrls;
     }
 }

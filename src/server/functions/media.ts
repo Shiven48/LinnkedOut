@@ -38,6 +38,7 @@ export const insertMedia = async (sharedMedia:Media) => {
                             createdAt: currentTimestamp,
                             updatedAt: currentTimestamp,
                             thumbnailUrl: sharedMedia.thumbnailUrl,
+                            hdThumbnailUrl: sharedMedia.hdThumbnailUrl
                        }])
                        .returning({ id: media.id });
     } catch(error){
@@ -114,6 +115,7 @@ export const insertRedditMedia = async (reddit:RedditMedia) => {
                             redditPostId: reddit.redditPostId,
                             author: reddit.author,
                             imageUrl: reddit.imageUrl,
+                            hdImageUrl: reddit.hdImageUrl,
                             imageWidth: reddit.imageWidth,
                             imageHeight: reddit.imageHeight,
                             videoUrl: reddit.videoUrl,
