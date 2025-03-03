@@ -1,8 +1,6 @@
 'use client'
 import { useEffect, useState } from "react";
-import { useSidebarState } from "../../../hooks/useSideBarState";
 import { Media } from "../../../types";
-import Image from "next/image";
 import Card from "../_components/Card";
 import Link from "next/link";
 
@@ -32,12 +30,12 @@ export default function Home() {
 
     return (
         <div className="h-[calc(100vh-48px)] overflow-y-auto flex-1 w-full bg-dark">
-            <div className="flex justify-evenly mt-10 flex-wrap cursor-pointer">
+            <div className="flex justify-evenly mt-6 flex-wrap cursor-pointer">
                 {media.length > 0 ? (
                     media.map((video: Media) => (
                         <div
                             key={video.id}
-                            className="card-green-glass w-[30%] h-53 m-4"
+                            className="card-green-glass w-[30%] h-53 my-8"
                         >
                             <Card media={video} />
                             <div className='flex justify-evenly'>
