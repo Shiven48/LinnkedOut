@@ -1,10 +1,11 @@
 - [X] Create a button on sidebar to toggle sidebar
 - [X] Create handler for fetching data from different platform apis
 - [X] Create a content area and fetch data and design as u need
-- [X] Create a solution to get data from every platform
-- [] The video should play on Hover 
-- [] create a category of platforms like reddit twitter and yt and show all the platforms on sidebar
-- [] make all the content of sidebar as an accordian
+- [X] Create a solution to get data from every platform 
+- [X] create a category of platforms like reddit twitter and yt and show all the platforms on sidebar
+- [X] make all the content of sidebar as an accordian
+
+- [] The video should play on Hover
 - []  Find a way to extend the expiration period of reddit's access token of reddit api 
 - [] Create a seperate page to display the embedded video and use specific strategies that nextJS offers(SSG,SSR,etc)
 - [] A toggle button to blur side except the video
