@@ -60,6 +60,7 @@ export const redditMedia = pgTable('reddit', {
   redditPostId: varchar('redditPostId', { length : 30 }),
   author: text('author').notNull(),
   imageUrl: text('imageUrl').notNull(),
+  hdImageUrl: text('hdImageUrl'),
   imageWidth: integer('imageWidth'),
   imageHeight: integer('imageHeight'),
   videoUrl: text('videoUrl').notNull(),
@@ -73,7 +74,8 @@ export const media = pgTable('media', {
     platform: varchar('platform', { length: 30 }).notNull(), // youtube, twitter, instagram
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
-    thumbnailUrl: varchar('ImageUrl', { length: 200 })
+    thumbnailUrl: varchar('ImageUrl', { length: 200 }),
+    hdThumbnailUrl: varchar('hdImageUrl', { length: 200 }),
 });
 
 export const mediaRelations = relations(media, ({ one }) => ({
