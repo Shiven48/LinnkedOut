@@ -64,7 +64,7 @@ export const redditMedia = pgTable('reddit', {
   hdImageUrl: text('hdImageUrl'),
   imageWidth: integer('imageWidth'),
   imageHeight: integer('imageHeight'),
-  videoUrl: text('videoUrl').notNull(),
+  videoUrl: text('videoUrl'),
   videoWidth: integer('videoWidth'),
   videoHeight: integer('videoHeight'),
 })

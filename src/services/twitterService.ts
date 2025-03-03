@@ -65,7 +65,7 @@ export const saveTweetToDatabase = async (tweetMetaData:any) => {
     }
 
     const returnedMedia = await insertMedia(media);
-    console.log(`inserted Media`)
+    console.log(`inserted Media : ${url}`)
     const mediaId = returnedMedia[0].id;  
 
     const tMedia:TwitterMedia = {
@@ -82,10 +82,3 @@ export const saveTweetToDatabase = async (tweetMetaData:any) => {
     console.group(`inserted twitter media`)
     return returnedTwitterMedia;
 }
-
-
-// if (!videoData || !videoData.items || videoData.items.length === 0) {
-        //     return NextResponse.json({ message: 'No video data found' }, { status: 404 });
-        // }
-        // const savedVideo = await saveYoutubeVideoToDatabase(videoMetaData);
-        // return NextResponse.json({ message: 'Video saved successfully', video: videoMetaData },  { status: 200 });
