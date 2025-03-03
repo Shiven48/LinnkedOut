@@ -30,7 +30,7 @@ body {
 }
 
 .text-golden {
-  box-shadow: 0px 2px 1px  var(--col-golden);
+  /* box-shadow: 0px 2px 1px  var(--col-golden); */
   color: var(--col-dark-golden);
 }
 
@@ -73,7 +73,7 @@ body {
 }
 
 .span-prop {
-  @apply absolute top-8 px-2 text-golden bg-opacity-45 bg-black rounded-xl flex justify-center border border-white 
+  @apply px-2 bg-opacity-45 bg-black rounded-xl border border-white
 }
 /* Background color classes */
 .bg-dark {
@@ -96,4 +96,8 @@ body {
 .stick {
   position: sticky;
   top: 12px;
+}
+
+.basic-text {
+  @apply font-serif font-thin text-golden
 }
