@@ -9,11 +9,27 @@ export class HelperFunctions {
         return () => fetchVideoFromYoutubeURL(link);
     }
 
-    public static parseYoutubeEmbeddedLink(link: string) {
-        // change here -> currently i am using data that i have declared, but not the data provided by the bot 
-        const url = new URL(Helper.Resources()[0].link).pathname
-        const trimmedUrl = url.trim()
-        return trimmedUrl.split('/')[1]
+    // change here -> currently i am using data that i have declared, but not the data provided by the bot 
+    public static parseYoutubeEmbeddedLink(link: string): string | null {
+        try {
+            if(!link){
+                throw new Error('Invalid link')
+            }
+            const url = new URL(link);
+            
+            // Handle youtube.com domain links
+            if (url.hostname.includes('youtube.com')) {
+                return url.searchParams.get('v') || null;
+            }
+            // Handle youtu.be short links
+            else if (url.hostname === 'youtu.be') {
+                const pathParts = url.pathname.split('/');
+                return pathParts.length > 1 ? pathParts[1] : null;
+            }
+            return null;
+        } catch (error) {
+            return null;
+        }
     }
 
     public static parseTwitterEmbeddedLink(link: string) {

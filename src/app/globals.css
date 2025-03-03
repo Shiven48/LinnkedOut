@@ -31,9 +31,22 @@ body {
 
 .text-golden {
   /* box-shadow: 0px 2px 1px  var(--col-golden); */
+  color: var(--col-golden);
+}
+
+.text-dark-golden {
+  /* box-shadow: 0px 2px 1px  var(--col-golden); */
   color: var(--col-dark-golden);
 }
 
+.text-dark {
+  color: var(--col-dark);
+}
+
+.border-golden {
+  border-color: var(--col-dark-golden);
+  border-width: 1px  
+}
 /* Navigation hover effects */
 .hover-nav:hover {
   background-color: var(--col-dark-golden);
@@ -54,7 +67,7 @@ body {
 /* New golden glass card component */
 .card-green-glass {
   background-color: hsla(63, 18%, 51%, 0.242);
-  border: 1px solid hsla(62, 100%, 50%, 0.2);
+  border: 3px solid hsla(62, 100%, 50%, 0.2);
   border-radius: 13px;
   box-shadow: 0px -3px 4px 0px var(--textDim) inset,
               0px 5px 15px rgba(0, 0, 0, 0.1);
@@ -67,7 +80,7 @@ body {
   background-color: hsla(64, 44%, 47%, 0.495);
   box-shadow: 0px -3px 8px 0px var(--col-golden) inset,
               0px 8px 20px rgba(0, 0, 0, 0.15);
-  border-width: 1px;
+  border-width: 3px;
   border-color: var(--col-dark-golden);
   transform: translateY(-3px);
 }
@@ -100,4 +113,8 @@ body {
 
 .basic-text {
   @apply font-serif font-thin text-golden
+}
+
+.button-hover:hover {
+  @apply bg-dark text-dark-golden border-golden
 }
