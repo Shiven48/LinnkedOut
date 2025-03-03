@@ -1,0 +1,1 @@
+ALTER TABLE "youtube_media" ADD COLUMN "thumbnailMaxResUrl" text;
