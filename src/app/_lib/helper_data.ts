@@ -84,6 +84,10 @@ export class Helper{
             {
                 'id':8,
                 'link':'https://www.reddit.com/r/beastboyshub/comments/1izxl2m/omg_shinchan_is_finally_in_india/?utm_source=share&utm_medium=mweb3x&utm_name=post_embed&utm_term=1&utm_content=1'
+            },
+            {
+                'id':9,
+                'link':'https://www.youtube.com/watch?v=XeGsq5yQOXw'
             }
         ]
         return resos as Resource[];
