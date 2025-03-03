@@ -1,24 +1,36 @@
 'use client'
 import Image from "next/image";
 import { Helper } from "../_lib/helper_data";
-import { Category } from "../../../types";
+import { Category, Platfrom } from "../../../types";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useSidebarState } from "../../../hooks/useSideBarState";
 import clsx from "clsx";
+import path from "path";
 
 export default function AppSidebar() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [activePlatform, setActivePlatform] = useState<string | null>(null);
+  const [isPlatformAccordianActive, setIsPlatfromAccordianActive] = useState<boolean>(false)
+
   const isOpen = useSidebarState((state) => (state.isOpen))
   const toggle = useSidebarState((state) => state.toggle)
   const pathname = usePathname();
 
   useEffect(() => {
-    const currentNav = Helper.categories().find(category => {
+    const currentCat = Helper.categories().find(category => {
       return category.url === pathname;
     });
-    setActiveCategory(currentNav ? currentNav.title : '');
+    const currentPlatform = Helper.Platforms().find(platform => {
+      return platform.url === pathname;
+    })
+    setActiveCategory(currentCat ? currentCat.title : '');
+    setActivePlatform(currentPlatform ? currentPlatform.name : '')
   }, [pathname]);
+
+  const handlePlatformAccordianClick = () => {
+    setIsPlatfromAccordianActive(prev => !prev)
+  }
 
   return (
     <aside 
@@ -43,12 +55,13 @@ export default function AppSidebar() {
           />
         </button>
       </div>
+
       <hr/>
 
       <nav className="mt-6 space-y-2">
         {Helper.categories().map((category: Category) => (
           <div key={category.title} className= {`rounded-xl w-full hover-side transition ease-out 0.3s shadow shadow-white
-            ${activeCategory===category.title ? 'active:bg-' : ''}
+            ${activeCategory===category.title ? '' : ''}
           `}>
             <a
               href={category.url}
@@ -75,7 +88,62 @@ export default function AppSidebar() {
           </div>
         ))}
       </nav>
+
       <hr className="mt-6" />
+
+        {/* // Working from here */}
+      <div 
+        className="mt-2 flex justify-start items-center hover:bg-[#2C2C2C] cursor-pointer p-1 rounded-small "
+        onClick={handlePlatformAccordianClick}
+      >
+        {isOpen && (
+          <span 
+            className="text-md text-white"
+          >Platform</span>
+        )}     
+        <div className="rounded-full w-5 h-5 bg-white ml-4">   
+          <Image
+            src={ isPlatformAccordianActive ? '/right.svg' : 'down.svg'}
+            alt="platform_toggle_arrow_right"
+            width={24}
+            height={24}
+            className={`transition-transform duration-200 ${!isOpen ? 'rotate-180' : ''}`}
+          />
+        </div>
+      </div>
+      {/* // Working till here */}
+      <nav className="mt-6 space-y-2 transition-transform duration-200" hidden={isPlatformAccordianActive}>
+        {Helper.Platforms().map((platform: Platfrom) => (
+          <div key={platform.name} className= {`rounded-xl w-full hover-side transition ease-out 0.3s shadow shadow-white
+            ${activePlatform === platform.name ? '' : ''}
+          `}>
+            <a
+              href={platform.url}
+              className={`bg-golden flex items-center py-1 px-4 rounded-xl transition-all duration-200 ease-in-out relative hover-side text-black shadow border border-black
+                ${activePlatform === platform.name ? 'bg-[#e3ec58] shadow shadow-[#e3ec58]' : 'shadow-white'}`}
+            >
+              <div className="w-7 h-7 rounded-xl flex justify-center relative bg-white border-2 border-black flex-shrink-0">
+                <Image
+                  src={`${Helper.basePath}/${platform.icon}.svg`}
+                  alt={platform.name}
+                  width={22}
+                  height={22}
+                  priority
+                  className="transition-transform duration-200"
+                />
+              </div>
+              {isOpen && (
+                <span className="ml-3 whitespace-nowrap overflow-hidden transition-opacity duration-200">
+                  {platform.name}
+                </span>
+              )}
+            </a>
+          </div>
+        ))}
+      </nav>
+
+      <hr className="mt-4"/>
+
     </aside>
   );
 }
