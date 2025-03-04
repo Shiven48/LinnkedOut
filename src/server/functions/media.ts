@@ -1,6 +1,7 @@
 import { db, queryDb } from '../db/index'
 import { media, redditMedia, twitterMedia, youtubeMedia } from '../db/schema' 
 import { Media, RedditMedia, TwitterMedia, YoutubeMedia } from '../../../types';
+import { eq } from 'drizzle-orm';
 
 // ORM layer
 export const getAllMedia = async () => {
@@ -10,6 +11,19 @@ export const getAllMedia = async () => {
     } catch (error) {
         console.error('Failed to fetch media:', error);
         throw new Error('Failed to fetch media');
+    }
+}
+
+export const getMediaById = async (id : number) => {
+    'use server'
+    try{
+        return await db.select()
+                        .from(media)
+                        .where(eq(media.id,id))
+                        .limit(1)
+    }catch (error){
+        console.error(`Failed to fetch the media by Id :${id}`, error)
+        throw new Error(`Failed to fetch media`)
     }
 }
 
