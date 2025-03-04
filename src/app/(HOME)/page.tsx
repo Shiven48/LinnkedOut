@@ -4,8 +4,7 @@ import { Media } from "../../../types";
 import Card from "../_components/Card";
 import Link from "next/link";
 
-export default function Home() {
-    // const isOpen = useSidebarState(state => state.isOpen) 
+export default function Home() { 
     const [media, setMedia] = useState<Media[]>([])
     const [error, setError] = useState<string>('')
 
@@ -40,16 +39,16 @@ export default function Home() {
                             <Card media={video} />
                             <div className='flex justify-evenly'>
                                 <div className="gap-5 rounded-2xl w-full h-full py-1 flex justify-evenly relative top-54">
-                                    <Link 
+                                    <Link
                                         className="span-prop basic-text button-hover"
                                         href='#'
-                                        > 
+                                    >
                                         {video.type}
                                     </Link>
                                     <Link
                                         className="span-prop basic-text button-hover"
                                         href="#"
-                                        >
+                                    >
                                         {video.platform}
                                     </Link>
                                 </div>
