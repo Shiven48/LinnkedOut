@@ -5,8 +5,6 @@ import { Category, Platfrom } from "../../../types";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useSidebarState } from "../../../hooks/useSideBarState";
-import clsx from "clsx";
-import path from "path";
 
 export default function AppSidebar() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
@@ -91,9 +89,10 @@ export default function AppSidebar() {
 
       <hr className="mt-6" />
 
-        {/* // Working from here */}
       <div 
-        className="mt-2 flex justify-start items-center hover:bg-[#2C2C2C] cursor-pointer p-1 rounded-small "
+        className={`mt-2 flex justify-start items-center hover:bg-[#2C2C2C] cursor-pointer p-1 rounded-small 
+          ${!isOpen ? 'h-8 w-9' : '' }
+        `}
         onClick={handlePlatformAccordianClick}
       >
         {isOpen && (
@@ -101,28 +100,31 @@ export default function AppSidebar() {
             className="text-md text-white"
           >Platform</span>
         )}     
-        <div className="rounded-full w-5 h-5 bg-white ml-4">   
+        <div className={`rounded-full w-5 h-5 bg-white ml-4 
+          ${!isOpen ? 'absolute start-3 w-6 h-6' : '' }
+          `}>   
           <Image
-            src={ isPlatformAccordianActive ? '/right.svg' : 'down.svg'}
+            src={ isPlatformAccordianActive ? '/right.svg' : '/down.svg'}
             alt="platform_toggle_arrow_right"
             width={24}
             height={24}
-            className={`transition-transform duration-200 ${!isOpen ? 'rotate-180' : ''}`}
+            className={`transition-all duration-200 ease-in-out`}
           />
         </div>
       </div>
-      {/* // Working till here */}
+      
       <nav className="mt-6 space-y-2 transition-transform duration-200" hidden={isPlatformAccordianActive}>
         {Helper.Platforms().map((platform: Platfrom) => (
           <div key={platform.name} className= {`rounded-xl w-full hover-side transition ease-out 0.3s shadow shadow-white
-            ${activePlatform === platform.name ? '' : ''}
           `}>
             <a
               href={platform.url}
               className={`bg-golden flex items-center py-1 px-4 rounded-xl transition-all duration-200 ease-in-out relative hover-side text-black shadow border border-black
                 ${activePlatform === platform.name ? 'bg-[#e3ec58] shadow shadow-[#e3ec58]' : 'shadow-white'}`}
             >
-              <div className="w-7 h-7 rounded-xl flex justify-center relative bg-white border-2 border-black flex-shrink-0">
+              <div className={`w-7 h-7 rounded-xl flex justify-center relative bg-white border-2 border-black flex-shrink-0
+                ${!isOpen ? 'right-3' : ''}
+              `}>
                 <Image
                   src={`${Helper.basePath}/${platform.icon}.svg`}
                   alt={platform.name}
