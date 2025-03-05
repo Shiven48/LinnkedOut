@@ -1,5 +1,6 @@
 import { fetchVideoFromYoutubeURL } from "../../../src/services/youtubeService";
 import { Helper } from "./helper_data";
+const { exec } = require('child_process');
 
 export class HelperFunctions {
 
@@ -63,5 +64,19 @@ export class HelperFunctions {
             const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
             throw new Error(`Failed to parse Reddit embedded link: ${errorMessage}`);
         }
+    }
+
+    public static accessDLP(videoId:string) {
+        exec(`yt-dlp -x --audio-format mp3 -o "output_audio.mp3" https://www.youtube.com/watch?v=${videoId}`, (error:Error, stdout:any, stderr:any) => {
+        if (error) {
+            console.error(`exec error: ${error}`);
+            return;
+        }
+        if (stderr) {
+            console.error(`stderr: ${stderr}`);
+            return;
+        }
+            console.log(`stdout: ${stdout}`);
+        });
     }
 }

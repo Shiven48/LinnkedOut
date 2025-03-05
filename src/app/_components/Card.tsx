@@ -6,14 +6,13 @@ import Link from 'next/link';
 
 export default function Card({ media }: { media: Media }){
         const [isLoading, setIsLoading] = useState(true)
-        const { id } = media
+        const { id, platform } = media
     return(
-        // This styling is just temporary
         <div className="flex gap-4 justify-center">
             <div className='aspect-video -z-90 rounded-2xl overflow-hidden'>
             {isLoading && <Skeleton className="absolute inset-0 rounded-2xl" />}
             <Link 
-                 href={`/video/${id}`}            
+                 href={`/video/${id}/${platform}`}            
             > 
                 <Image
                     src={media.hdThumbnailUrl || ''}
