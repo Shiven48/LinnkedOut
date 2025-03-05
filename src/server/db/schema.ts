@@ -52,9 +52,9 @@ export const twitterMedia = pgTable('twitter_media', {
     durationMS: text('durationMS')
 });
 
-export const redditMedia = pgTable('reddit', {
+export const redditMedia = pgTable('reddit_media', {
   id: serial('id').primaryKey(),
-  mediaId: integer('mediaId').references(() => media.id).notNull().unique(),
+  mediaId: integer('media_id').references(() => media.id).notNull().unique(),
   subreddit: text('subreddit'),
   title: text('title').notNull(),
   type: varchar('type', { length : 20 }),

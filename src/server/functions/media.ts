@@ -14,19 +14,6 @@ export const getAllMedia = async () => {
     }
 }
 
-export const getMediaById = async (id : number) => {
-    'use server'
-    try{
-        return await db.select()
-                        .from(media)
-                        .where(eq(media.id,id))
-                        .limit(1)
-    }catch (error){
-        console.error(`Failed to fetch the media by Id :${id}`, error)
-        throw new Error(`Failed to fetch media`)
-    }
-}
-
 export const getLatestVideos = async () => {
     'use server'
     try{
@@ -141,5 +128,44 @@ export const insertRedditMedia = async (reddit:RedditMedia) => {
     } catch(error) {
         console.error('Failed to insert reddit media model', error);
         throw new Error('Failed to insert reddit media model'); 
+    }
+}
+
+export const getMediaFromYoutubeById = async (id: number) => {
+    'use server'
+    try{
+        return await db.select()
+                        .from(youtubeMedia)
+                        .where(eq(youtubeMedia.mediaId,id))
+                        .limit(1)
+    } catch (error){
+        console.error(`Failed to fetch media from youtube by Id :${id}`, error)
+        throw new Error(`Failed to fetch media from youtube`)
+    }
+}
+
+export const getMediaFromTwitterById = async (id: number) => {
+    'use server'
+    try{
+        return await db.select()
+                        .from(twitterMedia)
+                        .where(eq(twitterMedia.mediaId,id))
+                        .limit(1)
+    } catch (error){
+        console.error(`Failed to fetch media from twitter by Id :${id}`, error)
+        throw new Error(`Failed to fetch media from twitter`)
+    }
+}
+
+export const getMediaFromRedditById = async (id: number) => {
+    'use server'
+    try {
+        return await db.select()
+                        .from(redditMedia)
+                        .where(eq(redditMedia.mediaId, id))
+                        .limit(1);
+    } catch (error) {
+        console.error('Detailed fetch error:', error);
+        throw new Error(`Failed to fetch media from twitter: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
 }
