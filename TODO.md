@@ -4,10 +4,12 @@
 - [X] Create a solution to get data from every platform 
 - [X] create a category of platforms like reddit twitter and yt and show all the platforms on sidebar
 - [X] make all the content of sidebar as an accordian
+- [X] Create a seperate page to display the embedded video and use specific strategies that nextJS offers(SSG,SSR,etc)
 
+- [] create a S3 bucket and generate the whole flow to store the audio in the S3 bucket
+- [] fetch the audio(Using Suspense) and video from the api endpoint
 - [] The video should play on Hover
 - []  Find a way to extend the expiration period of reddit's access token of reddit api 
-- [] Create a seperate page to display the embedded video and use specific strategies that nextJS offers(SSG,SSR,etc)
 - [] A toggle button to blur side except the video
 - [] generate weekly reports
 - [] generate summary from the transcripts of the video from its metadata using OPENAI key
