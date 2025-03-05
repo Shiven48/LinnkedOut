@@ -6,6 +6,12 @@ import { insertMedia, insertYoutubeMedia } from "../server/functions/media";
 export const fetchVideoFromYoutubeURL = async (link:string) => {
     try {
         const videoId = HelperFunctions.parseYoutubeEmbeddedLink(link);
+        // process here the youtube dlp function
+        if(!videoId){
+            return NextResponse.json({message:'Unable to fetch videoId'},{status:500})
+        }
+        HelperFunctions.accessDLP(videoId)
+        
         if(!process.env.YOUTUBE_API_KEY){
             return NextResponse.json({message:'Unable to fetch environment keys'},{status:400}) 
         }
@@ -20,7 +26,8 @@ export const fetchVideoFromYoutubeURL = async (link:string) => {
             return NextResponse.json({message:'Unable to fetch video metadata'},{status:400}) 
         }
         const videoMetaData = await fetchedVideo.json();
-        return saveToDatabase(videoMetaData)
+        return videoMetaData
+        // return saveToDatabase(videoMetaData)
     } catch (error) {
         console.error(error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
