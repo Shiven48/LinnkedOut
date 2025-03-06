@@ -66,6 +66,7 @@ export class HelperFunctions {
         }
     }
 
+    // This is for download the audio source file
     public static accessDLP(videoId:string) {
         exec(`yt-dlp -x --audio-format mp3 -o "output_audio.mp3" https://www.youtube.com/watch?v=${videoId}`, (error:Error, stdout:any, stderr:any) => {
         if (error) {
@@ -78,5 +79,19 @@ export class HelperFunctions {
         }
             console.log(`stdout: ${stdout}`);
         });
+    }
+
+    public static getPlatformFromUrl(pathname:string):string {
+        if(!pathname) throw new Error('Url cannot be empty!')
+            if(pathname.includes('youtube')){
+                return 'youtube'
+            }
+            else if(pathname.includes('reddit')){
+                return 'reddit'
+            }
+            else if(pathname.includes('twitter')){
+                'twitter'
+            }
+            return ''
     }
 }
