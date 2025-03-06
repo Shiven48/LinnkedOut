@@ -6,11 +6,12 @@ import { insertMedia, insertYoutubeMedia } from "../server/functions/media";
 export const fetchVideoFromYoutubeURL = async (link:string) => {
     try {
         const videoId = HelperFunctions.parseYoutubeEmbeddedLink(link);
-        // process here the youtube dlp function
         if(!videoId){
             return NextResponse.json({message:'Unable to fetch videoId'},{status:500})
         }
-        HelperFunctions.accessDLP(videoId)
+
+        // process here the youtube dlp function
+        // HelperFunctions.accessDLP(videoId)
         
         if(!process.env.YOUTUBE_API_KEY){
             return NextResponse.json({message:'Unable to fetch environment keys'},{status:400}) 
