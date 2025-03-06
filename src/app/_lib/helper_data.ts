@@ -35,7 +35,7 @@ export class Helper{
                 title: "Career Growth",
                 url: `/categories/${encodeURIComponent('Career Growth')}`,
                 icon: 'growth'
-            }
+            },
         ];
         return categories as Category[];
     }
@@ -123,8 +123,16 @@ export class Helper{
                 'link':'https://www.reddit.com/r/cartoons/comments/1j269lv/flow_has_won_best_animated_film_at_the_oscars/?utm_source=share&utm_medium=mweb3x&utm_name=post_embed&utm_term=1&utm_content=1'
             },
             {
-                'id':9,
+                'id':13,
                 'link':'https://x.com/TheCartoonBase/status/1896398374439694547?ref_src=twsrc%5Etfw%7Ctwcamp%5Etweetembed%7Ctwterm%5E1896398374439694547%7Ctwgr%5E2c9c3aa1729a9690d8699fc3b6c38ca15ddfc53d%7Ctwcon%5Es1_c10&ref_url=https%3A%2F%2Fpublish.twitter.com%2F%3Furl%3Dhttps%3A%2F%2Ftwitter.com%2FTheCartoonBase%2Fstatus%2F1896398374439694547'
+            },
+            {
+                'id':14,
+                'link':'https://www.reddit.com/r/ShinChan/comments/1j46wnx/what_is_this/?utm_source=share&utm_medium=mweb3x&utm_name=post_embed&utm_term=1&utm_content=1'
+            },
+            {
+                'id':15,
+                'link':'https://youtu.be/9TdexGFlFIM?si=wQMXSNcFQCYtdiwQ'
             }
         ]
         return resos as Resource[];

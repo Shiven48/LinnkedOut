@@ -5,6 +5,7 @@ import { Category, Platfrom } from "../../../types";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useSidebarState } from "../../../hooks/useSideBarState";
+import { usePlayingState } from "../../../hooks/useIsPlaying";
 
 export default function AppSidebar() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
@@ -14,6 +15,7 @@ export default function AppSidebar() {
   const isOpen = useSidebarState((state) => (state.isOpen))
   const toggle = useSidebarState((state) => state.toggle)
   const pathname = usePathname();
+  const isPlaying = usePlayingState((state) => state.isPlaying)
 
   useEffect(() => {
     const currentCat = Helper.categories().find(category => {
@@ -32,10 +34,12 @@ export default function AppSidebar() {
 
   return (
     <aside 
-      className={`h-[calc(100vh-48px)] flex-shrink-0 overflow-y-auto p-5 transition-all duration-200 ease-in-out
-        ${isOpen ? 'w-72' : 'w-20'} border border-white bg-dark`}
+      className={`h-[calc(100vh-48px)] flex-shrink-0 overflow-y-auto p-5 transition-all duration-200 ease-in-out border border-white
+        ${isOpen ? 'w-72' : 'w-20'} 
+        ${isPlaying ? 'bg-blend-darken brightness-55 bg-darker' : 'bg-dark'}
+      `}
     >
-      <div className="relative flex items-center h-8 mb-4 ">
+      <div className="relative flex items-center h-8 mb-4 bg-inherit">
         {isOpen && (
           <span className="text-md text-white">Explore</span>
         )}
@@ -56,7 +60,7 @@ export default function AppSidebar() {
 
       <hr/>
 
-      <nav className="mt-6 space-y-2">
+      <nav className="mt-6 space-y-2 bg-inherit">
         {Helper.categories().map((category: Category) => (
           <div key={category.title} className= {`rounded-xl w-full hover-side transition ease-out 0.3s shadow shadow-white
             ${activeCategory===category.title ? '' : ''}
