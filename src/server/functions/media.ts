@@ -169,3 +169,39 @@ export const getMediaFromRedditById = async (id: number) => {
         throw new Error(`Failed to fetch media from twitter: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
 }
+
+export const getAllMediaFromYoutube = async () => {
+    'use server'
+    try{
+        return await db.select()
+                       .from(youtubeMedia)
+                       .execute()
+    } catch(error){
+        console.error('Detailed fetch error:', error);
+        throw new Error(`Failed to fetch media from Youtube: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+}
+
+export const getAllMediaFromTwitter = async () => {
+    'use server'
+    try{
+        return await db.select()
+                       .from(twitterMedia)
+                       .execute()
+    } catch(error){
+        console.error('Detailed fetch error:', error);
+        throw new Error(`Failed to fetch media from Twitter: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+}
+
+export const getAllMediaFromReddit = async () => {
+    'use server'
+    try{
+        return await db.select()
+                       .from(redditMedia)
+                       .execute()
+    } catch(error){
+        console.error('Detailed fetch error:', error);
+        throw new Error(`Failed to fetch media from Reddit: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+}
