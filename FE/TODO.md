@@ -1,0 +1,20 @@
+- [X] Create a button on sidebar to toggle sidebar
+- [X] Create handler for fetching data from different platform apis
+- [X] Create a content area and fetch data and design as u need
+- [X] Create a solution to get data from every platform 
+- [X] create a category of platforms like reddit twitter and yt and show all the platforms on sidebar
+- [X] make all the content of sidebar as an accordian
+- [X] Create a seperate page to display the embedded video and use specific strategies that nextJS offers(SSG,SSR,etc)
+- [X] A switch like button to on or off the 
+- [X] A toggle button to blur side except the video
+- [] Currently working on SideVideo
+- [] Spotify like feature
+- [] youtube video on id loading div on top left corner and change color of focus mode 
+
+- [] The video should play on Hover
+- []  Find a way to extend the expiration period of reddit's access token of reddit api 
+- [] generate weekly reports
+- [] generate summary from the transcripts of the video from its metadata using OPENAI key
+
+- [] create a S3 bucket and generate the whole flow to store the audio in the S3 bucket
+- [] fetch the audio(Using Suspense) and video from the api endpoint

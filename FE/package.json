@@ -1,0 +1,57 @@
+{
+  "name": "next_fe",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "db:generate": "drizzle-kit generate",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio"
+  },
+  "dependencies": {
+    "@heroui/navbar": "^2.2.9",
+    "@heroui/react": "^2.6.14",
+    "@heroui/system": "^2.4.7",
+    "@heroui/theme": "^2.4.6",
+    "@radix-ui/react-dialog": "^1.1.6",
+    "@radix-ui/react-separator": "^1.1.2",
+    "@radix-ui/react-slot": "^1.1.2",
+    "@radix-ui/react-tooltip": "^1.1.8",
+    "aws-sdk": "^2.1692.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "framer-motion": "^12.4.2",
+    "lucide-react": "^0.475.0",
+    "next": "15.1.7",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tailwind-merge": "^3.0.1",
+    "tailwindcss-animate": "^1.0.7",
+    "zustand": "^5.0.3"
+  },
+  "packageManager": "npm@10.8.1",
+  "overrides": {
+    "react": "$react",
+    "reactDom": "$reactDom"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@types/node": "^20",
+    "@types/pg": "^8.11.11",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "dotenv": "^16.4.7",
+    "drizzle-kit": "^0.30.4",
+    "drizzle-orm": "^0.39.3",
+    "eslint": "^9",
+    "eslint-config-next": "15.1.7",
+    "pg": "^8.13.3",
+    "postcss": "^8",
+    "postgres": "^3.4.5",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5"
+  }
+}
