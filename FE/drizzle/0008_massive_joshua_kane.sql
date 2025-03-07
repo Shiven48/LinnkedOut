@@ -1,0 +1,1 @@
+ALTER TABLE "media" ALTER COLUMN "ImageUrl" SET DATA TYPE varchar(100);
