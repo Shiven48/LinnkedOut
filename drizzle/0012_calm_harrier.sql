@@ -1,1 +1,0 @@
-ALTER TABLE "reddit" ALTER COLUMN "videoUrl" DROP NOT NULL;

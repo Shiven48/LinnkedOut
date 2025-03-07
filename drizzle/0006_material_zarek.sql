@@ -1,1 +1,0 @@
-ALTER TABLE "media" ADD COLUMN "ImageUrl" varchar(30);
