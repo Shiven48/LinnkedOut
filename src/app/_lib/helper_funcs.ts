@@ -80,18 +80,4 @@ export class HelperFunctions {
             console.log(`stdout: ${stdout}`);
         });
     }
-
-    public static getPlatformFromUrl(pathname:string):string {
-        if(!pathname) throw new Error('Url cannot be empty!')
-            if(pathname.includes('youtube')){
-                return 'youtube'
-            }
-            else if(pathname.includes('reddit')){
-                return 'reddit'
-            }
-            else if(pathname.includes('twitter')){
-                'twitter'
-            }
-            return ''
-    }
 }
