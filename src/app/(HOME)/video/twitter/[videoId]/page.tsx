@@ -23,7 +23,7 @@ export const Page = (
                 if (isOpen) {
                     useSidebarState.getState().setIsOpen(false);
                 }
-                const res = await fetch(`/api/videos/media/${id}/twitter`);
+                const res = await fetch(`/api/videos/media/twitter/${id}`);
                 if (!res.ok) {
                     throw new Error(`Error: ${res.statusText}`);
                 }
@@ -54,10 +54,10 @@ export const Page = (
     return (
         <div className="flex flex-row h-screen w-full bg-[#181818]">
             <div className="card-green-glass rounded-xl m-10 w-[70%] h-[70%] border-golden flex items-center justify-center">
-                {video?.videoUrl ? (
+                {video?.media_url ? (
                     <video
                         ref={videoRef}
-                        src={video.videoUrl}
+                        src={video.media_url}
                         className="max-w-full max-h-full"
                         controls
                         onClick={handleVideoPlay}

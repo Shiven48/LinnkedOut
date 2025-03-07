@@ -39,12 +39,12 @@ export const Page = (
                 if (isOpen) {
                     useSidebarState.getState().setIsOpen(false);
                 }
-                const res = await fetch(`/api/videos/media/${id}/youtube`);
+                const res = await fetch(`/api/videos/media/youtube/${id}`);
                 if (!res.ok) {
                     throw new Error(`Error: ${res.statusText}`);
                 }
                 const data = await res.json();
-                setVideo(data);
+                setVideo(data.body);
             } catch (error: unknown) {
                 console.error('Error fetching media:', error);
             }
@@ -87,8 +87,6 @@ export const Page = (
     const onPlayerStateChange = (event: { data: number }) => {
         setIsPlaying(event.data === 1);
     };
-    
-    console.log(isPlaying);
     
     return (
         <div className={`flex h-screen w-full bg-dark p-4 relative`}>
