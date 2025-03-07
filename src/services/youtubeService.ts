@@ -1,4 +1,3 @@
-// API Route to fetch video metadata from YouTube
 import { HelperFunctions } from "../../src/app/_lib/helper_funcs"; 
 import { Media, YoutubeMedia } from "../../types"; 
 import { NextResponse } from "next/server"; 
