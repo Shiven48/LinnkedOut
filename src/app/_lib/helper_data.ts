@@ -43,18 +43,18 @@ export class Helper{
     public static Platforms():Platfrom[] {
         const platforms: Platfrom[] = [
             {
-                name: 'Youtube', 
-                url: `/platforms/${encodeURIComponent('Youtube')}`,
+                name: 'youtube', 
+                url: `/video/${encodeURIComponent('youtube')}`,
                 icon: `youtube`
             },
             {
-                name: 'Reddit', 
-                url: `/platforms/${encodeURIComponent('Reddit')}`,
+                name: 'reddit', 
+                url: `/video/${encodeURIComponent('reddit')}`,
                 icon: `reddit`
             },
             {
-                name: 'Twitter', 
-                url: `/platforms/${encodeURIComponent('Twitter')}`,
+                name: 'twitter', 
+                url: `/video/${encodeURIComponent('twitter')}`,
                 icon:`twitter`
             }
         ]
@@ -133,6 +133,10 @@ export class Helper{
             {
                 'id':15,
                 'link':'https://youtu.be/9TdexGFlFIM?si=wQMXSNcFQCYtdiwQ'
+            },
+            {
+                'id':16,
+                'link':'https://youtu.be/TNhaISOUy6Q?si=HlOH5aHIJhyOKxdI'
             }
         ]
         return resos as Resource[];
