@@ -9,7 +9,7 @@ export async function GET(
     req: NextRequest
 ) {
     try {
-        const mappedVideo = await fetchVideoFromYoutubeURL(Helper.Resources()[14].link)   // ->    For Youtube
+        const mappedVideo = await fetchVideoFromYoutubeURL(Helper.Resources()[15].link)   // ->    For Youtube
         // const mappedVideo = await fetchVideoFromTwitterURL(Helper.Resources()[12].link)      // ->    For Twitter
         // const mappedVideo = await fetchVideoFromRedditURL(Helper.Resources()[13].link)    // ->    For Reddit
         console.log(mappedVideo)
