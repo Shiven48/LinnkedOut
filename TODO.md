@@ -9,10 +9,12 @@
 - [X] A toggle button to blur side except the video
 - [] Currently working on SideVideo
 - [] Spotify like feature
+- [] youtube video on id loading div on top left corner and change color of focus mode 
 
-- [] create a S3 bucket and generate the whole flow to store the audio in the S3 bucket
-- [] fetch the audio(Using Suspense) and video from the api endpoint
 - [] The video should play on Hover
 - []  Find a way to extend the expiration period of reddit's access token of reddit api 
 - [] generate weekly reports
 - [] generate summary from the transcripts of the video from its metadata using OPENAI key
+
+- [] create a S3 bucket and generate the whole flow to store the audio in the S3 bucket
+- [] fetch the audio(Using Suspense) and video from the api endpoint
