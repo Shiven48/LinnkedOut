@@ -1,1 +1,0 @@
-ALTER TABLE "reddit" ADD COLUMN "videoHeight" integer;
