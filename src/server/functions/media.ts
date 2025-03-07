@@ -162,8 +162,8 @@ export const getMediaFromRedditById = async (id: number) => {
     try {
         return await db.select()
                         .from(redditMedia)
-                        .where(eq(redditMedia.mediaId, id))
-                        .limit(1);
+                        .where(eq(redditMedia.id, id))
+                        .limit(1); 
     } catch (error) {
         console.error('Detailed fetch error:', error);
         throw new Error(`Failed to fetch media from twitter: ${error instanceof Error ? error.message : 'Unknown error'}`);
