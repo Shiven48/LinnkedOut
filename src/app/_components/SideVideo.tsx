@@ -10,24 +10,25 @@ export default function SideVideo(){
 
     // Correct this
     useEffect(() => {
-        let platform:string = getPlatformFromUrl(pathname);
+        // let platform:string = getPlatformFromUrl(pathname);
         const fetchDataById = async (id: number) => {
             try {
-                if(!platform) throw new Error('Something went wrong!')
-                if (isOpen) {
-                    useSidebarState.getState().setIsOpen(false);
-                }
-                const res = await fetch(`/api/videos/media/${id}/youtube`);
-                if (!res.ok) {
-                    throw new Error(`Error: ${res.statusText}`);
-                }
-                const data = await res.json();
-                setVideo(data);
+                // if(!platform) throw new Error('Something went wrong!')
+                // if (isOpen) {
+                //     useSidebarState.getState().setIsOpen(false);
+                // }
+                // const res = await fetch(`/api/videos/media/${id}/youtube`);
+                // if (!res.ok) {
+                //     throw new Error(`Error: ${res.statusText}`);
+                // }
+                // const data = await res.json();
+                // setVideo(data);
+                console.log(`working`)
             } catch (error: any) {
                 throw new Error('Error fetching media:', error);
             }
         }
-        fetchDataById(id)
+        // fetchDataById(id)
     },[])
 
     return(
