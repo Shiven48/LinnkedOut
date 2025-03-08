@@ -34,9 +34,9 @@ export default function AppSidebar() {
 
   return (
     <aside 
-      className={`h-[calc(100vh-48px)] flex-shrink-0 overflow-y-auto p-5 transition-all duration-200 ease-in-out border border-white
+      className={`h-[calc(100vh-48px)] flex-shrink-0 overflow-y-auto p-5 ease-in-out border border-white
         ${isOpen ? 'w-72' : 'w-20'} 
-        ${isPlaying ? 'bg-blend-darken brightness-55 bg-darker' : 'bg-dark'}
+        ${isPlaying ? 'bg-blend-darken brightness-50 bg-darker transition-all duration-500' : 'bg-dark transition-all duration-500'}
       `}
     >
       <div className="relative flex items-center h-8 mb-4 bg-inherit">
