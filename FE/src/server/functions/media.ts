@@ -39,7 +39,9 @@ export const insertMedia = async (sharedMedia:Media) => {
                             createdAt: currentTimestamp,
                             updatedAt: currentTimestamp,
                             thumbnailUrl: sharedMedia.thumbnailUrl,
-                            hdThumbnailUrl: sharedMedia.hdThumbnailUrl
+                            hdThumbnailUrl: sharedMedia.hdThumbnailUrl,
+                            title: sharedMedia.title,
+                            duration_ms: sharedMedia.duration_ms
                        }])
                        .returning({ id: media.id });
     } catch(error){
@@ -65,7 +67,7 @@ export const insertYoutubeMedia = async (ytMedia:YoutubeMedia) => {
                             thumbnailMediumUrl: ytMedia.thumbnailMediumUrl,
                             thumbnailHighUrl: ytMedia.thumbnailHighUrl,
                             thumbnailMaxRes: ytMedia.thumbnailMaxRes,
-                            duration: ytMedia.duration,
+                            duration_ms: ytMedia.duration_ms,
                             definition: ytMedia.definition,
                             hasCaption: ytMedia.hasCaption,
                             tags: ytMedia.tags
@@ -92,7 +94,7 @@ export const insertTwitterMedia = async (tm:TwitterMedia) => {
                             tweetMediaKey: tm.tweet_media_key,
                             mediaUrl: tm.media_url,
                             authorUsername: tm.username,
-                            durationMS: tm.duration_ms
+                            duration_ms: tm.duration_ms,
                        }])
                        .returning({ id: twitterMedia.id });
     } catch(error) {
@@ -159,10 +161,11 @@ export const getMediaFromTwitterById = async (id: number) => {
 
 export const getMediaFromRedditById = async (id: number) => {
     'use server'
+    console.log(`Lets see ${id}`)
     try {
         return await db.select()
                         .from(redditMedia)
-                        .where(eq(redditMedia.id, id))
+                        .where(eq(redditMedia.mediaId, id))
                         .limit(1); 
     } catch (error) {
         console.error('Detailed fetch error:', error);
