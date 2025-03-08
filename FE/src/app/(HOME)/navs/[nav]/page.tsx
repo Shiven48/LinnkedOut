@@ -7,8 +7,8 @@ const page = (
     const nav =param.nav  
     return(
         <>
-        <div className="h-screen w-full mt-12 bg-[#181818]">                
-            <span className="text-white">This is the current nav : {nav} </span>
+        <div className="h-screen w-full bg-[#181818]">                
+            <span className="text-white">Will start working on {nav} soon</span>
         </div>
         </>
     )

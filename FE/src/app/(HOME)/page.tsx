@@ -5,15 +5,18 @@ import Card from "../_components/ThumbnailCard";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
+import Loading from "../_components/Loading";
+import NoContent from "../_components/NoContent";
 
 export default function Home() {
     const [isLoading, setIsLoading] = useState(true)
     const [media, setMedia] = useState<Media[]>([])
     const [error, setError] = useState<string>('')
-
+    
     useEffect(() => {
         const fetchedMedia = async () => {
             try {
+                setIsLoading(true)
                 const res = await fetch('/api/videos', {
                     cache: "no-store"
                 });
@@ -22,14 +25,22 @@ export default function Home() {
                 }
                 const data = await res.json();
                 setMedia(data.body);
+                setIsLoading(false)
             } catch (error: unknown) {
                 console.error('Error fetching media:', error);
+                setIsLoading(false)
                 setError(error instanceof Error ? error.message : 'An error occurred');
             }
         }
+       
         fetchedMedia();
-    }, [setMedia]);
-
+    }, []);
+    
+    // Return the Loading component when data is still loading
+    if(isLoading) {
+        return <Loading />
+    }
+    
     return (
         <div className="h-[calc(100vh-48px)] overflow-y-auto flex-1 w-full bg-dark">
             <div className="flex justify-evenly mt-6 flex-wrap">
@@ -41,8 +52,6 @@ export default function Home() {
                         >
                             <div className="flex gap-4 justify-center">
                                 <div className='aspect-video -z-90 rounded-2xl overflow-hidden'>
-                                    {isLoading && <Skeleton className="absolute inset-0 rounded-2xl" />}
-                                    {/* Here */}
                                     <Link
                                         href={`/video/${video.platform}/${video.id}`}
                                     >
@@ -54,33 +63,22 @@ export default function Home() {
                                             priority
                                             quality={95}
                                             className='object-cover opacity-90 rounded-2xl'
-                                            onLoadingComplete={() => setIsLoading(false)}
+                                            onLoadingComplete={() => {}} // No need to set isLoading here
                                             // onMouseEnter={handleMouseEvent}
                                             // onMouseLeave={handleMouseEvent}
                                         />
                                     </Link>
                                 </div>
                             </div>
-                            <div className='flex justify-evenly'>
-                                <div className="gap-5 rounded-2xl w-full h-full py-1 flex justify-evenly relative top-54">
-                                    <Link
-                                        className="span-prop basic-text button-hover"
-                                        href='#'
-                                    >
-                                        {video.type}
-                                    </Link>
-                                    <Link
-                                        className="span-prop basic-text button-hover"
-                                        href="#"
-                                    >
-                                        {video.platform}
-                                    </Link>
+                            <div className="span-prop relative flex top-54 rounded-[5px]">
+                                <div>
+                                    <span>{video.platform}</span>
                                 </div>
                             </div>
                         </div>
                     ))
                 ) : (
-                    <div>No videos available</div>
+                    <NoContent />
                 )}
             </div>
         </div>

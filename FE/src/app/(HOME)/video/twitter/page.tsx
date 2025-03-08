@@ -1,21 +1,21 @@
 'use client'
 import { useEffect, useState } from "react";
-import { Media, YoutubeMedia, yt_media } from "../../../../../types";
+import { TwitterMedia } from "../../../../../types";
 import Card from "../../../_components/ThumbnailCard";
 import Link from "next/link";
-import YoutubeCard from "@/app/_components/YoutubeCard";
 import Image from "next/image";
 import { Skeleton } from "@/components/ui/skeleton";
+import NoContent from "@/app/_components/NoContent";
 
 // Change here For twitter
 export default function Youtube() {
     const [isLoading, setIsLoading] = useState(true)
-    const [media, setMedia] = useState<YoutubeMedia[]>([])
+    const [media, setMedia] = useState<TwitterMedia[]>([])
 
     useEffect(() => {
         const fetchedMedia = async () => {
             try {
-                const res = await fetch('/api/videos/media/youtube', {
+                const res = await fetch('/api/videos/media/twitter', {
                     cache: "no-store"
                 });
                 if (!res.ok) {
@@ -36,7 +36,7 @@ export default function Youtube() {
         <div className="h-[calc(100vh-48px)] overflow-y-auto flex-1 w-full bg-dark">
             <div className="flex justify-evenly mt-6 flex-wrap">
                 {media.length > 0 ? (
-                    media.map((video: YoutubeMedia) => (
+                    media.map((video: TwitterMedia) => (
                         <div
                             key={video.id}
                             className="card-green-glass w-[30%] h-53 my-8"
@@ -45,10 +45,10 @@ export default function Youtube() {
                                 <div className='aspect-video -z-90 rounded-2xl overflow-hidden'>
                                     {isLoading && <Skeleton className="absolute inset-0 rounded-2xl" />}
                                     <Link
-                                        href={`/video/${video.platform}/${video.id}`}
+                                        href={`/video/twitter/${video.id}`}
                                     >
                                         <Image
-                                            src={video.hdThumbnailUrl || ''}
+                                            src={video.tweet_media_key || ''}
                                             alt="Media thumbnail"
                                             fill
                                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -62,26 +62,10 @@ export default function Youtube() {
                                     </Link>
                                 </div>
                             </div>
-                            <div className='flex justify-evenly'>
-                                <div className="gap-5 rounded-2xl w-full h-full py-1 flex justify-evenly relative top-54">
-                                    <Link
-                                        className="span-prop basic-text button-hover"
-                                        href='#'
-                                    >
-                                        {video.type}
-                                    </Link>
-                                    <Link
-                                        className="span-prop basic-text button-hover"
-                                        href="#"
-                                    >
-                                        {video.platform}
-                                    </Link>
-                                </div>
-                            </div>
                         </div>
                     ))
                 ) : (
-                    <div>No videos available</div>
+                    <NoContent />
                 )}
             </div>
         </div>
