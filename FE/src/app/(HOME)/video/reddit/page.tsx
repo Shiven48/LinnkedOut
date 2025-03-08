@@ -3,9 +3,9 @@ import { useEffect, useState } from "react";
 import { RedditMedia } from "../../../../../types";
 import Card from "../../../_components/ThumbnailCard";
 import Link from "next/link";
-import YoutubeCard from "@/app/_components/YoutubeCard";
 import Image from "next/image";
 import { Skeleton } from "@/components/ui/skeleton";
+import NoContent from "@/app/_components/NoContent";
 
 // Change here For reddit
 export default function Youtube() {
@@ -81,7 +81,7 @@ export default function Youtube() {
                         </div>
                     ))
                 ) : (
-                    <div>No videos available</div>
+                    <NoContent />
                 )}
             </div>
         </div>

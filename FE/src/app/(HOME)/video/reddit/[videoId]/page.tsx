@@ -4,6 +4,7 @@ import { useSidebarState } from "../../../../../../hooks/useSideBarState";
 import SideVideo from "@/app/_components/SideVideo";
 import { RedditMedia } from "../../../../../../types";
 import { usePlayingState } from "../../../../../../hooks/useIsPlaying";
+import Loading from "@/app/_components/Loading";
 
 export const Page = (
   { params }: {
@@ -45,28 +46,31 @@ export const Page = (
 
   const handleVideoStateChange = (e: React.SyntheticEvent<HTMLVideoElement>) => {
     if (videoRef.current?.paused) {
-      setIsPlaying(false);
-    } else {
-      setIsPlaying(true);
+      setIsPlaying(!isPlaying)
     }
   }
 
+  console.log(`The video Url : ${video}`)
+
   return (
-    <div className="flex flex-row h-screen w-full bg-[#181818]">
-      <div className="card-green-glass rounded-xl m-10 w-[70%] h-[70%] border-golden flex items-center justify-center overflow-hidden
-      ">
+    <div className={`flex flex-row h-screen w-full bg-[#181818] relative
+      ${isPlaying ? 'bg-darker transition-all duration-500' : 'bg-dark transition-all duration-500'}
+    `}>
+      <div className={`border-4 rounded-xl m-5 z-40 w-full sm:w-[70%] lg:w-[80%] h-[70%] overflow-hidden relative transition-all duration-500
+          ${isPlaying ? 'border-dark-golden shadow-xl' : 'border-golden'}
+      `}>
         {video?.videoUrl ? (
           <video
             ref={videoRef}
             src={video.videoUrl}
-            className="w-full h-full object-contain"
+            className={`w-full h-full object-contain`}
             controls
             onPause={handleVideoStateChange}
             onEnded={handleVideoEnded}
             onClick={handleVideoStateChange}
           />
         ) : (
-          <div className="text-white">No video available</div>
+          <Loading />
         )}
       </div>
       <SideVideo />

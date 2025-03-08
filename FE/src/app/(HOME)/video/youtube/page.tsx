@@ -4,6 +4,7 @@ import { Media, YoutubeMedia } from "../../../../../types";
 import Link from "next/link";
 import Image from "next/image";
 import { Skeleton } from "@/components/ui/skeleton";
+import NoContent from "@/app/_components/NoContent";
 
 export default function Youtube() {
     const [isLoading, setIsLoading] = useState(true)
@@ -29,6 +30,9 @@ export default function Youtube() {
 
     return (
         <div className="h-[calc(100vh-48px)] overflow-y-auto flex-1 w-full bg-dark">
+            {
+               <span className="text-white font-semibold font-sans flex relative top-5 justify-center">Results for Youtube Media</span>
+            }
             <div className="flex justify-evenly mt-6 flex-wrap">
                 {media.length > 0 ? (
                     media.map((video: YoutubeMedia) => (
@@ -76,7 +80,7 @@ export default function Youtube() {
                         </div>
                     ))
                 ) : (
-                    <div>No videos available</div>
+                    <NoContent />
                 )}
             </div>
         </div>

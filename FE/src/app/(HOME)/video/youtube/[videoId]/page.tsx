@@ -4,6 +4,7 @@ import { useSidebarState } from "../../../../../../hooks/useSideBarState";
 import SideVideo from "@/app/_components/SideVideo";
 import { YoutubeMedia } from "../../../../../../types";
 import { usePlayingState } from "../../../../../../hooks/useIsPlaying";
+import Loading from "@/app/_components/Loading";
 
 declare global {
   interface Window {
@@ -90,8 +91,8 @@ export const Page = (
     
     return (
         <div className={`flex h-screen w-full bg-dark p-4 relative`}>
-          <div className={`absolute inset-0 transition-all duration-500 z-0
-                ${isPlaying ? 'bg-darker' : 'bg-dark'}
+          <div className={`absolute inset-0 z-0
+                ${isPlaying ? 'bg-darker transition-all duration-500' : 'bg-dark transition-all duration-500'}
             `}>
           <div className={`flex-1 w-full transition-all duration-500 absolute inset-0 h-[calc(100vh-48px)] top-5 overflow-y-auto flex`}>
             <div
@@ -101,10 +102,9 @@ export const Page = (
               {video?.videoId ? (
                 <div id="youtube-player" className="w-full h-full" />
               ) : (
-                <div className="flex w-8 h-8 justify-center items-center bg-white"></div>
+                <Loading />
               )}
             </div>
-      
             <SideVideo />
           </div>
         </div>

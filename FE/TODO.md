@@ -7,6 +7,7 @@
 - [X] Create a seperate page to display the embedded video and use specific strategies that nextJS offers(SSG,SSR,etc)
 - [X] A switch like button to on or off the 
 - [X] A toggle button to blur side except the video
+- [] try to get a way to fetch media with the media_key of twitter
 - [] Currently working on SideVideo
 - [] Spotify like feature
 - [] youtube video on id loading div on top left corner and change color of focus mode 
