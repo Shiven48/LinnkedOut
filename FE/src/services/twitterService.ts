@@ -1,3 +1,4 @@
+import { NextResponse } from "next/server";
 import { HelperFunctions } from "../../src/app/_lib/helper_funcs";
 import { Media, TwitterMedia} from "../../types";
 import { insertMedia, insertTwitterMedia } from "../server/functions/media";
@@ -30,7 +31,12 @@ export const fetchVideoFromTwitterURL = async (link:string) => {
         }
         console.log(`Tweet Fetched Successfully: ${fetchedTweet}`)
         const tweetMetadata = await fetchedTweet.json();
-        return saveTweetToDatabase(tweetMetadata)
+
+        const savedData = saveTweetToDatabase(tweetMetadata)
+        if (!savedData) { 
+            return NextResponse.json({ message: 'Error saving to the database' }, { status: 500 }); 
+        }
+        return savedData
     } catch (error) {
         console.error(error);
         throw error;
@@ -40,18 +46,18 @@ export const fetchVideoFromTwitterURL = async (link:string) => {
 export const saveTweetToDatabase = async (tweetMetaData:any) => {
     const { data, includes } =  tweetMetaData
     const { text,id } = data
-
-    console.log(`Here : ${JSON.stringify(tweetMetaData)}`)
     
     const mediaItem = includes?.media?.[0];
         if (!mediaItem) {
             throw new Error('No media found in tweet');
         }    
-    const { media_key, type, url, duration_ms } = mediaItem;
+    const { media_key, type, url } = mediaItem;
+    const { duration_ms } = mediaItem
+    const duration = duration_ms || ''
     const username = includes?.users?.[0]?.username || 'unknown_user';
 
     if (!data) {
-        throw new Error('No video data found in the YouTube response')
+        throw new Error('No video data found in the twitter response')
     };
 
     const currentTimestamp = new Date().toISOString();
@@ -62,10 +68,12 @@ export const saveTweetToDatabase = async (tweetMetaData:any) => {
         createdAt: currentTimestamp,
         updatedAt: currentTimestamp,
         thumbnailUrl: url,
+        title: text,
+        duration_ms: duration || ''
     }
 
     const returnedMedia = await insertMedia(media);
-    console.log(`inserted Media : ${url}`)
+    console.log(`inserted Media : ${returnedMedia}`)
     const mediaId = returnedMedia[0].id;  
 
     const tMedia:TwitterMedia = {
@@ -75,7 +83,7 @@ export const saveTweetToDatabase = async (tweetMetaData:any) => {
         tweet_media_key: media_key, 
         media_url: url,
         username: username,
-        duration_ms: duration_ms,
+        duration_ms: duration || '',
     }
 
     const returnedTwitterMedia = await insertTwitterMedia(tMedia);
