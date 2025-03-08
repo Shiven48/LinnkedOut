@@ -20,10 +20,18 @@ export class HelperFunctions {
             
             // Handle youtube.com domain links
             if (url.hostname.includes('youtube.com')) {
-                return url.searchParams.get('v') || null;
+                if(url.searchParams.has('v')){
+                    return url.searchParams.get('v')
+                }
+                else if(url.pathname.includes('shorts')){
+                    const pathParts = url.pathname.split('/');
+                    return pathParts.length > 2 ? pathParts[2] : null;
+                }
+                return null;
             }
             // Handle youtu.be short links
             else if (url.hostname === 'youtu.be') {
+                // Work here
                 const pathParts = url.pathname.split('/');
                 return pathParts.length > 1 ? pathParts[1] : null;
             }
