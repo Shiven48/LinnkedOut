@@ -31,9 +31,9 @@ export const fetchVideoFromYoutubeURL = async (link: string) => {
         if (!savedData) { 
             return NextResponse.json({ message: 'Error saving to the database' }, { status: 500 }); 
         }
-        
-        revalidatePath('/'); 
+
         return savedData
+        // return videoMetaData
     } catch (error) { 
         console.error(error); 
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 }); 
@@ -62,7 +62,7 @@ export const saveToDatabase = async (videoMetaData:any) => {
         thumbnailMediumUrl: thumbnails.medium.url,
         thumbnailHighUrl: thumbnails.high.url,
         thumbnailMaxRes: thumbnails.maxres.url,
-        duration: duration,
+        duration_ms: duration,
         definition: definition,
         hasCaption: caption,
         tags: tags
@@ -75,7 +75,9 @@ export const saveToDatabase = async (videoMetaData:any) => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         thumbnailUrl: mappedData.thumbnailUrl || '',
-        hdThumbnailUrl: mappedData.thumbnailMaxRes || ''
+        hdThumbnailUrl: mappedData.thumbnailMaxRes || '',
+        title: mappedData.title,
+        duration_ms: mappedData.duration_ms || ''
     }
 
     const returnedMedia = await insertMedia(media);
@@ -92,7 +94,7 @@ export const saveToDatabase = async (videoMetaData:any) => {
         thumbnailMediumUrl: mappedData.thumbnailMediumUrl,
         thumbnailHighUrl: mappedData.thumbnailHighUrl,
         thumbnailMaxRes: mappedData.thumbnailMaxRes,
-        duration: mappedData.duration,
+        duration_ms: mappedData.duration_ms,
         definition: mappedData.definition,
         hasCaption: mappedData.hasCaption,
         tags: mappedData.tags || [],

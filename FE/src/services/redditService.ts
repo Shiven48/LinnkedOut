@@ -1,6 +1,7 @@
 import { Media, RedditMedia, Urls } from "../../types";
 import { HelperFunctions } from "../../src/app/_lib/helper_funcs"
 import { insertMedia, insertRedditMedia } from "../server/functions/media";
+import { NextResponse } from "next/server";
 
 export const fetchVideoFromRedditURL = async (embeddedLink:string) => {
     try {
@@ -29,8 +30,14 @@ export const fetchVideoFromRedditURL = async (embeddedLink:string) => {
             throw new Error(`Reddit API error: ${fetchedRedditPost.status} ${fetchedRedditPost.statusText}. Details: ${errorBody}`)
         }
         console.log(`Reddit Post Fetched Successfully: ${fetchedRedditPost}`)
+
         const redditPostMetaData = await fetchedRedditPost.json();
-        return saveRedditPostToDatabase(redditPostMetaData)
+        const savedData = await saveRedditPostToDatabase(redditPostMetaData)
+
+        if (!savedData) { 
+            return NextResponse.json({ message: 'Error saving to the database' }, { status: 500 }); 
+        }
+        return savedData
     } catch (error) {
         console.error(error);
         throw error;
@@ -47,7 +54,7 @@ export const saveRedditPostToDatabase = async (redditPostMetaData:any) => {
     const previewHdUrl = resolutions.length ? resolutions[resolutions.length - 1].url : undefined;
     
     const { url: previewImageUrl, width: imageWidth, height: imageHeight } = source || {};
-    const { fallback_url, width: videoWidth, height: videoHeight } = media?.reddit_video || {};
+    const { fallback_url, width: videoWidth, height: videoHeight, duration } = media?.reddit_video || {};
 
     // Mapping the urls that are destructured into the url object
     const urls: Urls = {
@@ -69,7 +76,9 @@ export const saveRedditPostToDatabase = async (redditPostMetaData:any) => {
         createdAt: currentTimestamp,
         updatedAt: currentTimestamp,
         thumbnailUrl: parsedImageUrl.sdUrl || '',
-        hdThumbnailUrl: parsedImageUrl.hdUrl
+        hdThumbnailUrl: parsedImageUrl.hdUrl,
+        title: title,
+        duration_ms: duration
     }
     console.log(generalisedMedia)
     const returnedMedia = await insertMedia(generalisedMedia);
@@ -91,6 +100,7 @@ export const saveRedditPostToDatabase = async (redditPostMetaData:any) => {
         videoUrl: fallback_url,
         videoWidth: videoWidth,
         videoHeight: videoHeight,
+        duration_ms: duration || ''
     } 
 
     const returnedRedditMedia = await insertRedditMedia(RedditMedia);
@@ -98,6 +108,7 @@ export const saveRedditPostToDatabase = async (redditPostMetaData:any) => {
     console.log(returnedRedditMedia)
     return returnedRedditMedia;
 }
+
 export function parseImage(unParsedImageUrls: Urls): Urls {
     try {
         const parsedUrls: Urls = { ...unParsedImageUrls };
@@ -113,4 +124,9 @@ export function parseImage(unParsedImageUrls: Urls): Urls {
         console.error("Error parsing image:", error);
         return unParsedImageUrls;
     }
+}
+
+// For later implementation
+export function getAccessToken() {
+    console.log(`Here for access token`)
 }
