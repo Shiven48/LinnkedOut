@@ -20,6 +20,8 @@ export interface Media {
     updatedAt: string;
     thumbnailUrl: string;
     hdThumbnailUrl?: string;
+    title: string;
+    duration_ms?: string;
 }
 
 export interface YoutubeMedia {
@@ -32,13 +34,13 @@ export interface YoutubeMedia {
     thumbnailMediumUrl: string | null;
     thumbnailHighUrl: string | null;
     thumbnailMaxRes?: string | null;
-    duration: string | null;
+    duration_ms?: string | null;
     definition: string | null;
     hasCaption: boolean | null;
     tags: string[] | null;
 }
 
-export interface TwitterMedia{
+export interface TwitterMedia {
     id?:number;
     mediaId?: number;
     tweetId: string;
@@ -65,6 +67,7 @@ export interface RedditMedia{
     videoUrl: string;
     videoWidth: number | null;
     videoHeight: number | null;
+    duration_ms?: string | null
 } 
 
 export interface Varient {
@@ -89,5 +92,3 @@ export interface Platfrom {
     url: string,
     icon: string
 }
-
-export type yt_media = Media & YoutubeMedia
