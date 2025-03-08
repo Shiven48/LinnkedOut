@@ -21,7 +21,7 @@ export const youtubeMedia = pgTable('youtube_media', {
     thumbnailMediumUrl: text('thumbnailMediumUrl'),
     thumbnailHighUrl: text('thumbnailHighUrl'),
     thumbnailMaxRes: text('thumbnailMaxResUrl'),
-    duration: varchar('duration', { length: 20 }),
+    duration_ms: text('duration_ms'),
     definition: varchar('definition', { length: 10 }),
     hasCaption: boolean('hasCaption'),
     tags: text('tags').array(),
@@ -49,7 +49,7 @@ export const twitterMedia = pgTable('twitter_media', {
     tweetMediaKey: text('tweet_media_key'),
     mediaUrl: text('media_url').notNull(),
     authorUsername: varchar('author_username', { length: 50 }),
-    durationMS: text('durationMS')
+    duration_ms: text('duration_ms')
 });
 
 export const redditMedia = pgTable('reddit_media', {
@@ -67,6 +67,7 @@ export const redditMedia = pgTable('reddit_media', {
   videoUrl: text('videoUrl'),
   videoWidth: integer('videoWidth'),
   videoHeight: integer('videoHeight'),
+  duration_ms :text('duration_ms')
 })
 
 export const media = pgTable('media', {
@@ -77,6 +78,8 @@ export const media = pgTable('media', {
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
     thumbnailUrl: varchar('ImageUrl', { length: 200 }),
     hdThumbnailUrl: varchar('hdImageUrl', { length: 200 }),
+    title: text('title').notNull(),
+    duration_ms: text('duration_ms')
 });
 
 export const mediaRelations = relations(media, ({ one }) => ({
