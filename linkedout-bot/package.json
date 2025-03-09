@@ -1,0 +1,35 @@
+{
+  "name": "telegram-bot",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev src/index.ts",
+    "deploy": "wrangler deploy src/index.ts",
+    "start": "bun run src/index.ts",
+    "db:generate": "drizzle-kit generate:pg",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio",
+    "db:check": "drizzle-kit check:pg",
+    "db:drop": "drizzle-kit drop",
+    "format": "prettier --write .",
+    "lint": "eslint . --ext .ts",
+    "type-check": "tsc --noEmit",
+    "webhook:set": "wrangler secret put TELEGRAM_WEBHOOK_URL",
+    "webhook:delete": "wrangler secret delete TELEGRAM_WEBHOOK_URL",
+    "build": "tsc",
+    "clean": "rm -rf .wrangler dist .turbo"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^0.10.4",
+    "drizzle-orm": "^0.29.1",
+    "hono": "^3.12.0",
+    "pg": "^8.13.3"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250303.0",
+    "bun-types": "latest",
+    "drizzle-kit": "^0.30.5",
+    "wrangler": "^3.22.0"
+  }
+}
