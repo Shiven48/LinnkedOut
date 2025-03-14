@@ -1,132 +1,196 @@
-import { Media, RedditMedia, Urls } from "../../types";
+import { CommentData, Media, RedditComment, RedditMedia } from "../../types";
 import { HelperFunctions } from "../../src/app/_lib/helper_funcs"
 import { insertMedia, insertRedditMedia } from "../server/functions/media";
 import { NextResponse } from "next/server";
 
-export const fetchVideoFromRedditURL = async (embeddedLink:string) => {
+export const fetchVideoFromRedditURL = async (embeddedLink: string) => {
     try {
-        const redditId = HelperFunctions.parseRedditEmbeddedLink(embeddedLink);
-        if(!process.env.REDDIT_BEARER_TOKEN){
-            return new Error(' Unable to fetch reddit bearer token ') 
+        const redditId = HelperFunctions.parseRedditLinkForId(embeddedLink);
+        const subreddit = HelperFunctions.parseRedditLinkForSubreddit(embeddedLink);
+
+        if (!process.env.REDDIT_BEARER_TOKEN) {
+            throw new Error('Unable to fetch Reddit bearer token');
         }
+        
         const redditAuthToken = process.env.REDDIT_BEARER_TOKEN;
-        const fetchedRedditPost = await fetch(`https://oauth.reddit.com/comments/${redditId}.json?limit=1`, {
+        
+        // Fetching the Reddit post
+        const fetchedRedditPost = await fetch(`https://oauth.reddit.com/r/${subreddit}/comments/${redditId}.json`, {
             method: 'GET',
             headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${redditAuthToken}`,
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${redditAuthToken}`,
             },
-          });
+        });
 
+        // Handle failed fetch or invalid response
         if (!fetchedRedditPost.ok) {
-            const errorBody = await fetchedRedditPost.text()
-            .catch(e => 'Failed to parse error response');
-            
+            const errorBody = await fetchedRedditPost.text().catch(e => 'Failed to parse error response');
             console.error('Reddit API error details:', {
                 status: fetchedRedditPost.status,
                 statusText: fetchedRedditPost.statusText,
-                body: errorBody
+                body: errorBody,
             });
-            throw new Error(`Reddit API error: ${fetchedRedditPost.status} ${fetchedRedditPost.statusText}. Details: ${errorBody}`)
+            throw new Error(`Reddit API error: ${fetchedRedditPost.status} ${fetchedRedditPost.statusText}. Details: ${errorBody}`);
         }
-        console.log(`Reddit Post Fetched Successfully: ${fetchedRedditPost}`)
 
-        const redditPostMetaData = await fetchedRedditPost.json();
-        const savedData = await saveRedditPostToDatabase(redditPostMetaData)
+        const fetchedRedditMetaData = await fetchedRedditPost.json();
 
-        if (!savedData) { 
-            return NextResponse.json({ message: 'Error saving to the database' }, { status: 500 }); 
+        const mediaData = await extractMediaData(fetchedRedditMetaData);
+        
+        const redditData = await extractRedditData(fetchedRedditMetaData);
+        
+        redditData.comments = await extractTopComments(fetchedRedditMetaData);
+        
+        const savedMedia = saveRedditPostToDatabase(mediaData, redditData);     
+
+        if (!savedMedia) {
+            return NextResponse.json({ message: 'Error saving to the database' }, { status: 500 });
         }
-        return savedData
+        return savedMedia
     } catch (error) {
-        console.error(error);
+        console.error('Error in fetching Reddit post:', error);
         throw error;
     }
-}
+};
 
-export const saveRedditPostToDatabase = async (redditPostMetaData:any) => {
-    // Destructuring the fetched data
+export const extractMediaData = async (redditPostMetaData:any):Promise<Media> => {
     const postData = redditPostMetaData[0].data.children[0].data;  
-    const { subreddit, title, post_hint, id, author, media, preview } = postData
-    const { source } = preview?.images[0] || {};  
-
-    const resolutions = preview?.images[0]?.resolutions || [];
-    const previewHdUrl = resolutions.length ? resolutions[resolutions.length - 1].url : undefined;
+    const { title, post_hint, id, media, preview } = postData;
     
-    const { url: previewImageUrl, width: imageWidth, height: imageHeight } = source || {};
-    const { fallback_url, width: videoWidth, height: videoHeight, duration } = media?.reddit_video || {};
+    const resolutions = preview?.images[0]?.resolutions || [];
+    const thumbnailUrl = Array.isArray(resolutions) && resolutions.length
+                    ? resolutions[resolutions.length - 1].url
+                    : undefined;
+   
+    const { fallback_url, duration } = media?.reddit_video || {};
+    const parsedThumbnailUrl = thumbnailUrl ? parseImage(thumbnailUrl) : undefined;
+    const durationMs = duration*1000;
 
-    // Mapping the urls that are destructured into the url object
-    const urls: Urls = {
-        sdUrl: previewImageUrl,
-        hdUrl: previewHdUrl
-    };
-
-    const currentTimestamp = new Date().toISOString();
-    const type = post_hint === 'hosted:video' ? 'video' 
-                : post_hint === 'hosted:image' ? 'image'
-                : 'photo';
-
-    const parsedImageUrl = parseImage(urls);
-
-    // Mapping the media Object to the data we just destructured
-    const generalisedMedia:Media = {
-        type: type,
+    return {
+        type: getType(post_hint),
         platform: 'reddit',
-        createdAt: currentTimestamp,
-        updatedAt: currentTimestamp,
-        thumbnailUrl: parsedImageUrl.sdUrl || '',
-        hdThumbnailUrl: parsedImageUrl.hdUrl,
+        thumbnailUrl: parsedThumbnailUrl,
+        postUrl: fallback_url || '',
         title: title,
-        duration_ms: duration
-    }
-    console.log(generalisedMedia)
-    const returnedMedia = await insertMedia(generalisedMedia);
-    console.log(`inserted Media`)
-    const mediaId = returnedMedia[0].id; 
-
-    // Mapping the Redditmedia Object to the data we just destructured
-    const RedditMedia:RedditMedia = {
-        mediaId: mediaId,
-        subreddit: subreddit,
-        title: title,
-        type: type,
-        redditPostId: id,
-        author: author,
-        imageUrl: parsedImageUrl.sdUrl || '',
-        hdImageUrl: parsedImageUrl.hdUrl || '',
-        imageWidth: imageWidth, 
-        imageHeight: imageHeight,
-        videoUrl: fallback_url,
-        videoWidth: videoWidth,
-        videoHeight: videoHeight,
-        duration_ms: duration || ''
-    } 
-
-    const returnedRedditMedia = await insertRedditMedia(RedditMedia);
-    console.log(`inserted reddit media`)
-    console.log(returnedRedditMedia)
-    return returnedRedditMedia;
+        durationMs: durationMs,
+        postId: id
+    };
 }
 
-export function parseImage(unParsedImageUrls: Urls): Urls {
+export const extractRedditData = async(redditPostMetaData: any): Promise<RedditMedia> => {
+    const postData = redditPostMetaData[0].data.children[0].data;  
+    const { subreddit, author, permalink } = postData;
+    
+    return {
+        subreddit: subreddit,
+        author: author,
+        postLink: `https://reddit.com${permalink}`
+    };
+}
+
+export const extractTopComments = async (data: any) => {
+    const comments: RedditComment[] = data[1]?.data?.children || [];
+
+    const sortedComments = comments.sort((a, b) => b.data.score - a.data.score);
+    
+    const topComments: CommentData[] = sortedComments.slice(0, 10).map(comment => {
+    
+        const result: CommentData = {
+            body: comment.data.body,
+            score: comment.data.score,
+            author: comment.data.author,
+            ups: comment.data.ups,
+            downs: comment.data.downs
+        };
+    
+        // Here i have passed the child object or the inner object
+        const extractRpls = extractNestedReplies(comment.data.replies);
+    
+        if(extractRpls && extractRpls.length > 0) {
+            result.replies = extractRpls 
+        }
+    
+        return result;
+    });
+    
+    return topComments;
+};
+
+export const extractNestedReplies = (replies: any): CommentData[] | undefined => {
+    if (!replies || !replies.data || !replies.data.children) {
+        return;
+    }
+
+    return replies.data.children
+        .filter((reply: any) => reply.data?.body)
+        .map((reply: any) => {
+            const result: CommentData  = {
+                body: reply.data.body,
+                score: reply.data.score,
+                author: reply.data.author,
+                ups: reply.data.ups,
+                downs: reply.data.downs
+            };
+
+            const extractRpls = extractNestedReplies(reply.data.replies);
+            if(extractRpls && extractRpls.length > 0) {
+                result.replies = extractRpls 
+            }
+            
+            return result;
+        });
+};
+
+export const saveRedditPostToDatabase = async (mediaData:Media, redditData:RedditMedia):Promise<{ id : number}> => {
+    // Inserting into media schema
+    const returnedMedia = await insertMedia(mediaData);
+    const mediaId = returnedMedia[0].id; 
+    redditData.mediaId = mediaId;
+
+    // Inserting into RedditMedia schema
+    const returnedRedditMedia = await insertRedditMedia(redditData);
+    return returnedRedditMedia[0];
+}
+
+export function getType(post_hint: string): "short" | "image" | "video" | "photo" {
+    if (post_hint === 'hosted:video') {
+        return 'video';
+    } else if (post_hint === 'hosted:image' || post_hint === 'photo') {
+        return 'image';
+    } else {
+        return 'short';
+    }
+}
+
+export function parseImage(unParsedImageUrl: string): string {
     try {
-        const parsedUrls: Urls = { ...unParsedImageUrls };
-        
-        if (parsedUrls.sdUrl) {
-            parsedUrls.sdUrl = decodeURIComponent(parsedUrls.sdUrl).replace(/&amp;/g, '&');
+        let parsedUrl:string = '';
+        if (unParsedImageUrl) {
+            parsedUrl = decodeURIComponent(unParsedImageUrl).replace(/&amp;/g, '&');
         }
-        if (parsedUrls.hdUrl) {
-            parsedUrls.hdUrl = decodeURIComponent(parsedUrls.hdUrl).replace(/&amp;/g, '&');
-        }
-        return parsedUrls;
+        return parsedUrl;
     } catch (error) {
         console.error("Error parsing image:", error);
-        return unParsedImageUrls;
-    }
+            return unParsedImageUrl;
+        }
 }
-
+    
 // For later implementation
-export function getAccessToken() {
-    console.log(`Here for access token`)
-}
+    
+    // export function getAccessToken():Promise<string> {
+    //     //     try{
+    //         //         await fetch(`https://www.reddit.com/api/v1/access_token`,{ 
+    //             //             method: 'GET', 
+    //             //             headers: { 
+    //                 //                 'Content-Type': 'application/json',
+    //                 //                 User-Agent
+                    
+    //                 //             } 
+    //                 //         });
+    //                 //     } catch(error:any){
+    //                     //         throw new Error('Error while getting token',error)
+    //                     //     }
+    //                     return new Promise<string>(resolve => resolve(`Here for access token`))
+    //                     .then((message:string) => message);
+// }
