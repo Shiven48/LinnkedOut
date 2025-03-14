@@ -1,5 +1,4 @@
 import { fetchVideoFromYoutubeURL } from "../../../src/services/youtubeService";
-import { Helper } from "./helper_data";
 const { exec } = require('child_process');
 
 export class HelperFunctions {
@@ -41,15 +40,15 @@ export class HelperFunctions {
         }
     }
 
-    public static parseTwitterEmbeddedLink(link: string) {
-        if (!link) throw new Error('Cannot parse the url check the url again')
-        return new URL(link).pathname
-            .split('/')
-            .pop()
-            ?.trim()
-    }
+    // public static parseTwitterEmbeddedLink(link: string) {
+    //     if (!link) throw new Error('Cannot parse the url check the url again')
+    //     return new URL(link).pathname
+    //         .split('/')
+    //         .pop()
+    //         ?.trim()
+    // }
 
-    public static parseRedditEmbeddedLink(embeddedLink: string): string {
+    public static parseRedditLinkForId(embeddedLink: string): string {
         if (!embeddedLink) throw new Error('The link cannot be null')
         try {
             const pathnameParts = new URL(embeddedLink).pathname.split('/').filter(parts => parts.length > 0)
@@ -74,7 +73,35 @@ export class HelperFunctions {
         }
     }
 
-    // This is for download the audio source file
+    public static parseRedditLinkForSubreddit = (url: string): string | null => {
+        try {
+        
+        /* If url is empty then return null */
+          if (!url) {
+            return null;
+          }
+
+          const urlObj = new URL(url);
+          
+          // Checking if this is a reddit.com URL
+          if (!urlObj.hostname.includes('reddit.com')) {
+            return null;
+          }
+          
+          const pathSegments = urlObj.pathname.split('/').filter(segment => segment.length > 0);
+          
+          if (pathSegments.length >= 2 && pathSegments[0].toLowerCase() === 'r') {
+            return pathSegments[1];
+          }
+          
+          return null;
+        } catch (error) {
+          console.error('Error parsing Reddit URL:', error);
+          return null;
+        }
+      }
+
+    // This is to download the audio source file
     public static accessDLP(videoId:string) {
         exec(`yt-dlp -x --audio-format mp3 -o "output_audio.mp3" https://www.youtube.com/watch?v=${videoId}`, (error:Error, stdout:any, stderr:any) => {
         if (error) {
