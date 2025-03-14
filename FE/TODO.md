@@ -7,15 +7,12 @@
 - [X] Create a seperate page to display the embedded video and use specific strategies that nextJS offers(SSG,SSR,etc)
 - [X] A switch like button to on or off the 
 - [X] A toggle button to blur side except the video
-- [] try to get a way to fetch media with the media_key of twitter
+- [X] youtube video on id loading div on top left corner and change color of focus mode 
+
 - [] Currently working on SideVideo
 - [] Spotify like feature
-- [] youtube video on id loading div on top left corner and change color of focus mode 
-
 - [] The video should play on Hover
 - []  Find a way to extend the expiration period of reddit's access token of reddit api 
 - [] generate weekly reports
 - [] generate summary from the transcripts of the video from its metadata using OPENAI key
-
 - [] create a S3 bucket and generate the whole flow to store the audio in the S3 bucket
-- [] fetch the audio(Using Suspense) and video from the api endpoint
