@@ -1,6 +1,6 @@
 import { db, queryDb } from '../db/index'
-import { media, redditMedia, twitterMedia, youtubeMedia } from '../db/schema' 
-import { Media, RedditMedia, TwitterMedia, YoutubeMedia } from '../../../types';
+import { media, redditMedia, youtubeMedia } from '../db/schema' 
+import { Media, RedditMedia, YoutubeMedia } from '../../../types';
 import { eq } from 'drizzle-orm';
 
 // ORM layer
@@ -28,22 +28,21 @@ export const getLatestVideos = async () => {
     }
 }
 
-export const insertMedia = async (sharedMedia:Media) => {
-    'use server'
+export const insertMedia = async (generalisedMedia:Media) => {
+    'use server'                                   
     try{
-        const currentTimestamp = new Date();
         return await db.insert(media)
                        .values([{
-                            type: sharedMedia.type as "short" | "image" | "video" | "photo",
-                            platform: sharedMedia.platform,
-                            createdAt: currentTimestamp,
-                            updatedAt: currentTimestamp,
-                            thumbnailUrl: sharedMedia.thumbnailUrl,
-                            hdThumbnailUrl: sharedMedia.hdThumbnailUrl,
-                            title: sharedMedia.title,
-                            duration_ms: sharedMedia.duration_ms
+                            type: generalisedMedia.type,
+                            platform: generalisedMedia.platform,
+                            thumbnailUrl: generalisedMedia.thumbnailUrl,
+                            postUrl: generalisedMedia.postUrl,
+                            title: generalisedMedia.title,
+                            durationMs: generalisedMedia.durationMs,
+                            postId: generalisedMedia.postId
+
                        }])
-                       .returning({ id: media.id });
+                       .returning({id: media.id });
     } catch(error){
         console.error('Failed to insert media model', error);
         throw new Error('Failed to insert media model'); 
@@ -58,48 +57,16 @@ export const insertYoutubeMedia = async (ytMedia:YoutubeMedia) => {
         }
         
         return await db.insert(youtubeMedia)
-                       .values([{
-                            mediaId: ytMedia.mediaId,
-                            videoId: ytMedia.videoId,
-                            title: ytMedia.title,
+                       .values([{                                    
+                            mediaId: ytMedia.mediaId,                               
                             description: ytMedia.description,
-                            thumbnailUrl: ytMedia.thumbnailUrl,
-                            thumbnailMediumUrl: ytMedia.thumbnailMediumUrl,
-                            thumbnailHighUrl: ytMedia.thumbnailHighUrl,
-                            thumbnailMaxRes: ytMedia.thumbnailMaxRes,
-                            duration_ms: ytMedia.duration_ms,
                             definition: ytMedia.definition,
-                            hasCaption: ytMedia.hasCaption,
-                            tags: ytMedia.tags
+                            englishCaptions: ytMedia.englishCaptions                   
                        }])
                        .returning({ id: youtubeMedia.id });
     } catch(error){
         console.error('Failed to insert youtube media model', error);
         throw new Error('Failed to insert youtube media model'); 
-    }
-}
-
-export const insertTwitterMedia = async (tm:TwitterMedia) => {
-    'use server'
-    try {
-        if (!tm.mediaId) {
-            throw new Error('mediaId is required');
-        }
-        
-        return await db.insert(twitterMedia)
-                       .values([{
-                            mediaId: tm.mediaId,
-                            tweetId: tm.tweetId,
-                            text: tm.text,
-                            tweetMediaKey: tm.tweet_media_key,
-                            mediaUrl: tm.media_url,
-                            authorUsername: tm.username,
-                            duration_ms: tm.duration_ms,
-                       }])
-                       .returning({ id: twitterMedia.id });
-    } catch(error) {
-        console.error('Failed to insert twitter media model', error);
-        throw new Error('Failed to insert twitter media model'); 
     }
 }
 
@@ -112,19 +79,11 @@ export const insertRedditMedia = async (reddit:RedditMedia) => {
         
         return await db.insert(redditMedia)
                        .values([{
-                            mediaId: reddit.mediaId,
-                            subreddit: reddit.subreddit,
-                            title: reddit.title,
-                            type: reddit.type,
-                            redditPostId: reddit.redditPostId,
-                            author: reddit.author,
-                            imageUrl: reddit.imageUrl,
-                            hdImageUrl: reddit.hdImageUrl,
-                            imageWidth: reddit.imageWidth,
-                            imageHeight: reddit.imageHeight,
-                            videoUrl: reddit.videoUrl,
-                            videoWidth: reddit.videoWidth,
-                            videoHeight: reddit.videoHeight,
+                        mediaId: reddit.mediaId,
+                        subreddit: reddit.subreddit,
+                        author: reddit.author,
+                        postLink: reddit.postLink,
+                        comments: reddit.comments
                        }])
                        .returning({ id: redditMedia.id });
     } catch(error) {
@@ -146,22 +105,8 @@ export const getMediaFromYoutubeById = async (id: number) => {
     }
 }
 
-export const getMediaFromTwitterById = async (id: number) => {
-    'use server'
-    try{
-        return await db.select()
-                        .from(twitterMedia)
-                        .where(eq(twitterMedia.mediaId,id))
-                        .limit(1)
-    } catch (error){
-        console.error(`Failed to fetch media from twitter by Id :${id}`, error)
-        throw new Error(`Failed to fetch media from twitter`)
-    }
-}
-
 export const getMediaFromRedditById = async (id: number) => {
     'use server'
-    console.log(`Lets see ${id}`)
     try {
         return await db.select()
                         .from(redditMedia)
@@ -182,18 +127,6 @@ export const getAllMediaFromYoutube = async () => {
     } catch(error){
         console.error('Detailed fetch error:', error);
         throw new Error(`Failed to fetch media from Youtube: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
-}
-
-export const getAllMediaFromTwitter = async () => {
-    'use server'
-    try{
-        return await db.select()
-                       .from(twitterMedia)
-                       .execute()
-    } catch(error){
-        console.error('Detailed fetch error:', error);
-        throw new Error(`Failed to fetch media from Twitter: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
 }
 
