@@ -1,6 +1,6 @@
-import { getMediaFromRedditById, getMediaFromTwitterById, getMediaFromYoutubeById } from "@/server/functions/media"
+import { getMediaFromRedditById, getMediaFromYoutubeById } from "@/server/functions/media"
 import { NextRequest, NextResponse } from "next/server"
-import { RedditMedia, TwitterMedia, YoutubeMedia } from "../../../../../../../types";
+import { RedditMedia, YoutubeMedia } from "@/../../types";
 
 export async function GET(
     request: NextRequest,
@@ -9,12 +9,12 @@ export async function GET(
         id :string;
     }}
 ) {
-    const { platform,id } = await(params)
+    const { id,platform } = await(params)
     const videoId = parseInt(id) 
     const trimmedPlatfrom = platform.toLowerCase().trim();
+
     try {
         if (!platform) throw new Error('Invalid platform!')
-            
         let fetchedVideobyId :any;    
         if (trimmedPlatfrom === 'youtube') {
             fetchedVideobyId = await getMediaFromYoutubeById(videoId);
@@ -22,13 +22,9 @@ export async function GET(
         else if (trimmedPlatfrom === 'reddit') {
             fetchedVideobyId = await getMediaFromRedditById(videoId);
         }
-        else if (trimmedPlatfrom === 'twitter') {
-            fetchedVideobyId = await getMediaFromTwitterById(videoId);
-        }
         if(!fetchedVideobyId){
             throw new Error(`Cannot get video from ${trimmedPlatfrom} by ${videoId}!`)
         }
-        console.log(`The video from ${videoId} is ${fetchedVideobyId}`)
         return NextResponse.json({ body:fetchedVideobyId[0], status: 200})
     } catch (error) {
         console.error(error)

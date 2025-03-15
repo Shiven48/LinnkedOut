@@ -54,7 +54,7 @@ export interface Media {
     thumbnailUrl?: string;                           // This is the thumbnail url
     postUrl: string;                                 // This is the video | image url
     title: string;                      
-    durationMs?: number;                             // This is optional because c'mon images dont have duration
+    durationMs: number;                             
     postId: string;                                  // The id of the post on that platform
 }
 

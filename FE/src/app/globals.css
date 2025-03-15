@@ -129,6 +129,9 @@ body {
   background-color: var(--col-special);
 }
 
+.hover-thread:hover {
+  @apply border border-black -translate-y-1
+}
 /* Sticky positioning helper */
 .stick {
   position: sticky;
