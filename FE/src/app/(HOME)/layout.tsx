@@ -6,6 +6,7 @@ import "../globals.css"
 import { usePlayingState } from "../../../hooks/useIsPlaying";
 import VideoNavBar from "../_components/VideoNavbar";
 import { usePathname } from "next/navigation";
+import SearchBar from "../_components/SearchBar";
 
 export default function Layout({ children }: { children: ReactNode }) {
     const pathname = usePathname();
