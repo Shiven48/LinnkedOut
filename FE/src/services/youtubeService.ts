@@ -2,7 +2,7 @@ import { HelperFunctions } from "../../src/app/_lib/helper_funcs";
 import { CaptionItem, Media, YoutubeMedia } from "../../types";
 import { NextResponse } from "next/server";
 import { insertMedia, insertYoutubeMedia } from "../server/functions/media";
-import { YoutubeTranscript } from 'youtube-transcript';
+import { TranscriptResponse, YoutubeTranscript } from 'youtube-transcript';
 
 export const fetchVideoFromYoutubeURL = async (link: string) => {
     try {
@@ -30,11 +30,13 @@ export const fetchVideoFromYoutubeURL = async (link: string) => {
 
         const mediaData = await extractMediaData(fetchedYoutubeMetaData);
 
-        const youtubeData = await extractYoutubeData(fetchedYoutubeMetaData); 
+        const youtubeData = await extractYoutubeData(fetchedYoutubeMetaData);
 
-        youtubeData.englishCaptions = await getTranscript(videoId);
+        const transcripts:TranscriptResponse[] = await getTranscript(videoId);
 
-        const savedData = await saveToDatabase(mediaData,youtubeData);
+        youtubeData.englishCaptions = getEnglishTranscripts(transcripts);
+
+        const savedData = await saveToDatabase(mediaData, youtubeData);
 
         if (!savedData) {
             return NextResponse.json({ message: 'Error saving to the database' }, { status: 500 });
@@ -49,26 +51,25 @@ export const fetchVideoFromYoutubeURL = async (link: string) => {
 export const extractMediaData = async (youtubeMetaData: any): Promise<Media> => {
     const { items } = youtubeMetaData;
     const video = items[0];
-    
+
     if (!video || video.length === 0) {
         throw new Error('No video data found in the YouTube response');
     }
-    
+
     const { id } = video;
     const { title, thumbnails } = video.snippet;
     const { duration } = video.contentDetails || {};
-    
+    const durationMs: number = parseDurationToMs(duration)
     const thumbnailUrl = await getThumbnailUrl(thumbnails);
-    
-    const durationMs = duration ? parseDurationToMs(duration) : undefined;
-    
+    const type:'short' | 'image' | 'video' | 'photo' = determineVideoType(durationMs) 
+
     return {
-        type: determineVideoType(video),
+        type: type,
         platform: 'youtube',
         thumbnailUrl: thumbnailUrl,
         postUrl: `https://www.youtube.com/watch?v=${id}`,
         title: title,
-        durationMs: durationMs,
+        durationMs: durationMs!,
         postId: id
     };
 };
@@ -76,34 +77,46 @@ export const extractMediaData = async (youtubeMetaData: any): Promise<Media> => 
 export const extractYoutubeData = async (youtubeMetaData: any): Promise<YoutubeMedia> => {
     const { items } = youtubeMetaData;
     const video = items[0];
-    
+
     if (!video || video.length === 0) {
         throw new Error('No video data found in the YouTube response');
     }
-    
+
     const { description } = video.snippet;
     const { definition } = video.contentDetails || {};
-    
+
     return {
         description: description,
         definition: definition,
     };
 };
 
-export async function getTranscript(videoId: string):Promise<CaptionItem[]> {
+export async function getTranscript(videoId: string): Promise<TranscriptResponse[]> {
     try {
         const transcriptItems = await YoutubeTranscript.fetchTranscript(videoId);
+        return transcriptItems;
+    } catch (error) {
+        if (error instanceof Error && error.message.includes('Transcript is disabled')) {
+            console.log('Transcripts are disabled for this video');
+            return [];
+        } else {
+            throw error;
+        }
+    }
+}
 
-        const enTranscripts:CaptionItem[] = transcriptItems.filter((item: any): item is CaptionItem => 
+export function getEnglishTranscripts(transcriptItems: TranscriptResponse[]): CaptionItem[] {
+    try {
+
+        const enTranscripts: CaptionItem[] = transcriptItems.filter((item: any): item is CaptionItem =>
             item.lang !== undefined && item.lang === 'en');
-
 
         if (enTranscripts.length === 0) {
             console.log('No English transcripts found, returning empty result');
             return [];
         }
 
-        const formattedTranscripts:CaptionItem[] = enTranscripts.map((item) => ({
+        const formattedTranscripts: CaptionItem[] = enTranscripts.map((item) => ({
             text: item.text,
             lang: item.lang,
             offset: item.offset,
@@ -138,10 +151,7 @@ const parseDurationToMs = (isoDuration: string): number => {
     return (hours * 3600 + minutes * 60 + seconds) * 1000;
 };
 
-const determineVideoType = (video: any): 'short' | 'image' | 'video' | 'photo' => {
-    const duration = video.contentDetails?.duration;
-    const durationMs = parseDurationToMs(duration);
-
+const determineVideoType = (durationMs:number): 'short' | 'image' | 'video' | 'photo' => {
     if (durationMs && durationMs < 60000) {
         return 'short';
     }
@@ -167,10 +177,10 @@ export const getThumbnailUrl = async (thumbnails: any): Promise<string> => {
     return '';
 }
 
-export const saveToDatabase = async (mediaData:Media, youtubeData:YoutubeMedia):Promise<{ id: number }> => {
+export const saveToDatabase = async (mediaData: Media, youtubeData: YoutubeMedia): Promise<{ id: number }> => {
     // Inserting into media schema first
     const returnedMedia = await insertMedia(mediaData);
-    const mediaId:number = returnedMedia[0].id;  
+    const mediaId: number = returnedMedia[0].id;
     youtubeData.mediaId = mediaId
 
     // Inserting into youtubeMedia schema
