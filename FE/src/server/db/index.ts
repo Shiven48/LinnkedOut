@@ -1,17 +1,33 @@
-import { drizzle } from 'drizzle-orm/postgres-js'
+import { drizzle as drizzleNeon } from "drizzle-orm/neon-http";
+import { drizzle as drizzlePostgres } from "drizzle-orm/postgres-js"
 import postgres from 'postgres'
+import { neon } from "@neondatabase/serverless";
+import { config } from "dotenv";
+import * as schema from './schema';
 
-if (!process.env.DATABASE_URL) {
+config({ path: ".env.local" });
+
+if (!process.env.REMOTE_DATABASE_URL) {
+    throw new Error('REMOTE_DATABASE_URL is missing');
+}
+
+if(!process.env.DATABASE_URL){
     throw new Error('DATABASE_URL is missing');
 }
 
-const connectionString:string = process.env.DATABASE_URL;
+const LocalDb:string = process.env.DATABASE_URL!
+const RemoteDb:string = process.env.REMOTE_DATABASE_URL!
 
-const client = postgres(connectionString, { max:1 })
-export const db = drizzle(client)
+const localClient = postgres(LocalDb);
+const remoteClient = neon(RemoteDb);
 
-const queryClient = postgres(connectionString, {
-    max: 10,
-    prepare: false,
-});
-export const queryDb = drizzle(queryClient)
+const isProduction = process.env.NODE_ENV === "production";
+let db: any;
+
+if(isProduction){
+    db = drizzleNeon(remoteClient, { schema }) 
+} else{
+    db = drizzlePostgres(localClient, { schema })
+}
+export * from './schema'
+export { db }
