@@ -38,7 +38,7 @@ export default function VideoNavBar() {
                 </a>
             </div>
 
-            <div className="flex justify-center w-[25%]">
+            <div className="flex justify-center w-[40%]">
                 <SearchBar />
             </div>
 

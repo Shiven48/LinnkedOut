@@ -37,7 +37,7 @@ export default function App() {
                 </a>
             </div>
 
-            <div className="flex justify-center w-[25%]">
+            <div className="flex justify-center w-[40%]">
                 <SearchBar />
             </div>
 
