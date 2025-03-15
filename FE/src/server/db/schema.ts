@@ -1,5 +1,5 @@
 import { relations} from "drizzle-orm";
-import { boolean, integer, jsonb, pgEnum, pgTable, serial, text, timestamp, varchar } from "drizzle-orm/pg-core";
+import { integer, jsonb, pgEnum, pgTable, real, serial, text, timestamp, varchar } from "drizzle-orm/pg-core";
 
 // The enum for the type of media
 export const mediaTypeEnum = pgEnum('type', ['short', 'image', 'video', 'photo']);
@@ -12,7 +12,7 @@ export const media = pgTable('media', {
   thumbnailUrl: varchar('thumbnail_url', { length: 200 }),
   postUrl: varchar('post_url', { length: 500 }).notNull(),
   title: text('title').notNull(),
-  durationMs: integer('duration_ms'),
+  durationMs: integer('duration_ms').default(0),
   postId: varchar('post_id', { length: 100 }).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull()
@@ -47,3 +47,5 @@ export const mediaRelations = relations(media, ({ one }) => ({
       references: [redditMedia.mediaId],
     })
 }));
+
+

@@ -1,4 +1,4 @@
-import { db, queryDb } from '../db/index'
+import { db } from '../db/index'
 import { media, redditMedia, youtubeMedia } from '../db/schema' 
 import { Media, RedditMedia, YoutubeMedia } from '../../../types';
 import { eq } from 'drizzle-orm';
@@ -17,7 +17,7 @@ export const getAllMedia = async () => {
 export const getLatestVideos = async () => {
     'use server'
     try{
-        return await queryDb.select()
+        return await db.select()
                             .from(media)
                             .orderBy(media.createdAt)
                             .limit(10)
@@ -28,22 +28,28 @@ export const getLatestVideos = async () => {
     }
 }
 
-export const insertMedia = async (generalisedMedia:Media) => {
-    'use server'                                   
-    try{
+export const insertMedia = async (generalisedMedia: Media) => {
+    'use server'      
+    if (generalisedMedia.durationMs !== undefined && !Number.isInteger(generalisedMedia.durationMs)) {
+        throw new Error('durationMs must be an integer');
+    }                    
+    try {
+        const durationMs = generalisedMedia.durationMs !== undefined 
+            ? Math.floor(generalisedMedia.durationMs)
+            : null;
         return await db.insert(media)
-                       .values([{
+                       .values({
                             type: generalisedMedia.type,
                             platform: generalisedMedia.platform,
                             thumbnailUrl: generalisedMedia.thumbnailUrl,
                             postUrl: generalisedMedia.postUrl,
                             title: generalisedMedia.title,
-                            durationMs: generalisedMedia.durationMs,
+                            durationMs: durationMs,
                             postId: generalisedMedia.postId
-
-                       }])
-                       .returning({id: media.id });
-    } catch(error){
+                       })
+                       .returning({ id: media.id });
+                       
+    } catch(error) {
         console.error('Failed to insert media model', error);
         throw new Error('Failed to insert media model'); 
     }
@@ -89,6 +95,19 @@ export const insertRedditMedia = async (reddit:RedditMedia) => {
     } catch(error) {
         console.error('Failed to insert reddit media model', error);
         throw new Error('Failed to insert reddit media model'); 
+    }
+}
+
+export const getFromMediaById = async (id: number) => {
+    'use server'
+    try{
+        return await db.select()
+                        .from(media)
+                        .where(eq(media.id,id))
+                        .limit(1)
+    } catch (error){
+        console.error(`Failed to fetch from media by Id :${id}`, error)
+        throw new Error(`Failed to fetch from media`)
     }
 }
 
