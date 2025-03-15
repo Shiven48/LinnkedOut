@@ -1,9 +1,10 @@
 'use client'
 import React, { useEffect, useState } from "react";
-import Link from "next/link";  // Use Next.js Link component
+import Link from "next/link";
 import { Helper } from "../_lib/helper_data";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
+import SearchBar from "./SearchBar";
 
 export default function App() {
     const [activeNavComponent, setActiveNavComponent] = useState<string | null>(null);
@@ -34,6 +35,10 @@ export default function App() {
                         className="min-w-[25px]"
                     />
                 </a>
+            </div>
+
+            <div className="flex justify-center w-[25%]">
+                <SearchBar />
             </div>
 
             <div className="flex items-center gap-4 bg-golden rounded-xl hover-side">
