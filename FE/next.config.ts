@@ -4,7 +4,24 @@ const nextConfig: NextConfig = {
   /* config options here */
   reactStrictMode: true,
   images: {
-    domains: ['external-preview.redd.it', 'i.redd.it', 'preview.redd.it', 'i.ytimg.com'],
+    remotePatterns: [
+        {
+          protocol: 'https',
+          hostname: 'external-preview.redd.it',
+        },
+        {
+          protocol: 'https',
+          hostname: 'i.redd.it',
+        },
+        {
+          protocol: 'https',
+          hostname: 'preview.redd.it',
+        },
+        {
+          protocol: 'https',
+          hostname: 'i.ytimg.com',
+        },
+      ],
   },
 };
 
