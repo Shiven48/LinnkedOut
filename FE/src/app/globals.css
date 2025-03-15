@@ -110,7 +110,7 @@ body {
 }
 
 .span-prop {
-  @apply px-2 bg-opacity-45 bg-black border border-white
+  @apply px-2 bg-opacity-25
 }
 /* Background color classes */
 .bg-dark {

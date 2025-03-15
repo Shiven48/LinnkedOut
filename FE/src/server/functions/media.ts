@@ -1,7 +1,7 @@
 import { db } from '../db/index'
 import { media, redditMedia, youtubeMedia } from '../db/schema' 
 import { Media, RedditMedia, YoutubeMedia } from '../../../types';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 
 // ORM layer
 export const getAllMedia = async () => {
@@ -158,5 +158,18 @@ export const getAllMediaFromReddit = async () => {
     } catch(error){
         console.error('Detailed fetch error:', error);
         throw new Error(`Failed to fetch media from Reddit: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+}
+
+export const getMediaFromQuery = async (query:string):Promise<Media[]> => {
+    'use server'
+    try{
+        return await db.select()
+                    .from(media)
+                    .where(sql`${media.title} ILIKE ${'%' + query + '%'}`)
+                    .limit(10)
+    } catch(error){
+        console.error('Something went wrong while querying database',error)
+        throw new Error(`Failed to query database: ${error instanceof Error ? error.message : "Unknown Error Occured"}`)
     }
 }
