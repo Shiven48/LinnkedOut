@@ -65,15 +65,15 @@ export const extractMediaData = async (redditPostMetaData:any):Promise<Media> =>
    
     const { fallback_url, duration } = media?.reddit_video || {};
     const parsedThumbnailUrl = thumbnailUrl ? parseImage(thumbnailUrl) : undefined;
-    const durationMs = duration*1000;
-
+    const durationMs:number = parseDuration(duration)
+    
     return {
         type: getType(post_hint),
         platform: 'reddit',
         thumbnailUrl: parsedThumbnailUrl,
         postUrl: fallback_url || '',
         title: title,
-        durationMs: durationMs,
+        durationMs: durationMs!,
         postId: id
     };
 }
@@ -176,6 +176,18 @@ export function parseImage(unParsedImageUrl: string): string {
         }
 }
     
+export const parseDuration = (duration: string | number): number => {
+    let durationMs: number;
+    if (typeof duration === 'string') {
+        durationMs = Math.round(Number(parseFloat(duration) * 1000));
+    } else if (typeof duration === 'number') {
+        durationMs = Math.round(duration * 1000);
+    } else {
+        durationMs = 0;
+    }
+    return durationMs
+}
+
 // For later implementation
     
     // export function getAccessToken():Promise<string> {
