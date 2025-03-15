@@ -23,7 +23,6 @@ export default function SideVideo(){
                 // }
                 // const data = await res.json();
                 // setVideo(data);
-                console.log(`working`)
             } catch (error: any) {
                 throw new Error('Error fetching media:', error);
             }
@@ -32,10 +31,10 @@ export default function SideVideo(){
     },[])
 
     return(
-        <div className={`w-[20%] h-[70%] bg-dark mt-5 border-golden rounded-large relative z-5
+        <div className={`m-20 w-[25%] h-[80%] bg-dark border-golden rounded-large relative z-5
             ${isPlaying ? 'blur-[1px] bg-blend-darken  brightness-50 transition-all duration-500' : ''}
         `}>
-
+            <p className="text-white font-mono mt-5 text-center">This part will be handled by ai for suggesting videos</p>
         </div>
     )
 }

@@ -5,6 +5,7 @@ import { Helper } from "../_lib/helper_data";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import Switch from "./Switch";
+import SearchBar from "./SearchBar";
 
 export default function VideoNavBar() {
     const [activeNavComponent, setActiveNavComponent] = useState<string | null>(null);
@@ -35,6 +36,10 @@ export default function VideoNavBar() {
                         className="min-w-[25px]"
                     />
                 </a>
+            </div>
+
+            <div className="flex justify-center w-[25%]">
+                <SearchBar />
             </div>
 
             <div className="flex absolute end-40">
