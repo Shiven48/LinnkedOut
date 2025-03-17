@@ -51,11 +51,6 @@ export class Helper{
                 name: 'reddit', 
                 url: `/video/${encodeURIComponent('reddit')}`,
                 icon: `reddit`
-            },
-            {
-                name: 'twitter', 
-                url: `/video/${encodeURIComponent('twitter')}`,
-                icon:`twitter`
             }
         ]
         return platforms as Platfrom[];
