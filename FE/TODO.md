@@ -4,15 +4,20 @@
 - [X] Create a solution to get data from every platform 
 - [X] create a category of platforms like reddit twitter and yt and show all the platforms on sidebar
 - [X] make all the content of sidebar as an accordian
-- [X] Create a seperate page to display the embedded video and use specific strategies that nextJS offers(SSG,SSR,etc)
+- [X] Create a seperate page to display the embedded video
 - [X] A switch like button to on or off the 
 - [X] A toggle button to blur side except the video
 - [X] youtube video on id loading div on top left corner and change color of focus mode 
+- [X] make youtube by Id UI better
+- [X] Search and its suggestions functionality
+- [X] Handle the description logo to make it hidden
+- [X] Solve the search bar issue on /search page
 
-- [] Currently working on SideVideo
-- [] Spotify like feature
+- [] The homepage should have the recommendations from ai embeddings based on previously watched context
+- [] The previous clicked videos will be showed on sidebar
 - [] The video should play on Hover
 - []  Find a way to extend the expiration period of reddit's access token of reddit api 
+
 - [] generate weekly reports
 - [] generate summary from the transcripts of the video from its metadata using OPENAI key
 - [] create a S3 bucket and generate the whole flow to store the audio in the S3 bucket

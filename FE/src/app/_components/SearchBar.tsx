@@ -4,6 +4,9 @@ import { Media } from '../../../types';
 import Loading from './Loading';
 import { debounce } from 'lodash';
 import NoContent from './NoContent';
+import Link from 'next/link';
+import { useSearchingResultState } from '../../../hooks/useSearchResultState';
+import { useRouter } from 'next/navigation';
 
 export default function SearchBar() {
   const [query, setQuery] = useState<string>('');
@@ -11,6 +14,9 @@ export default function SearchBar() {
   const [queryResult, setQueryResult] = useState<Media[]>([]);
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
+  const searchState = useSearchingResultState((state) => state.searchState) 
+  const setSearchState = useSearchingResultState((state) => state.setSearching)
+  const router = useRouter()
 
   const debouncedSearch = useRef(
     debounce(async (searchQuery: string) => {
@@ -47,19 +53,26 @@ export default function SearchBar() {
   }, [query, debouncedSearch]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchState(true)
     setQuery(e.target.value);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setSearchState(false)
+    setQuery('')
     debouncedSearch.flush();
+    localStorage.setItem('queryResult',JSON.stringify(queryResult))
+    router.push(`/search?query=${query}`)
   };
+
+  console.log(query)
 
   return (
     <div className="relative w-[90%]">
       <form
         className="flex items-center p-2 rounded-medium justify-center"
-        onSubmit={handleSubmit}
+        onSubmit={handleFormSubmit}
       >
         <input
           type="text"
@@ -72,6 +85,7 @@ export default function SearchBar() {
         <button
           type="submit"
           className="bg-golden h-8 text-white px-4 py-2 rounded-r-medium"
+          // onClick={HandleSearchSubmit}
         >
           <Image
             width={20}
@@ -86,13 +100,17 @@ export default function SearchBar() {
 
       {error && <div className="text-red-500 mt-2 absolute top-12 w-full">{error}</div>}
 
-      {!loading && !error && queryResult.length > 0 && (
+      {!loading && !error && searchState && queryResult.length > 0 && (
         <div className="absolute top-14 bg-dark bg-opacity-90 w-full rounded p-2 shadow-lg z-10 border border-golden">
           <p className="text-golden mb-2">Found {queryResult.length} results</p>
           <div className="max-h-60 overflow-y-auto">
-            {queryResult.map((item, index) => (
-              <div className='flex justify-between cursor-pointer mt-4 border-l-1 border-yellow-500 hover:bg-gray-800 hover:bg-opacity-60'>
-                <p key={index} className="p-2 text-sm rounded cursor-pointer text-golden">
+            {queryResult.map((item) => (
+              <Link 
+                className='flex justify-between cursor-pointer mt-4 border-l-1 border-yellow-500 hover:bg-gray-800 hover:bg-opacity-60'  
+                href={`/video/${item.platform}/${item.id}`}
+                key={item.id}
+              >
+                <p key={item.id} className="p-2 text-sm rounded cursor-pointer text-golden">
                   {item.title}
                 </p>
                 <Image
@@ -101,14 +119,14 @@ export default function SearchBar() {
                   width={80}
                   height={80}
                 />
-              </div>
+              </Link>
             ))}
           </div>
         </div>
       )}
 
       {!loading && !error && query && queryResult.length === 0 && (
-        <div className="absolute top-12 bg-gray-800 w-full rounded-md p-2 shadow-lg z-10">
+        <div className="absolute top-12 bg-dark w-full rounded-md p-2 shadow-lg z-10">
           <NoContent />
         </div>
       )}
