@@ -8,7 +8,7 @@ export async function GET(
     req: NextRequest
 ) {
     try {
-        const mappedVideo = await fetchVideoFromYoutubeURL(Helper.Resources()[11].link)        // ->    For Youtube
+        const mappedVideo = await fetchVideoFromYoutubeURL(Helper.Resources()[4].link)        // ->    For Youtube
         // const mappedVideo = await fetchVideoFromRedditURL(Helper.Resources()[3].link)             // ->    For Reddit
         revalidatePath('/'); 
         return NextResponse.json({ body:mappedVideo, status: 200});       
