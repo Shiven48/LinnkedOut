@@ -11,11 +11,11 @@ if (!process.env.REMOTE_DATABASE_URL) {
     throw new Error('REMOTE_DATABASE_URL is missing');
 }
 
-if(!process.env.DATABASE_URL){
+if(!process.env.LOCAL_PG_DATABASE){
     throw new Error('DATABASE_URL is missing');
 }
 
-const LocalDb:string = process.env.DATABASE_URL!
+const LocalDb:string = process.env.LOCAL_PG_DATABASE!
 const RemoteDb:string = process.env.REMOTE_DATABASE_URL!
 
 const localClient = postgres(LocalDb);

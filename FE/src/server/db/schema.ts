@@ -1,5 +1,5 @@
 import { relations} from "drizzle-orm";
-import { integer, jsonb, pgEnum, pgTable, real, serial, text, timestamp, varchar } from "drizzle-orm/pg-core";
+import { integer, jsonb, pgEnum, pgTable, serial, text, timestamp, varchar, vector } from "drizzle-orm/pg-core";
 
 // The enum for the type of media
 export const mediaTypeEnum = pgEnum('type', ['short', 'image', 'video', 'photo']);
@@ -37,6 +37,13 @@ export const youtubeMedia = pgTable('youtube_media', {
   englishCaptions: jsonb('english_captions')
 });
 
+export const embeddings = pgTable("embeddings", {
+  id: serial("id").primaryKey(),
+  text: text("text").notNull(),
+  embedding: vector("embedding", { dimensions: 768 }),
+});
+
+
 export const mediaRelations = relations(media, ({ one }) => ({
     youtubeDetails: one(youtubeMedia,{
         fields: [media.id],
@@ -48,4 +55,4 @@ export const mediaRelations = relations(media, ({ one }) => ({
     })
 }));
 
-
+export const schema = { media, redditMedia, youtubeMedia };
