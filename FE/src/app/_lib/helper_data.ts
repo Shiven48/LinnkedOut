@@ -120,4 +120,13 @@ export class Helper{
         ]
         return resos as Resource[];
     }
+
+    public static categoryDefinitions:Record<string,string>= {
+        "Learning & Skills": "learn skills tutorials education training",
+        "Mindset & Focus": "mindset focus motivation discipline productivity",
+        "Decision Making": "decisions strategy problem solving choices",
+        "Industry Trends": "trends industry innovation technology news",
+        "Health & Wellness": "health wellness fitness nutrition mental",
+        "Career Growth": "career growth jobs professional development success"
+    };
 }

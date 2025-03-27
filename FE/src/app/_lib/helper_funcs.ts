@@ -1,4 +1,5 @@
 import { fetchVideoFromYoutubeURL } from "../../../src/services/youtubeService";
+import { Helper } from "./helper_data";
 const { exec } = require('child_process');
 
 export class HelperFunctions {
@@ -39,14 +40,6 @@ export class HelperFunctions {
             return null;
         }
     }
-
-    // public static parseTwitterEmbeddedLink(link: string) {
-    //     if (!link) throw new Error('Cannot parse the url check the url again')
-    //     return new URL(link).pathname
-    //         .split('/')
-    //         .pop()
-    //         ?.trim()
-    // }
 
     public static parseRedditLinkForId(embeddedLink: string): string {
         if (!embeddedLink) throw new Error('The link cannot be null')
