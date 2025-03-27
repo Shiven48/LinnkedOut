@@ -37,10 +37,11 @@ export const youtubeMedia = pgTable('youtube_media', {
   englishCaptions: jsonb('english_captions')
 });
 
-export const embeddings = pgTable("embeddings", {
+export const contentVectors = pgTable("embeddings", {
   id: serial("id").primaryKey(),
-  text: text("text").notNull(),
-  embedding: vector("embedding", { dimensions: 768 }),
+  content: text("content").notNull(),
+  contentEmbedding: jsonb("embedding").notNull(),
+  categories: text("category").notNull(),
 });
 
 
