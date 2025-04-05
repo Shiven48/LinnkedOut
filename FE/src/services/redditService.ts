@@ -1,5 +1,5 @@
 import { CommentData, Media, RedditComment, RedditMedia } from "../../types";
-import { HelperFunctions } from "../../src/app/_lib/helper_funcs"
+import { HelperFunctions } from "../lib/helper_funcs"
 import { insertMedia, insertRedditMedia } from "../server/functions/media";
 import { NextResponse } from "next/server";
 
@@ -142,15 +142,14 @@ export const extractNestedReplies = (replies: any): CommentData[] | undefined =>
         });
 };
 
-export const saveRedditPostToDatabase = async (mediaData:Media, redditData:RedditMedia):Promise<{ id : number}> => {
+export const saveRedditPostToDatabase = async (mediaData:Media, redditData:RedditMedia):Promise<number> => {
     // Inserting into media schema
-    const returnedMedia = await insertMedia(mediaData);
-    const mediaId = returnedMedia[0].id; 
+    const { id:mediaId } = await insertMedia(mediaData);
     redditData.mediaId = mediaId;
 
     // Inserting into RedditMedia schema
-    const returnedRedditMedia = await insertRedditMedia(redditData);
-    return returnedRedditMedia[0];
+    const { id:redditId } = await insertRedditMedia(redditData);
+    return redditId;
 }
 
 export function getType(post_hint: string): "short" | "image" | "video" | "photo" {
