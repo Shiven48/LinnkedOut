@@ -1,7 +1,7 @@
 'use client'
 import React, { useEffect, useState } from "react";
 import Link from "next/link";  // Use Next.js Link component
-import { Helper } from "../_lib/helper_data";
+import { Helper } from "../../lib/helper_data";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import Switch from "./Switch";

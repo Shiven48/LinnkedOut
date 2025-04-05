@@ -1,6 +1,6 @@
 'use client'
 import Image from "next/image";
-import { Helper } from "../_lib/helper_data";
+import { Helper } from "../../lib/helper_data";
 import { Category, Platfrom } from "../../../types";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
