@@ -78,3 +78,24 @@ export interface YoutubeMedia {
 export interface MediaRelations {
     youtubeDetails?: YoutubeMedia;  
 }
+
+export interface ProcessedContent {
+    id: string;
+    original_text: string;
+    cleaned_text: string;
+    metadata: {
+      source: string;
+      category_candidates: string[];
+      processed_at: Date;
+    };
+}
+
+export interface CategoryEmbedding {
+    category: string,
+    categoryEmbeddings: number[]
+}
+
+export interface ErrorObj {
+    name: string,
+    message: string
+}
