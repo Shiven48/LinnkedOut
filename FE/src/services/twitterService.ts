@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { HelperFunctions } from "../../src/app/_lib/helper_funcs";
+import { HelperFunctions } from "../lib/helper_funcs";
 import { Media, TwitterMedia} from "../../types";
 import { insertMedia, insertTwitterMedia } from "../server/functions/media";
 
