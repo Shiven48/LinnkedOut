@@ -1,7 +1,7 @@
 import { isValidElement, useState } from 'react';
-import { CommentData } from '../../../types';
+import { CommentData } from '../../../../types';
 import CommentList from './CommentList';
-import { usePlayingState } from '../../../hooks/useIsPlaying';
+import { usePlayingState } from '../../../../hooks/useIsPlaying';
 
 interface CommentItemProps {
   comment: CommentData;

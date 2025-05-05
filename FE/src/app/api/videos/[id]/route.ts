@@ -1,6 +1,5 @@
-import { getFromMediaById, getMediaFromRedditById, getMediaFromYoutubeById } from "@/server/functions/media"
+import { getFromMediaById } from '@/server/functions/media'
 import { NextRequest, NextResponse } from "next/server"
-import { RedditMedia, YoutubeMedia } from "@/../../types";
 
 export async function GET(
     request: NextRequest,

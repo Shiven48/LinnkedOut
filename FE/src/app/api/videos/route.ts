@@ -1,11 +1,11 @@
-import { getLatestVideos } from "../../../server/functions/media";
+import { getAllMedia } from "../../../server/functions/media";
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
     request:NextRequest
 ) {
         try {
-            const videos = await getLatestVideos();
+            const videos = await getAllMedia();
             return NextResponse.json({body:videos},{status:200})
         } catch (error) {
             console.error(error)

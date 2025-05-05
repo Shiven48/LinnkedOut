@@ -1,15 +1,15 @@
-import { Helper } from '../../_lib/helper_data';
+import { Helper } from '@/lib/helper_data';
 import { NextRequest, NextResponse } from 'next/server';
-import { fetchVideoFromRedditURL } from '../../../services/redditService';
-import { fetchVideoFromYoutubeURL } from '../../../services/youtubeService'
+import { fetchVideoFromRedditURL } from '@/services/redditService';
+import { fetchVideoFromYoutubeURL } from '@/services/youtubeService'
 import { revalidatePath } from 'next/cache';
 
 export async function GET(
     req: NextRequest
 ) {
     try {
-        const mappedVideo = await fetchVideoFromYoutubeURL(Helper.Resources()[4].link)        // ->    For Youtube
-        // const mappedVideo = await fetchVideoFromRedditURL(Helper.Resources()[3].link)             // ->    For Reddit
+        const mappedVideo = await fetchVideoFromYoutubeURL(Helper.Resources()[13].link)        // ->    For Youtube
+        // const mappedVideo = await fetchVideoFromRedditURL(Helper.Resources()[7].link)             // ->    For Reddit
         revalidatePath('/'); 
         return NextResponse.json({ body:mappedVideo, status: 200});       
     } catch (error: any) {

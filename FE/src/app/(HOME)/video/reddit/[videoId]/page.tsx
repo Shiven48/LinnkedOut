@@ -4,8 +4,8 @@ import { useSidebarState } from "../../../../../../hooks/useSideBarState";
 import SideVideo from "@/app/_components/SideVideo";
 import { CommentData, Media, RedditMedia } from "../../../../../../types";
 import { usePlayingState } from "../../../../../../hooks/useIsPlaying";
-import Loading from "@/app/_components/Loading";
-import CommentsDisplay from "@/app/_components/CommentsDisplay";
+import Loading from "@/app/_components/shared/Loading";
+import CommentsDisplay from "@/app/_components/comments/CommentsDisplay";
 import Link from "next/link";
 
 export const Page = (

@@ -122,7 +122,7 @@ export default function AppSidebar() {
           <div key={platform.name} className= {`rounded-xl w-full hover-side transition ease-out 0.3s shadow shadow-white
           `}>
             <a
-              href={platform.url}
+              href={decodeURIComponent(platform.url)}
               className={`bg-golden flex items-center py-1 px-4 rounded-xl transition-all duration-200 ease-in-out relative hover-side text-black shadow border border-black
                 ${activePlatform === platform.name ? 'bg-[#e3ec58] shadow shadow-[#e3ec58]' : 'shadow-white'}`}
             >
