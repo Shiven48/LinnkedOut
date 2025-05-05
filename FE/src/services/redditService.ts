@@ -2,6 +2,9 @@ import { CommentData, Media, RedditComment, RedditMedia } from "../../types";
 import { HelperFunctions } from "../lib/helper_funcs"
 import { insertMedia, insertRedditMedia } from "../server/functions/media";
 import { NextResponse } from "next/server";
+import { contentVectorStore } from "./contentVectorStore";
+import EmbeddingGenerator from "./EmbeddingGeneratorService";
+import { Helper } from "@/lib/helper_data";
 
 export const fetchVideoFromRedditURL = async (embeddedLink: string) => {
     try {
@@ -11,10 +14,7 @@ export const fetchVideoFromRedditURL = async (embeddedLink: string) => {
         if (!process.env.REDDIT_BEARER_TOKEN) {
             throw new Error('Unable to fetch Reddit bearer token');
         }
-        
         const redditAuthToken = process.env.REDDIT_BEARER_TOKEN;
-        
-        // Fetching the Reddit post
         const fetchedRedditPost = await fetch(`https://oauth.reddit.com/r/${subreddit}/comments/${redditId}.json`, {
             method: 'GET',
             headers: {
@@ -22,8 +22,6 @@ export const fetchVideoFromRedditURL = async (embeddedLink: string) => {
                 'Authorization': `Bearer ${redditAuthToken}`,
             },
         });
-
-        // Handle failed fetch or invalid response
         if (!fetchedRedditPost.ok) {
             const errorBody = await fetchedRedditPost.text().catch(e => 'Failed to parse error response');
             console.error('Reddit API error details:', {
@@ -35,19 +33,25 @@ export const fetchVideoFromRedditURL = async (embeddedLink: string) => {
         }
 
         const fetchedRedditMetaData = await fetchedRedditPost.json();
-
-        const mediaData = await extractMediaData(fetchedRedditMetaData);
-        
-        const redditData = await extractRedditData(fetchedRedditMetaData);
-        
+        const mediaData:Media = await extractMediaData(fetchedRedditMetaData);
+        const redditData:RedditMedia = await extractRedditData(fetchedRedditMetaData);
         redditData.comments = await extractTopComments(fetchedRedditMetaData);
-        
-        const savedMedia = saveRedditPostToDatabase(mediaData, redditData);     
 
-        if (!savedMedia) {
-            return NextResponse.json({ message: 'Error saving to the database' }, { status: 500 });
+        // Saving the video embeddings in the database
+        const embeddingsId:number = await storeEmbeddings(mediaData, redditData)
+        if (!embeddingsId) {
+            return NextResponse.json({ message: 'Error saving embeddings to the database' }, { status: 500 });
         }
-        return savedMedia
+        mediaData.embeddingId = embeddingsId;
+        
+        // Saving the video metadata in the database
+        const metaDataId:number = await saveRedditPostToDatabase(mediaData, redditData);
+        if (metaDataId === undefined || metaDataId === null || isNaN(metaDataId) || metaDataId <= 0) {
+            return NextResponse.json({ message: 'Error saving metadata to the database' }, { status: 500 });
+        }
+        
+        console.log('Inserted all data successfully')
+        return { videoMetadataId:metaDataId, embeddingsId: embeddingsId }
     } catch (error) {
         console.error('Error in fetching Reddit post:', error);
         throw error;
@@ -145,7 +149,7 @@ export const extractNestedReplies = (replies: any): CommentData[] | undefined =>
 export const saveRedditPostToDatabase = async (mediaData:Media, redditData:RedditMedia):Promise<number> => {
     // Inserting into media schema
     const { id:mediaId } = await insertMedia(mediaData);
-    redditData.mediaId = mediaId;
+    redditData.id = mediaId;
 
     // Inserting into RedditMedia schema
     const { id:redditId } = await insertRedditMedia(redditData);
@@ -187,21 +191,65 @@ export const parseDuration = (duration: string | number): number => {
     return durationMs
 }
 
-// For later implementation
+export const extractComments = (comments: CommentData[], extractedCommentsArr: string[] = [], seenComments = new Set<string>()): string => {
+    comments.forEach(comment => {
+      if (!seenComments.has(comment.body)) {
+        const body = comment.body;
+        seenComments.add(body);
+        extractedCommentsArr.push(body);
+      }
+      if (comment.replies && comment.replies.length > 0) {
+        extractComments(comment.replies, extractedCommentsArr, seenComments);
+      }
+    });
     
-    // export function getAccessToken():Promise<string> {
-    //     //     try{
-    //         //         await fetch(`https://www.reddit.com/api/v1/access_token`,{ 
-    //             //             method: 'GET', 
-    //             //             headers: { 
-    //                 //                 'Content-Type': 'application/json',
-    //                 //                 User-Agent
-                    
-    //                 //             } 
-    //                 //         });
-    //                 //     } catch(error:any){
-    //                     //         throw new Error('Error while getting token',error)
-    //                     //     }
-    //                     return new Promise<string>(resolve => resolve(`Here for access token`))
-    //                     .then((message:string) => message);
+    const extractedComments:string = extractedCommentsArr.reduce((accumulator, comm) => {
+        return accumulator + comm.toLowerCase().trim() + ' ';
+    }, '');
+    return extractedComments;
+  }
+
+export const storeEmbeddings = async(mediaData:Media, redditData:RedditMedia):Promise<number> => {
+    const vectorStore = new contentVectorStore();
+    const embeddingGenerator = new EmbeddingGenerator();
+
+    try{
+        // initialize the category embeddings and store them in cache
+        const categoryEmbeddings:Record<string, number[]> = await embeddingGenerator.initializeEmbeddings(Helper.categoryDefinitions)
+        console.log("Categories available for classification:", Object.keys(categoryEmbeddings));
+        
+        const preprocessedContent: string = await embeddingGenerator.extractAndPreprocessData(mediaData, redditData);
+        if (!preprocessedContent) throw new Error("Preprocessing failed: content is undefined or empty");
+
+        const contentEmbeddings: number[] = await embeddingGenerator.generateEmbeddings(preprocessedContent);
+        if (!Helper.categoryDefinitions || Object.keys(Helper.categoryDefinitions).length === 0) {
+            throw new Error("Category definitions are empty");
+        }
+        console.log(`Found ${Object.keys(Helper.categoryDefinitions).length} category definitions`);
+        const assignedCategory = vectorStore.classifyEmbedding(contentEmbeddings, categoryEmbeddings);
+        mediaData.category = assignedCategory;
+
+        const embeddingIdInDatabase:number = await vectorStore.storeContent(preprocessedContent, contentEmbeddings, assignedCategory)
+        return embeddingIdInDatabase;
+    } catch (error) {
+        console.error("Error in storeEmbeddings:", error);
+        throw error;
+    }
+}
+
+// For later implementation
+// export function getAccessToken():Promise<string> {
+//     try{
+//         await fetch(`https://www.reddit.com/api/v1/access_token`,{ 
+//             method: 'GET', 
+//             headers: { 
+//                 'Content-Type': 'application/json',
+//                 User-Agent                    
+//             } 
+//         });
+//     } catch(error:any){
+//         throw new Error('Error while getting token',error)
+//     }
+//         return new Promise<string>(resolve => resolve(`Here for access token`))
+//                     .then((message:string) => message);
 // }

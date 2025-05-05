@@ -4,7 +4,7 @@ import { useSidebarState } from "../../../../../../hooks/useSideBarState";
 import SideVideo from "@/app/_components/SideVideo";
 import { Media, YoutubeMedia } from "../../../../../../types";
 import { usePlayingState } from "../../../../../../hooks/useIsPlaying";
-import Loading from "@/app/_components/Loading";
+import Loading from "@/app/_components/shared/Loading";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -59,21 +59,21 @@ export const Page = (
   }, [id, isOpen]);
 
   // This is for the youtube media
-  useEffect(() => {
-    const fetchDataById = async (id: number) => {
-      try {
-        const res = await fetch(`/api/videos/media/youtube/${id}`);
-        if (!res.ok) {
-          throw new Error(`Error: ${res.statusText}`);
-        }
-        const data = await res.json();
-        setYoutubeVideo(data.body);
-      } catch (error: unknown) {
-        console.error('Error fetching media:', error);
-      }
-    }
-    fetchDataById(id);
-  }, [id]);
+  // useEffect(() => {
+  //   const fetchDataById = async (id: number) => {
+  //     try {
+  //       const res = await fetch(`/api/videos/media/youtube/${id}`);
+  //       if (!res.ok) {
+  //         throw new Error(`Error: ${res.statusText}`);
+  //       }
+  //       const data = await res.json();
+  //       setYoutubeVideo(data.body);
+  //     } catch (error: unknown) {
+  //       console.error('Error fetching media:', error);
+  //     }
+  //   }
+  //   fetchDataById(id);
+  // }, [id]);
 
   console.log("YouTube Video data:", youtubeVideo);
 

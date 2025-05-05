@@ -1,16 +1,16 @@
 'use client'
 import { useEffect, useState } from "react";
-import { RedditMedia } from "../../../../../types";
-import Card from "../../../_components/ThumbnailCard";
+import { Media } from "@/../../types";
+// import Card from "../../../_components/ThumbnailCard";
 import Link from "next/link";
 import Image from "next/image";
 import { Skeleton } from "@/components/ui/skeleton";
-import NoContent from "@/app/_components/NoContent";
+import Loading from "@/app/_components/shared/Loading";
 
 // Change here For reddit
 export default function Youtube() {
     const [isLoading, setIsLoading] = useState(true)
-    const [media, setMedia] = useState<RedditMedia[]>([])
+    const [media, setMedia] = useState<Media[]>([])
 
     useEffect(() => {
         const fetchedMedia = async () => {
@@ -36,7 +36,7 @@ export default function Youtube() {
         <div className="h-[calc(100vh-48px)] overflow-y-auto flex-1 w-full bg-dark">
             <div className="flex justify-evenly mt-6 flex-wrap">
                 {media.length > 0 ? (
-                    media.map((video: RedditMedia) => (
+                    media.map((video: Media) => (
                         <div
                             key={video.id}
                             className="card-green-glass w-[30%] h-53 my-8"
@@ -48,7 +48,7 @@ export default function Youtube() {
                                         href={`/video/reddit/${video.id}`}
                                     >
                                         <Image
-                                            src={video.hdImageUrl || ''}
+                                            src={video.thumbnailUrl || ''}
                                             alt="Media thumbnail"
                                             fill
                                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -81,7 +81,7 @@ export default function Youtube() {
                         </div>
                     ))
                 ) : (
-                    <NoContent />
+                    <Loading />
                 )}
             </div>
         </div>

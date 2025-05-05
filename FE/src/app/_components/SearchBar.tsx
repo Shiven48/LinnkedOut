@@ -1,9 +1,9 @@
 import Image from 'next/image';
 import { useRef, useState, useEffect } from 'react';
 import { Media } from '../../../types';
-import Loading from './Loading';
+import Loading from './shared/Loading';
 import { debounce } from 'lodash';
-import NoContent from './NoContent';
+import NoContent from './shared/NoContent';
 import Link from 'next/link';
 import { useSearchingResultState } from '../../../hooks/useSearchResultState';
 import { useRouter } from 'next/navigation';

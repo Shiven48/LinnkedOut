@@ -1,33 +1,62 @@
 import { getMediaFromRedditById, getMediaFromYoutubeById } from "@/server/functions/media"
-import { NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 import { RedditMedia, YoutubeMedia } from "@/../../types";
 
-export async function GET(
-    request: NextRequest,
-    { params } : { params : {
-        platform :string,
-        id :string;
-    }}
-) {
-    const { id,platform } = await(params)
-    const videoId = parseInt(id) 
-    const trimmedPlatfrom = platform.toLowerCase().trim();
+// Union type for either media type
+type YoutubeOrReddit = YoutubeMedia | RedditMedia;
 
+function isYoutubeMedia(media: YoutubeOrReddit): media is YoutubeMedia {
+    return (media as YoutubeMedia).id !== undefined;
+}
+
+function isRedditMedia(media: YoutubeOrReddit): media is RedditMedia {
+    return (media as RedditMedia).id !== undefined;
+}
+
+export async function GET(
+    { params } : { params : {
+        platform: string,
+        id: string;
+    }}
+): Promise<NextResponse> {
+    const { id, platform } = await(params);
+    const videoId = parseInt(id);
+    const trimmedPlatform = platform.toLowerCase().trim();
+    
     try {
-        if (!platform) throw new Error('Invalid platform!')
-        let fetchedVideobyId :any;    
-        if (trimmedPlatfrom === 'youtube') {
-            fetchedVideobyId = await getMediaFromYoutubeById(videoId);
+        if (!platform) {
+            throw new Error('Invalid platform!');
         }
-        else if (trimmedPlatfrom === 'reddit') {
-            fetchedVideobyId = await getMediaFromRedditById(videoId);
+        
+        let fetchedVideo: YoutubeOrReddit | null = null;
+        
+        if (trimmedPlatform === 'youtube') {
+            fetchedVideo = await getMediaFromYoutubeById(videoId);
+            if (fetchedVideo && isYoutubeMedia(fetchedVideo)) {
+                console.log(fetchedVideo)
+                return NextResponse.json(fetchedVideo, { status: 200 });
+            }
         }
-        if(!fetchedVideobyId){
-            throw new Error(`Cannot get video from ${trimmedPlatfrom} by ${videoId}!`)
+        else if (trimmedPlatform === 'reddit') {
+            fetchedVideo = await getMediaFromRedditById(videoId);
+            if(fetchedVideo && isRedditMedia(fetchedVideo)){
+                console.log(fetchedVideo)
+                return NextResponse.json(fetchedVideo, { status: 200 });
+            }
         }
-        return NextResponse.json({ body:fetchedVideobyId[0], status: 200})
+        
+        if (!fetchedVideo) {
+            throw new Error(`Cannot get video from ${trimmedPlatform} with ID ${videoId}!`);
+        }
+
+        throw new Error(`Video doesnt belong to youtube nor reddit!`); 
     } catch (error) {
-        console.error(error)
-        return NextResponse.json({ message: 'Error fetching videos', error }, { status: 500 });
+        console.error(error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        
+        return NextResponse.json(
+            { message: 'Error fetching videos', error: errorMessage },
+            { status: 500 }
+        );
     }
 }

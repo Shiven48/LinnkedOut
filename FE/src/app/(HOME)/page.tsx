@@ -3,8 +3,8 @@ import { useEffect, useState } from "react";
 import { Media } from "../../../types";
 import Link from "next/link";
 import Image from "next/image";
-import Loading from "../_components/Loading";
-import NoContent from "../_components/NoContent";
+import Loading from "../_components/shared/Loading";
+import NoContent from "../_components/shared/NoContent";
 
 export default function Home() {
     const [isLoading, setIsLoading] = useState(true)
@@ -72,7 +72,7 @@ export default function Home() {
                     media.map((video: Media) => (
                         <div
                             key={video.id}
-                            className="card-green-glass w-[36%] h-64 my-8"
+                            className="card-green-glass w-[30%] h-64 my-8"
                         >
                             <div className="flex gap-4 justify-center">
                                 <div className='aspect-video -z-90 rounded-2xl overflow-hidden'>
@@ -88,6 +88,7 @@ export default function Home() {
                                             quality={95}
                                             className='object-cover opacity-90 rounded-2xl'
                                             onLoadingComplete={() => {}}
+                                            // This is for onHoverPlay
                                             // onMouseEnter={handleMouseEvent}
                                             // onMouseLeave={handleMouseEvent}
                                         />

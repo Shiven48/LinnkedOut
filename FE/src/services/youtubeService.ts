@@ -1,4 +1,4 @@
-import { HelperFunctions } from "../lib/helper_funcs";
+import { HelperFunctions } from "@/lib/helper_funcs";
 import { CaptionItem, Media, YoutubeMedia } from "../../types";
 import { NextResponse } from "next/server";
 import { insertMedia, insertYoutubeMedia } from "../server/functions/media";
@@ -9,6 +9,7 @@ import { Helper } from "@/lib/helper_data";
 
 export const fetchVideoFromYoutubeURL = async (link: string) => {
     try {
+        // Preprocessing the link
         const videoId = HelperFunctions.parseYoutubeEmbeddedLink(link);
         if (!videoId) {
             return NextResponse.json({ message: 'Unable to fetch videoId' }, { status: 500 });
@@ -16,6 +17,8 @@ export const fetchVideoFromYoutubeURL = async (link: string) => {
         if (!process.env.YOUTUBE_API_KEY) {
             return NextResponse.json({ message: 'Unable to fetch environment keys' }, { status: 400 });
         }
+
+        // Fetching the video from it's extracted ID
         const youtubeKey = process.env.YOUTUBE_API_KEY;
         const fetchedVideo = await fetch(
             `https://www.googleapis.com/youtube/v3/videos?id=${videoId}&key=${youtubeKey}&part=snippet,contentDetails,statistics,status`,
@@ -24,24 +27,30 @@ export const fetchVideoFromYoutubeURL = async (link: string) => {
         if (!fetchedVideo.ok) return NextResponse.json({ message: 'Unable to fetch video metadata' }, { status: 400 });
         const fetchedYoutubeMetaData = await fetchedVideo.json();
 
+        // Extracting metadata from the fetched video
         const mediaData = await extractMediaData(fetchedYoutubeMetaData);
         const youtubeData = await extractYoutubeData(fetchedYoutubeMetaData);
 
+        // Extracting transcripts of the video
         const transcripts:TranscriptResponse[] = await getTranscript(videoId);
         youtubeData.englishCaptions = getEnglishTranscripts(transcripts);
 
-        // const savedMetaDataIdInDatabase:number = await saveToDatabase(mediaData, youtubeData);
-        const savedEmbeddingsIdInDatabase:number | undefined = await storeEmbeddings(mediaData, youtubeData)
-
-        // if (!savedMetaDataIdInDatabase) {
-        //     return NextResponse.json({ message: 'Error saving metadata to the database' }, { status: 500 });
-        // }
-
-        if (!savedEmbeddingsIdInDatabase) {
+        // Saving the video embeddings in the database
+        const embeddingsId:number = await storeEmbeddings(mediaData, youtubeData)
+        if (!embeddingsId) {
             return NextResponse.json({ message: 'Error saving embeddings to the database' }, { status: 500 });
         }
-        console.log('Inserted all data suggessfully')
-        return savedEmbeddingsIdInDatabase
+
+        mediaData.embeddingId = embeddingsId;
+
+        // Saving the video metadata in the database
+        const metaDataId:number = await saveToDatabase(mediaData, youtubeData);
+        if (metaDataId === undefined || metaDataId === null || isNaN(metaDataId) || metaDataId <= 0) {
+            return NextResponse.json({ message: 'Error saving metadata to the database' }, { status: 500 });
+        }
+
+        console.log('Inserted all data successfully')
+        return { videoMetadataId:metaDataId, embeddingsId: embeddingsId }
     } catch (error) {
         console.error(error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
@@ -71,7 +80,7 @@ export const extractMediaData = async (youtubeMetaData: any): Promise<Media> => 
         title: title,
         durationMs: durationMs!,
         postId: id
-    };
+    }
 };
 
 export const extractYoutubeData = async (youtubeMetaData: any): Promise<YoutubeMedia> => {
@@ -185,27 +194,43 @@ export const extractCaptions = (captions:CaptionItem[]) => {
     return captionsText
 }
 
-export const saveToDatabase = async (mediaData: Media, youtubeData: YoutubeMedia):Promise<number> => {
-    // Inserting into media schema first
-    const { id:mediaId } = await insertMedia(mediaData);
-    youtubeData.mediaId = mediaId
-
+export const saveToDatabase = async (mediaData: Media, youtubeData: YoutubeMedia) => {
     // Inserting into youtubeMedia schema
     const { id:youtubeId } = await insertYoutubeMedia(youtubeData);
-    return youtubeId;
+    mediaData.youtubeId = youtubeId;
+    console.log(mediaData)
+
+    // Inserting into media schema first
+    const {id:mediaId } = await insertMedia(mediaData);
+    return mediaId;
 }
 
-export const storeEmbeddings = async(mediaData:Media, youtubeData:YoutubeMedia):Promise<number | undefined> => {
-    const store = new contentVectorStore();
+export const storeEmbeddings = async(mediaData:Media, youtubeData:YoutubeMedia):Promise<number> => {
+    const vectorStore = new contentVectorStore();
     const embeddingGenerator = new EmbeddingGenerator();
 
-    const preprocessedContent:string = await embeddingGenerator.extractAndPreprocessData(mediaData, youtubeData)
-    if (!preprocessedContent) throw new Error("Preprocessing failed: content is undefined or empty");
-    const contentEmbeddings: number[] = await embeddingGenerator.generateEmbeddings(preprocessedContent);
-    const categoryEmbeddings:Record<string,number[]> = await embeddingGenerator.generateCategoryEmbeddings(Helper.categoryDefinitions)
-    // const assignedCategory = store.classifyEmbedding(contentEmbeddings, categoryEmbeddings);
-    // const embeddingIdInDatabase = await store.storeContent(preprocessedContent, contentEmbeddings, assignedCategory)
+    try{
+        // initialize the category embeddings and store them in cache
+        const categoryEmbeddings:Record<string, number[]> = await embeddingGenerator.initializeEmbeddings(Helper.categoryDefinitions)
+        console.log("Categories available for classification:", Object.keys(categoryEmbeddings));
+        
+        const preprocessedContent: string = await embeddingGenerator.extractAndPreprocessData(mediaData, youtubeData);
+        if (!preprocessedContent) throw new Error("Preprocessing failed: content is undefined or empty");
+
+        const contentEmbeddings: number[] = await embeddingGenerator.generateEmbeddings(preprocessedContent);
+        if (!Helper.categoryDefinitions || Object.keys(Helper.categoryDefinitions).length === 0) {
+            throw new Error("Category definitions are empty");
+        }
+        console.log(`Found ${Object.keys(Helper.categoryDefinitions).length} category definitions`);
+        const assignedCategory = vectorStore.classifyEmbedding(contentEmbeddings, categoryEmbeddings);
+
+        mediaData.category = assignedCategory;
+
+        const embeddingIdInDatabase:number = await vectorStore.storeContent(preprocessedContent, contentEmbeddings, assignedCategory)
+        return embeddingIdInDatabase;
+    } catch (error) {
+        console.error("Error in storeEmbeddings:", error);
+        throw error;
+    }
+}
     
-    // return embeddingIdInDatabase[0].id;
-    return contentEmbeddings[0]
-} 
