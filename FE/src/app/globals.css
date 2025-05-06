@@ -19,11 +19,11 @@ body {
   :root {
     --textDim: hsl(68, 61%, 45%);
     --accentHi: hsla(155, 100%, 100%, 25%);
-    --col-dark: #181818;
     --col-darker: #0A0A0A;
+    --col-dark: #181818;
     --col-golden: #9d9d39;
-    --col-special: #A7E600;
     --col-dark-golden: #e3ec58;
+    --col-special: #A7E600;
     --col-yt: #FF0000;
     --col-rd: #FF4500;
     --col-tw: #1DA1F2;
