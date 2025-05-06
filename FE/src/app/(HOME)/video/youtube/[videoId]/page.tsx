@@ -7,6 +7,7 @@ import { usePlayingState } from "../../../../../../hooks/useIsPlaying";
 import Loading from "@/app/_components/shared/Loading";
 import Link from "next/link";
 import Image from "next/image";
+import SmallLoading from "@/app/_components/shared/SmallLoading";
 
 declare global {
   interface Window {
@@ -31,51 +32,69 @@ export const Page = (
 ) => {
   const id = use(params).videoId;
   const [video, setVideo] = useState<Media | null>(null);
-  const [youtubeVideo, setYoutubeVideo] = useState<YoutubeMedia | null>(null);
+  const [youtubeVideo, setYoutubeVideo] = useState<YoutubeMedia>();
   const isOpen = useSidebarState((state) => state.isOpen);
   const isPlaying = usePlayingState((state) => state.isPlaying);
   const setIsPlaying = usePlayingState((state) => state.setIsPlaying);
   const playerRef = useRef<any>(null);
   const [isHidden,setIsHidden] = useState<boolean>(false) 
+  const [isSummarizing, setIsSummarizing] = useState<boolean>(false)
+  const [summary, setSummary] = useState<string>('')
 
   // This is for the media
   useEffect(() => {
-    const fetchDataById = async (id: number) => {
+    const fetchDataById = async (videoId: number) => {
       try {
         if (isOpen) {
           useSidebarState.getState().setIsOpen(false);
         }
-        const res = await fetch(`/api/videos/${id}`);
+        const res = await fetch(`/api/videos/${videoId}`);
+        
         if (!res.ok) {
           throw new Error(`Error: ${res.statusText}`);
         }
+        
         const data = await res.json();
-        setVideo(data.body);
-      } catch (error: unknown) {
-        console.error('Error fetching media:', error);
-      }
+        console.log("Video API response:", data);
+        
+        if (data && data.body) {
+          setVideo(data.body);
+        } else {
+          throw new Error('No video data found');
+        }
+      } catch (error: any) {
+        console.error('Error fetching video:', error);
+      } 
+    };
+    
+    if (id) {
+      fetchDataById(id);
     }
-    fetchDataById(id);
   }, [id, isOpen]);
 
-  // This is for the youtube media
-  // useEffect(() => {
-  //   const fetchDataById = async (id: number) => {
-  //     try {
-  //       const res = await fetch(`/api/videos/media/youtube/${id}`);
-  //       if (!res.ok) {
-  //         throw new Error(`Error: ${res.statusText}`);
-  //       }
-  //       const data = await res.json();
-  //       setYoutubeVideo(data.body);
-  //     } catch (error: unknown) {
-  //       console.error('Error fetching media:', error);
-  //     }
-  //   }
-  //   fetchDataById(id);
-  // }, [id]);
-
-  console.log("YouTube Video data:", youtubeVideo);
+  useEffect(() => {
+    const fetchYoutubeData = async (youtubeId: number) => {
+      try {
+        const res = await fetch(`/api/videos/media/youtube/${youtubeId}`);
+        
+        if (!res.ok) {
+          throw new Error(`Error: ${res.statusText}`);
+        }
+        
+        const data = await res.json();        
+        if (data && data.body) {
+          setYoutubeVideo(data.body);
+          console.log(`youtubeVideo: ${JSON.stringify(youtubeVideo)}`)
+        }
+      } catch (error: any) {
+        console.error('Error fetching YouTube data:', error);
+      }
+    };
+    
+    if (video && video.youtubeId && !isNaN(Number(video.youtubeId)) && Number(video.youtubeId) > 0) {
+      fetchYoutubeData(Number(video.youtubeId));
+    }
+  }, [video]);
 
   // This is for creating iframe for youtube
   useEffect(() => {
@@ -132,7 +151,39 @@ export const Page = (
     setIsHidden((prev) => !prev)
   }
 
-  console.log(isHidden)
+  const handleSummarizeClick = async() => {
+    try{  
+      setIsSummarizing(true)
+      const captions = youtubeVideo?.englishCaptions;
+      if(!captions || captions === undefined || captions === null || typeof captions !== 'string'){
+        setSummary('captions are not present')
+        return;
+      }
+      const CaptionsData = {
+        caption: captions
+      }
+      const response = await fetch(`/api/summarize`,{
+        method: 'POST', 
+        headers: {
+          'Content-Type': 'application/json', 
+        },
+        body: JSON.stringify(CaptionsData),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error: ${response.status} ${response.statusText}`);
+    }
+    
+    const Summary = await response.json();
+    console.log('Summary received:', Summary.body);
+
+    setSummary(Summary.body)
+    } catch(error){
+      console.error(`Error Summarizing video`)
+    } finally{
+      setIsSummarizing(false)
+    }
+  }
 
   return (
     <div className={`overflow-y-auto flex flex-row h-screen w-full bg-[#181818] relative
@@ -153,7 +204,7 @@ export const Page = (
           <div className="text-white mb-2">
             {video?.postUrl && (
               <Link href={video.postUrl}>
-                <div className={`w-32 h-8 flex bg-dark-golden border border-white rounded-xl
+                <div className={`w-32 h-8 flex bg-dark-golden border border-white rounded-xl hover:bg-golden
                     hover-thread
                   `}>
                   <p className={`text-black flex items-center font-serif ml-9`}>YouTube</p>
@@ -163,10 +214,11 @@ export const Page = (
           </div>
         </div>
         <div className="flex">
-          <span className="text-gray-400 text-xl">{video?.type || "Unknown type"}</span>
+          <span className="text-gray-400 text-xl">{video?.type}</span>
         </div>
         {youtubeVideo?.description && (
-          <div className={`mt-4 text-white max-h-40`}>
+          <div className="flex justify-between">
+            <div className={`mt-4 text-white max-h-40`}>
             <div className="flex relative gap-4 h-8">
               <h3 className="text-xl mb-2 text-gray-400">Description</h3>
               <Image
@@ -178,9 +230,21 @@ export const Page = (
                 onClick={handleHidden}
               />
             </div>
-            <p className={`text-gray-300"
+            <p className={`text-gray-300 mt-4 "
               ${isHidden ? 'hidden' : 'whitespace-pre-line'} `}
             >{youtubeVideo.description}</p>
+            </div>
+            <div className="text-white mb-2">
+              {video?.postUrl && (
+                <button onClick={handleSummarizeClick}>
+                  <div className={`w-32 h-8 flex items-center justify-center bg-dark-golden border border-white rounded-xl hover:bg-golden
+                      hover-thread
+                    `}>
+                    <span className={`text-black font-serif`}>{isSummarizing ? <SmallLoading /> : `Summarize`}</span>
+                  </div>
+                </button>
+              )}
+            </div>
           </div>
         )}
       </div>

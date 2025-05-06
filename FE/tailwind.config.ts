@@ -18,6 +18,9 @@ export default {
 		'68': '17rem'
       },
   		colors: {
+			'dark': 'var(--dark',
+			'golden': 'var(--col-golden)',
+			'dark-golden': 'var(--col-dark-golden)',
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {
@@ -73,7 +76,7 @@ export default {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
-  		}
+  		},
   	}
   },
   plugins: [require("tailwindcss-animate"),heroui()],

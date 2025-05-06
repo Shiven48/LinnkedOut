@@ -1,5 +1,5 @@
 import { VoyageEmbeddings } from "@langchain/community/embeddings/voyage";
-import { Media, RedditMedia, YoutubeMedia } from "../../types";
+import { Media } from "../../types";
 import { extractCaptions } from "./youtubeService";
 import path from 'path'
 import fs from 'fs/promises'

@@ -85,13 +85,14 @@ export const insertRedditMedia = async (reddit: RedditMedia): Promise<{ id: numb
     }
 }
 
-export const getFromMediaById = async (id: number) => {
+export const getFromMediaById = async (id: number):Promise<Media> => {
     'use server'
     try {
-        return await db.select()
+        const [fetchedVideo] = await db.select()
             .from(media)
             .where(eq(media.id, id))
             .limit(1)
+        return fetchedVideo;
     } catch (error) {
         console.error(`Failed to fetch from media by Id :${id}`, error)
         throw new Error(`Failed to fetch from media`)
@@ -102,10 +103,11 @@ export const getFromMediaById = async (id: number) => {
 export const getMediaFromYoutubeById = async (id: number):Promise<YoutubeMedia> => {
     'use server'
     try {
-        return await db.select()
+        const [fetchedYoutubeMedia] = await db.select()
             .from(youtubeMedia)
-            .where(eq(media.youtubeId, id))
+            .where(eq(youtubeMedia.id, id))
             .limit(1)
+        return fetchedYoutubeMedia 
     } catch (error) {
         console.error(`Failed to fetch media from youtube by Id :${id}`, error)
         throw new Error(`Failed to fetch media from youtube`)
@@ -116,10 +118,11 @@ export const getMediaFromYoutubeById = async (id: number):Promise<YoutubeMedia> 
 export const getMediaFromRedditById = async (id: number) => {
     'use server'
     try {
-        return await db.select()
+        const [fetchedRedditMedia] = await db.select()
             .from(redditMedia)
-            .where(eq(media.redditId, id))
+            .where(eq(redditMedia.id, id))
             .limit(1);
+            return fetchedRedditMedia;
     } catch (error) {
         console.error('Detailed fetch error:', error);
         throw new Error(`Failed to fetch media from twitter: ${error instanceof Error ? error.message : 'Unknown error'}`);
