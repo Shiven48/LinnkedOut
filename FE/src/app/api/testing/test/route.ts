@@ -52,3 +52,25 @@
 //         );
 //     }
 // }
+
+import { redis } from '@/server/db/redis';
+import { RedditExternalSchedular } from '@/services/Platform/reddit/RedditExternalScheduler';
+import { NextResponse } from 'next/server';
+
+export async function GET() {
+    try{
+        const scheduler = new RedditExternalSchedular(redis);
+        await scheduler.refreshToken();
+        
+        const token = await scheduler.getValidToken();
+        console.log('Fetched token from Redis:', token);
+        
+        return NextResponse.json({ message: token, status: 200}) 
+    } catch(error:any) {
+        console.error("Caught error in GET handler:", error.message);
+        return new NextResponse(
+            JSON.stringify({ message: 'Error fetching videos', error: error.message }),
+            { status: 500, headers: { 'Content-Type': 'application/json' } }
+        );
+    }
+}

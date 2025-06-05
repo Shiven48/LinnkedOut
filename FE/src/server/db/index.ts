@@ -15,11 +15,8 @@ if(!process.env.LOCAL_PG_DATABASE){
     throw new Error('DATABASE_URL is missing');
 }
 
-const LocalDb:string = process.env.LOCAL_PG_DATABASE!
-const RemoteDb:string = process.env.REMOTE_DATABASE_URL!
-
-const localClient = postgres(LocalDb);
-const remoteClient = neon(RemoteDb);
+const localClient = postgres(process.env.LOCAL_PG_DATABASE!);
+const remoteClient = neon(process.env.REMOTE_DATABASE_URL!);
 
 const isProduction = process.env.NODE_ENV === "production";
 let db: any;

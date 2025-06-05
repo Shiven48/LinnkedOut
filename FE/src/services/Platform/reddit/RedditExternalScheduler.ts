@@ -3,12 +3,12 @@ import { RedditBearerApiEndpointResponse } from '@/services/common/types';
 import { utility } from '@/services/common/utils';
 import Redis from 'ioredis'
 
-export class RedditEcternalSchedular {
+export class RedditExternalSchedular {
     private redis: Redis;
     private tokenKey = 'reddit:bearer_token';
 
-    constructor(redisConfig?: any) {
-        this.redis = new Redis(redisConfig);
+    constructor(redisInstance: Redis) {
+        this.redis = redisInstance
     }
 
     // This method would be called by external scheduler (cron, AWS EventBridge, etc.)
