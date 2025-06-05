@@ -1,6 +1,6 @@
 import { getMediaFromRedditById, getMediaFromYoutubeById } from "@/server/functions/media"
 import { NextResponse } from "next/server"
-import { RedditMedia, YoutubeMedia } from "@/../../types";
+import { RedditMedia, YoutubeMedia } from '@/services/common/types';;
 
 // Union type for either media type
 type YoutubeOrReddit = YoutubeMedia | RedditMedia;
@@ -32,7 +32,9 @@ export async function GET(
     }
     
     const { platform, id } = params;
-    
+    console.log(`Platform: ${platform}`)
+    console.log(`Id: ${id}`)
+
     if (!platform || !id) {
         return NextResponse.json(
             { message: 'Error fetching videos', error: 'Missing platform or id parameters' },
@@ -40,22 +42,24 @@ export async function GET(
         );
     }
 
-    const videoId = Number(parseInt(id));
-    console.log(`Processing request for platform: ${platform}, id: ${videoId}`);
+    const mediaId = Number(parseInt(id));
+    console.log(`Processing request for platform: ${platform}, id: ${mediaId}`);
     const trimmedPlatform = platform.toLowerCase().trim();
     
     try {
     let fetchedVideo: YoutubeOrReddit | null = null;
        
     if (trimmedPlatform === 'youtube') {
-        fetchedVideo = await getMediaFromYoutubeById(videoId);
+        fetchedVideo = await getMediaFromYoutubeById(mediaId);
         if (fetchedVideo && isYoutubeMedia(fetchedVideo)) {
             console.log(`Successfully retrieved YouTube video: ${fetchedVideo.id}`);
             return NextResponse.json({body: fetchedVideo}, { status: 200 });
         }
     }
     else if (trimmedPlatform === 'reddit') {
-        fetchedVideo = await getMediaFromRedditById(videoId);
+        console.log('You are here hitting shitting on mediaId')
+        fetchedVideo = await getMediaFromRedditById(mediaId);
+        console.log(JSON.stringify(fetchedVideo,null,2))
         if(fetchedVideo && isRedditMedia(fetchedVideo)){
             console.log(`Successfully retrieved Reddit video: ${fetchedVideo.id}`);
             return NextResponse.json({body: fetchedVideo}, { status: 200 });
@@ -63,7 +67,7 @@ export async function GET(
     }
    
     if (!fetchedVideo) {
-        throw new Error(`Cannot get video from ${trimmedPlatform} with ID ${videoId}!`);
+        throw new Error(`Cannot get video from ${trimmedPlatform} with ID ${mediaId}!`);
     }
     throw new Error(`Video doesnt belong to youtube nor reddit!`);
 } catch (error) {

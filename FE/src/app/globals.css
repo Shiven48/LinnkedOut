@@ -90,7 +90,7 @@ body {
 }
 /* New golden glass card component */
 .card-green-glass {
-  background-color: hsla(63, 18%, 51%, 0.242);
+  /* background-color: hsla(63, 18%, 51%, 0.242); */
   border: 3px solid hsla(62, 100%, 50%, 0.2);
   border-radius: 13px;
   box-shadow: 0px -3px 4px 0px var(--textDim) inset,
@@ -107,6 +107,97 @@ body {
   border-width: 3px;
   border-color: var(--col-dark-golden);
   transform: translateY(-3px);
+}
+
+@media (max-width: 600px) {
+  .smallScreenCard {
+    @apply flex flex-col w-[95%];
+  }  
+  
+  .smallScreenFont {
+    @apply text-medium;
+  }
+  
+  .smallScreenPlatform {
+    @apply flex flex-col overflow-y-auto;
+  }
+  
+  .smallFirstHalfComponents {
+    @apply flex flex-col ml-2 w-full;
+    /* Ensure this appears above suggested videos */
+    position: relative;
+    z-index: 100;
+  }
+  
+  .smallSecondHalfComponents {
+    @apply w-full ml-2;
+    /* Lower z-index for suggested videos */
+  }
+  
+  .smallVideoTitle {
+    @apply text-large line-clamp-1 text-wrap;
+  }
+  
+  .smallTitleAndLink {
+    @apply flex gap-2 mt-8;
+    /* Force title and link container above everything */
+    position: relative;
+    z-index: 999;
+    background-color: inherit;
+    padding: 8px 0;
+  }
+  
+  .smallDescription {
+    @apply hidden;
+  }
+  
+  .smallSideVideo {
+    @apply mt-0;
+    /* Ensure suggested videos stay below */
+    position: relative;
+    z-index: 1;
+  }
+  
+  .smallYoutubeVideoContainer {
+    @apply mt-4 w-full;
+  }
+  
+  .smallYoutubeVideo {
+    @apply h-[300px];
+  }
+  
+  .smallPostLink {
+    @apply w-24 flex justify-center;
+    /* Force YouTube button above everything */
+    position: relative;
+    z-index: 999;
+  }
+  
+  .smallScreenSidebar {
+    @apply hidden;
+  }
+  
+  .sidebarNav {
+    @apply block;
+  }
+}
+
+/* Additional fix for all screen sizes */
+.metadata-container {
+  position: relative;
+  z-index: 1000;
+  background-color: inherit;
+}
+
+.suggested-videos-container {
+  position: relative;
+  z-index: 1;
+}
+
+@media (min-width: 600px) and (max-width: 900px) {
+  .mediumScreenCard {
+    @apply flex w-[40%]; 
+  }
 }
 
 .span-prop {
@@ -144,4 +235,15 @@ body {
 
 .button-hover:hover {
   @apply text-dark-golden
+}
+
+.MainHeaderTitle {
+  @apply text-dark-golden font-sans flex relative top-5 justify-center;
+}
+
+#youtube-player {
+  width: 100% !important;
+  aspect-ratio: 16/9 !important;
+  height: auto !important;
+  min-height: 300px !important;
 }

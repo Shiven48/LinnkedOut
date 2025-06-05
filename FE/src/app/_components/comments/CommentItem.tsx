@@ -1,5 +1,5 @@
-import { isValidElement, useState } from 'react';
-import { CommentData } from '../../../../types';
+import { useState } from 'react';
+import { CommentData } from '@/services/common/types';
 import CommentList from './CommentList';
 import { usePlayingState } from '../../../../hooks/useIsPlaying';
 

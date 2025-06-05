@@ -1,4 +1,4 @@
-import { CommentData } from "../../../../types";
+import { CommentData } from '@/services/common/types';
 import CommentList from "./CommentList";
 
 interface CommentsDisplayProps {
@@ -7,7 +7,7 @@ interface CommentsDisplayProps {
 
 const CommentsDisplay: React.FC<CommentsDisplayProps> = ({ comments }) => {
   return (
-    <div className="max-h-[200px] mt-10 rounded-lg">
+    <div className="max-h-[200px] mt-2 rounded-lg">
       <CommentList comments={comments} />
     </div>
   );

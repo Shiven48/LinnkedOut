@@ -1,26 +1,38 @@
 import { db } from '../db/index'
-import { media, redditMedia, youtubeMedia, contentVectors } from '../db/schema'
-import { Media, RedditMedia, YoutubeMedia } from '../../../types';
-import { eq, sql } from 'drizzle-orm';
+import { media, redditMedia, youtubeMedia } from '../db/schema'
+import { Media, RedditMedia, YoutubeMedia } from '@/services/common/types';
+import { count, eq, sql } from 'drizzle-orm';
+import { MEDIA_PER_PAGE } from '@/services/common/constants';
 import * as schema from "../db/schema"
 
-// ORM layer
-export const getAllMedia = async (): Promise<Media[]> => {
-    'use server'
+export const getAllMedia = async (offset: number): Promise<Media[]> => {
     try {
         return await db.select()
             .from(schema.media)
             .orderBy(schema.media.createdAt)
-            .limit(12)
-            .execute();
+            .limit(MEDIA_PER_PAGE)
+            .offset(offset);
     } catch (error: any) {
         console.error('Failed to fetch media:', error);
         throw error;
     }
 }
 
+export const getMediaCount = async () => {
+    try {
+        const [ { mediaCount } ] = await db.select({
+            mediaCount: count()
+        })
+        .from(media);
+        return mediaCount;
+    } catch(error: any){
+        console.error('Failed to fetch count of medias:', error);
+        throw error;
+    }
+}
+
 export const insertMedia = async (generalisedMedia: Media): Promise<{ id: number }> => {
-    'use server'
+    // // 'use server'
     if (generalisedMedia.durationMs !== undefined && !Number.isInteger(generalisedMedia.durationMs)) {
         throw new Error('durationMs must be an integer');
     }
@@ -51,7 +63,7 @@ export const insertMedia = async (generalisedMedia: Media): Promise<{ id: number
 }
 
 export const insertYoutubeMedia = async (ytMedia: YoutubeMedia): Promise<{ id: number }> => {
-    'use server'
+    // 'use server'
     try {
         const [ReturnedMedia] = await db.insert(youtubeMedia)
             .values([{
@@ -68,7 +80,7 @@ export const insertYoutubeMedia = async (ytMedia: YoutubeMedia): Promise<{ id: n
 }
 
 export const insertRedditMedia = async (reddit: RedditMedia): Promise<{ id: number }> => {
-    'use server'
+    // 'use server'
     try {
         const [ReturnedMedia] = await db.insert(redditMedia)
             .values([{
@@ -86,7 +98,7 @@ export const insertRedditMedia = async (reddit: RedditMedia): Promise<{ id: numb
 }
 
 export const getFromMediaById = async (id: number):Promise<Media> => {
-    'use server'
+    // 'use server'
     try {
         const [fetchedVideo] = await db.select()
             .from(media)
@@ -101,7 +113,7 @@ export const getFromMediaById = async (id: number):Promise<Media> => {
 
 // Change media id to youtube_id
 export const getMediaFromYoutubeById = async (id: number):Promise<YoutubeMedia> => {
-    'use server'
+    // 'use server'
     try {
         const [fetchedYoutubeMedia] = await db.select()
             .from(youtubeMedia)
@@ -115,54 +127,82 @@ export const getMediaFromYoutubeById = async (id: number):Promise<YoutubeMedia> 
 }
 
 // Change media id to reddit_id
-export const getMediaFromRedditById = async (id: number) => {
-    'use server'
+export const getMediaFromRedditById = async (id: number):Promise<RedditMedia | null> => {
+    // 'use server'
     try {
-        const [fetchedRedditMedia] = await db.select()
+        const [fetchedRedditMedia]:RedditMedia[] = await db.select()
             .from(redditMedia)
             .where(eq(redditMedia.id, id))
-            .limit(1);
-            return fetchedRedditMedia;
+            .limit(1)
+            return fetchedRedditMedia ?? null;
     } catch (error) {
         console.error('Detailed fetch error:', error);
-        throw new Error(`Failed to fetch media from twitter: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        throw new Error(`Failed to fetch media from reddit: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
 }
 
-export const getAllMediaFromYoutube = async():Promise<Media[]> => {
-    'use server'
+
+export const getAllMediaWherePlatformYoutube = async(offset: number):Promise<Media[]> => {
     try {
         return await db.select()
             .from(media)
             .where(eq(media.platform,'youtube'))
-            .limit(12);
+            .limit(MEDIA_PER_PAGE)
+            .offset(offset);
     } catch (error) {
         console.error('Detailed fetch error:', error);
         throw new Error(`Failed to fetch media from Youtube: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
 }
 
-export const getAllMediaFromReddit = async():Promise<Media[]> => {
-    'use server'
+export const getAllMediaWherePlatformReddit = async(offset: number):Promise<Media[]> => {
+    // 'use server'
     try {
         return await db.select()
             .from(media)
             .where(eq(media.platform, 'reddit'))
-            .limit(12)
+            .limit(MEDIA_PER_PAGE)
+            .offset(offset);
     } catch (error) {
         console.error('Detailed fetch error:', error);
         throw new Error(`Failed to fetch media from Reddit: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
 }
 
+export const getYoutubeMediaCount = async():Promise<number> => {
+    try{
+        const [ { ytMediaCount } ] = await db
+            .select({ytMediaCount: count() })
+            .from(media)
+            .where(eq(media.platform, 'youtube'));
+        return ytMediaCount;
+    } catch(error:any){
+        console.error('Detailed fetch error:', error);
+        throw new Error(`Failed to fetch media count of Youtube: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+}
+
+export const getRedditMediaCount = async():Promise<number> => {
+    try{
+        const [ { rdtMediaCount } ] = await db
+            .select({rdtMediaCount: count() })
+            .from(media)
+            .where(eq(media.platform, 'reddit'));
+        return rdtMediaCount;
+    } catch(error:any){
+        console.error('Detailed fetch error:', error);
+        throw new Error(`Failed to fetch media count of Reddit: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+}
+
 // This is for search suggestion(SearchBar)
 export const getMediaFromQuery = async (query: string): Promise<Media[]> => {
-    'use server'
+    // 'use server'
     try {
         return await db.select()
             .from(media)
             .where(sql`${media.title} ILIKE ${'%' + query + '%'}`)
-            .limit(10)
+            .limit(MEDIA_PER_PAGE)
     } catch (error) {
         console.error('Something went wrong while querying database', error)
         throw new Error(`Failed to query database: ${error instanceof Error ? error.message : "Unknown Error Occured"}`)
@@ -186,16 +226,30 @@ export const insertEmbeddings = async (content: string, contentEmbeddings: numbe
     }
 };
 
-export const getMediaByCategory = async (category:string): Promise<Media[]> => {
-    'use server'
+export const getMediaByCategory = async (category:string, offset:number): Promise<Media[]> => {
     try {
         return await db.select()
             .from(media)
             .where(eq(media.category, category))
-            .limit(10)
+            .limit(MEDIA_PER_PAGE)
+            .offset(offset);
     } catch (error) {
         console.error('Detailed fetch error:', error);
-        throw new Error(`Failed to fetch media from category: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        throw new Error(`Failed to fetch media from given category: ${category}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+}
+
+export const getCategoryCount = async (category: string): Promise<number> => {
+    try{
+        const [ { categoryCount } ] = await db
+            .select({categoryCount: count() })
+            .from(media)
+            .where(eq(media.category, category))
+            .limit(MEDIA_PER_PAGE)
+        return categoryCount;
+    } catch(error){
+        console.error('Detailed fetch error:', error);
+        throw new Error(`Failed to fetch media count of given category ${category}: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
 }
 

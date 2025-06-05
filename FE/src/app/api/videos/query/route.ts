@@ -1,6 +1,5 @@
-import { media } from "@/server/db";
-import { NextRequest, NextResponse } from "next/server";
-import { Media } from "../../../../../types";
+import { NextResponse } from "next/server";
+import { Media } from '@/services/common/types';;
 import { getMediaFromQuery } from "@/server/functions/media";
 
 export async function GET(

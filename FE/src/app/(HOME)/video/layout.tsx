@@ -1,10 +1,7 @@
 'use client'
 import { ReactNode } from "react";
-import AppSidebar from "@/app/_components/Suidebar"
-import VideoNavBar from "@/app/_components/VideoNavbar";
+import AppSidebar from "@/app/_components/shared/Suidebar"
 import "@/app/globals.css"
-import { usePathname } from "next/navigation";
-// import { usePlayingState } from "../../../hooks/useIsPlaying";
 
 export default function Layout({ children }: { children: ReactNode }) {
     return (
