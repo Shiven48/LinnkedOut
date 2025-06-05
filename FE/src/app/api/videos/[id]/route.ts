@@ -1,6 +1,6 @@
 import { getFromMediaById } from '@/server/functions/media'
 import { NextRequest, NextResponse } from "next/server"
-import { Media } from '../../../../../types';
+import { Media } from '@/services/common/types';;
 
 export async function GET(
     request: NextRequest,

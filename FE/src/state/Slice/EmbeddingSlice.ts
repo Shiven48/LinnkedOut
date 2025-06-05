@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { AppState, videoMetaData } from "../../../types";
+import { AppState, videoMetaData } from '@/services/common/types';
 
 const initialAppState:AppState = {
     embeddings: {},

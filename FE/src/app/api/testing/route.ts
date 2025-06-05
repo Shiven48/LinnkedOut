@@ -1,16 +1,19 @@
-import { Helper } from '@/lib/helper_data';
-import { NextRequest, NextResponse } from 'next/server';
-import { fetchVideoFromRedditURL } from '@/services/redditService';
-import { fetchVideoFromYoutubeURL } from '@/services/youtubeService'
+import { Resources } from '@/services/common/constants';
+import { NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
+import YoutubeOrchestrator from '@/services/orchestrators/YoutubeOrchestrator'
+import RedditOrchestrator from '@/services/orchestrators/RedditOrchestrator';
 
 export async function GET(
-    req: NextRequest
 ) {
     try {
-        const mappedVideo = await fetchVideoFromYoutubeURL(Helper.Resources()[13].link)        // ->    For Youtube
-        // const mappedVideo = await fetchVideoFromRedditURL(Helper.Resources()[7].link)             // ->    For Reddit
+        const youtubeOrchestrator = new YoutubeOrchestrator(); 
+        const redditOrchestrator = new RedditOrchestrator();
+
+        // const mappedVideo = await youtubeOrchestrator.mainYoutubeOrchestrator(Resources()[13].link)
+        const mappedVideo = await redditOrchestrator.mainRedditOrchestrator(Resources()[3].link)
         revalidatePath('/'); 
+        
         return NextResponse.json({ body:mappedVideo, status: 200});       
     } catch (error: any) {
         console.error("Caught error in GET handler:", error.message);

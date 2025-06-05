@@ -1,4 +1,4 @@
-import { CommentData } from '../../../../types';
+import { CommentData } from '@/services/common/types';
 import CommentItem from './CommentItem';
 
 interface CommentListProps {
@@ -7,7 +7,7 @@ interface CommentListProps {
 
 const CommentList: React.FC<CommentListProps> = ({ comments }) => {
   return (
-    <div className="space-y-4 ">
+    <div className="space-y-4">
       {comments.map((comment, index) => (
         <CommentItem key={index} comment={comment} />
       ))}

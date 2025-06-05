@@ -10,8 +10,8 @@ export default function Switch() {
     }
 
     return(
-        <div className={`w-14 h-4 brightness-55 border border-white rounded-xl justify-center
-            ${isPlaying ? 'bg-dark-golden' : 'bg-dark'}
+        <div className={`w-14 h-4 smallScreenSwitch brightness-55 border border-white rounded-xl justify-center
+            ${isPlaying ? 'bg-golden' : 'bg-dark'}
         `}>
             <div 
                 className={`flex relative bottom-1 z-10 w-6 h-6 border rounded-full hover:cursor-pointer transition-transform duration-300 place-content-center
