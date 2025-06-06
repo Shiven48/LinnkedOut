@@ -1,16 +1,19 @@
-import { PromptTemplate } from "@langchain/core/prompts";
+import { ChatPromptTemplate, PromptTemplate } from "@langchain/core/prompts";
 import { ChatGroq } from "@langchain/groq";
 import { createStuffDocumentsChain } from "langchain/chains/combine_documents";
 import { Document } from "langchain/document";
 import { StreamChunk } from '@/services/common/types';
+import { Summary_Template, Tags_Template } from "../common/constants";
+import { CommaSeparatedListOutputParser, ListOutputParser, StringOutputParser, StructuredOutputParser } from "@langchain/core/output_parsers";
+import { RunnableSequence } from "@langchain/core/runnables";
 
 export class SummaryService {
   private llm: ChatGroq;
-  
+
   constructor() {
     this.llm = this.initializeModel();
   }
-  
+
   private initializeModel(): ChatGroq {
     return new ChatGroq({
       model: 'llama-3.3-70b-versatile',
@@ -20,9 +23,9 @@ export class SummaryService {
     });
   }
 
-  public createTemplate(): PromptTemplate {
+  public createTemplate(template: string): PromptTemplate {
     return PromptTemplate.fromTemplate(
-      "Summarize the main points or the main theme of the whole document such that it can be used as notes for revision of concept maintaining all the scientific concepts and terms and explaining and adding the core idea in summary: {context}"
+      template
     );
   }
 
@@ -32,15 +35,15 @@ export class SummaryService {
       prompt,
     });
   }
-  
+
   public async generateSummary(text: string): Promise<Response> {
     const docs: Document[] = [new Document({ pageContent: text })];
-    const prompt = this.createTemplate();
+    const prompt = this.createTemplate(Summary_Template);
     const chain = await this.createChain(prompt);
-    
+
     const stream = new ReadableStream<Uint8Array>({
       async start(controller: ReadableStreamDefaultController<Uint8Array>) {
-        const asyncIterable:AsyncIterable<StreamChunk> = await chain.stream({ context: docs });
+        const asyncIterable: AsyncIterable<StreamChunk> = await chain.stream({ context: docs });
         for await (const chunk of asyncIterable) {
           const textChunk: string =
             typeof chunk === 'string'
@@ -53,10 +56,25 @@ export class SummaryService {
     });
 
     return new Response(stream, {
-        headers: {
-          'Content-Type': 'text/plain',
-          'Cache-Control': 'no-cache',
-        },
-      });
+      headers: {
+        'Content-Type': 'text/plain',
+        'Cache-Control': 'no-cache',
+      },
+    });
+  }
+
+  public async generateTags(prompt: string): Promise<string[]> {
+    const parser = new CommaSeparatedListOutputParser();
+    const template = this.createTemplate(Tags_Template)
+
+    const chain = RunnableSequence.from([
+      (input: { data: string }) => ({ data: input }),
+      template,
+      this.llm,
+      parser
+    ])
+    
+    const output: string[] = await chain.invoke({ data: prompt })
+    return output;
   }
 }

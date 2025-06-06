@@ -143,6 +143,7 @@ export interface Media {
     durationMs: number;                             
     postId: string;                                  // The id of the post on that platform
     category?: string,
+    tags?: string[],
     redditId?: number | null, 
     youtubeId?: number | null,
     embeddingId?: number | null

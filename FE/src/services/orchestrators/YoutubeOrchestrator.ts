@@ -41,7 +41,8 @@ export default class YoutubeOrchestrator {
             const youtubeData = await this.youtubeMetadataService.extractYoutubeData(fetchedYoutubeMetadata);
             const transcripts:TranscriptResponse[] = await this.youtubeTranscriptionService.fetchTranscript(videoId);
             youtubeData.englishCaptions = this.youtubeTranscriptionService.extractEnglishCaptions(transcripts);
-        
+            mediaData.tags = await this.youtubeMetadataService.extractTags(fetchedYoutubeMetadata, mediaData, youtubeData);
+
             const embeddingsId:number = await this.embeddingStorageOrchestrator(mediaData, youtubeData)
             mediaData.embeddingId = embeddingsId;
             const metaDataId:number = await this.youtubeRepository.saveYoutubeMediaData(mediaData, youtubeData);

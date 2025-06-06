@@ -75,27 +75,4 @@ export class ProcessingService {
       return filteredTokens.join(' ');
   }
     
-  // private cleanText(text:string):string {
-    //   let cleaned = text.replace(/[-_=]{2,}/g, '');
-    //   cleaned = cleaned.replace(/https?:\/\/\S+/g, '');
-    //   cleaned = cleaned.replace(/\d+:\d+/g, '');
-    //   cleaned = cleaned.replace(/[^\w\s'-]/g, ' ');
-    //   cleaned = cleaned.replace(/\b(Subscribe|Follow|Learn more|LinkedIn|Twitter|Facebook|Instagram|visit|YouTube|contact|gmail)\b/gi, '');
-    //   cleaned = cleaned.toLowerCase();
-    //   cleaned = cleaned.replace(/\n+/g, ' ');
-    //   cleaned = cleaned.replace(/\s+/g, ' ');
-
-    //   const words = cleaned.split(/\s+/);
-    //   const uniqueWords: string[] = [];
-    //   const seenWords = new Set();
-
-    //   words.forEach(word => {
-    //     if(!seenWords.has(word) && word.trim() !== ''){
-    //       uniqueWords.push(word);
-    //       seenWords.add(word);
-    //     }
-    //   });
-
-    //   return uniqueWords.join(' ').trim();
-  // }
 }
