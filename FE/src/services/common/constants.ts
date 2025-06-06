@@ -6,6 +6,7 @@ export const SERVER_BASE_URL: string = `http://localhost:3000/`;
 export const REDDIT_BEARER_TOKEN_ENDPOINT: string = `https://www.reddit.com/api/v1/access_token`
 export const DESKTOPSIZE:number = 1080;
 export const MEDIA_PER_PAGE:number = 9;
+export const Summary_Template:string = "Summarize the main points or the main theme of the whole document such that it can be used as notes for revision of concept maintaining all the scientific concepts and terms and explaining and adding the core idea in summary: {context}";
 
 export const categories = (): Category[] => {
     const categories: Category[] = [
@@ -140,3 +141,26 @@ export const categoryDefinitions: Record<string, string> = {
     "Health & Wellness": "Evidence-based content on maintaining optimal physical and mental condition to support professional performance and personal wellbeing. This includes cognitive performance optimization, stress management techniques, burnout prevention strategies, workplace ergonomics, exercise science for productivity, nutrition for cognitive function, sleep optimization for performance, recovery methodologies, mental health maintenance in professional settings, work-life balance strategies, energy management frameworks, cognitive load regulation, physical wellbeing for knowledge workers, resilience building practices, preventative health approaches, mindfulness for professional contexts, physiological optimization, psychological sustainability practices, attention restoration techniques, and evidence-based wellness interventions.",
     "Career Growth": "Strategic content on professional advancement, career trajectory management, and development of capabilities that enhance occupational progression. This includes professional advancement strategies, career path planning, leadership skill development, expertise cultivation methodology, professional network building, strategic skill acquisition, personal brand development, promotion qualification strategies, career transition frameworks, specialized expertise development, professional value proposition enhancement, strategic credential acquisition, career capital investment approaches, professional opportunity identification, career differentiation strategies, executive presence development, advancement barrier navigation, professional relevance maintenance, succession planning approaches, and systematic career progression methodologies."
 };
+
+export const Tags_Template:string = `You are an intelligent tagging agent. Your job is to generate useful, high-level tags from the given text content. These tags should:
+      - Be concise and general (e.g. "quantum computing", "technology", "career growth", "mindset").
+      - Help in categorizing the content into one or more of the following broader productivity-focused categories:
+        - Learning & Skills
+        - Mindset & Focus
+        - Decision Making
+        - Industry Trends
+        - Health & Wellness
+        - Career Growth
+
+        Your response must be a comma-separated list of **10 relevant tags** that:
+        1. Reflect the key ideas or topics in the content.
+        2. Can be used to organize similar content in the future.
+        3. Are not overly specific (avoid full sentences or hashtags).
+
+        Content:
+        """
+        {data}
+        """
+
+        Now generate 10 reliable and general-purpose tags based on the content above.
+        Return only the tags, in a comma-separated format.`
