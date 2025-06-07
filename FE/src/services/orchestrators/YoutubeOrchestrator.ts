@@ -1,4 +1,3 @@
-import { TranscriptResponse } from "youtube-transcript";
 import { YoutubeAPIService } from "../Platform/youtube/YoutubeAPIService";
 import { YoutubeMetadataSevice } from "../Platform/youtube/YoutubeMetadataService";
 import { YoutubeTranscriptService } from "../Platform/youtube/YoutubeTranscriptionService";
@@ -39,8 +38,7 @@ export default class YoutubeOrchestrator {
 
             const mediaData = this.youtubeMetadataService.extractMediaData(fetchedYoutubeMetadata);
             const youtubeData = await this.youtubeMetadataService.extractYoutubeData(fetchedYoutubeMetadata);
-            const transcripts:TranscriptResponse[] = await this.youtubeTranscriptionService.fetchTranscript(videoId);
-            youtubeData.englishCaptions = this.youtubeTranscriptionService.extractEnglishCaptions(transcripts);
+            youtubeData.englishCaptions = await this.youtubeTranscriptionService.fetchTranscript(videoId, mediaData.title);
             mediaData.tags = await this.youtubeMetadataService.extractTags(fetchedYoutubeMetadata, mediaData, youtubeData);
 
             const embeddingsId:number = await this.embeddingStorageOrchestrator(mediaData, youtubeData)

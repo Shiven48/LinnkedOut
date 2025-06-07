@@ -164,3 +164,5 @@ export const Tags_Template:string = `You are an intelligent tagging agent. Your 
 
         Now generate 10 reliable and general-purpose tags based on the content above.
         Return only the tags, in a comma-separated format.`
+
+export const Audio_Output_Directory:string =`C://Users/Sheve/Desktop/crazy/linnkedOut_cloned/FE/audio`
