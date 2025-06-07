@@ -1,11 +1,8 @@
-import { Audio_Output_Directory } from '@/services/common/constants';
 import { Media, YoutubeMedia } from '@/services/common/types';
 import { YoutubeAPIService } from '@/services/Platform/youtube/YoutubeAPIService';
 import { YoutubeMetadataSevice } from '@/services/Platform/youtube/YoutubeMetadataService';
 import { YoutubeTranscriptService } from '@/services/Platform/youtube/YoutubeTranscriptionService';
 import { NextResponse } from 'next/server';
-import path from 'path';
-import { TranscriptResponse } from 'youtube-transcript';
 
 // export async function GET() {
 //     try{
