@@ -13,10 +13,10 @@
 - [X] Handle the description logo to make it hidden
 - [X] Solve the search bar issue on /search page
 - [X] generate summary from the transcripts of the video from its metadata using Langchain
+- [X] Find a way to extend the expiration period of reddit's access token of reddit api 
 
 - [] The homepage should have the recommendations from ai embeddings based on previously watched context
 - [] The previous clicked videos will be showed on sidebar
 - [] The video should play on Hover
-- []  Find a way to extend the expiration period of reddit's access token of reddit api 
 
 - [] generate weekly reports

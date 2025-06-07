@@ -1,6 +1,11 @@
+import { Audio_Output_Directory } from '@/services/common/constants';
+import { Media, YoutubeMedia } from '@/services/common/types';
 import { YoutubeAPIService } from '@/services/Platform/youtube/YoutubeAPIService';
 import { YoutubeMetadataSevice } from '@/services/Platform/youtube/YoutubeMetadataService';
+import { YoutubeTranscriptService } from '@/services/Platform/youtube/YoutubeTranscriptionService';
 import { NextResponse } from 'next/server';
+import path from 'path';
+import { TranscriptResponse } from 'youtube-transcript';
 
 // export async function GET() {
 //     try{
@@ -20,23 +25,76 @@ import { NextResponse } from 'next/server';
 //     }
 // }
 
+// for Reddit tags
+// export async function GET() {
+//     try{
+//         const youtubeAPIService = new YoutubeAPIService();
+//         const youtubeMetadataService = new YoutubeMetadataSevice();
+        
+//         const link = 'https://youtu.be/Ko6yct5To40?si=ZTZtJUZGpJ4_Ksu7'; 
+//         const videoId = youtubeAPIService.parseVideoId(link);
+//         const fetchedYoutubeMetadata = await youtubeAPIService.fetchVideoMetadata(videoId);
+//         const mediaData = youtubeMetadataService.extractMediaData(fetchedYoutubeMetadata);
+//         const youtubeData = await youtubeMetadataService.extractYoutubeData(fetchedYoutubeMetadata);
+//         mediaData.tags = await youtubeMetadataService.extractTags(fetchedYoutubeMetadata, mediaData, youtubeData);
+//         return NextResponse.json({body: { mediaData, youtubeData }, status: 200})
+//     } catch(error:any) {
+//         console.error("Caught error in GET handler:", error.message);
+//         return new NextResponse(
+//             JSON.stringify({ message: 'Error fetching videos', error: error.message }),
+//             { status: 500, headers: { 'Content-Type': 'application/json' } }
+//         );
+//     }
+// }
+
+// For reddit tags
+// export async function GET() {
+//     try{
+//         const redditAPIService = new RedditAPIService();
+        
+//         const link = 'https://www.reddit.com/r/ShinChan/comments/1j46wnx/what_is_this/?utm_source=share&utm_medium=mweb3x&utm_name=post_embed&utm_term=1&utm_content=1'; 
+//         const videoId = redditAPIService.parseRedditUrlForId(link);
+//         const subreddit = redditAPIService.parseRedditUrlForSubreddit(link);
+//         const fetchedRedditMetadata = await redditAPIService.fetchVideoMetadata(subreddit, videoId);
+
+//         // const mediaData = youtubeMetadataService.extractMediaData(fetchedYoutubeMetadata);
+//         // const youtubeData = await youtubeMetadataService.extractYoutubeData(fetchedYoutubeMetadata);
+//         // mediaData.tags = await youtubeMetadataService.extractTags(fetchedYoutubeMetadata, mediaData, youtubeData);
+//         return NextResponse.json({body: fetchedRedditMetadata, status: 200})
+//     } catch(error:any) {
+//         console.error("Caught error in GET handler:", error.message);
+//         return new NextResponse(
+//             JSON.stringify({ message: 'Error fetching videos', error: error.message }),
+//             { status: 500, headers: { 'Content-Type': 'application/json' } }
+//         );
+//     }
+// }
+
+// For captions
 export async function GET() {
     try{
-        const youtubeAPIService = new YoutubeAPIService();
-        const youtubeMetadataService = new YoutubeMetadataSevice();
-        
-        const link = 'https://youtu.be/Ko6yct5To40?si=ZTZtJUZGpJ4_Ksu7'; 
-        const videoId = youtubeAPIService.parseVideoId(link);
-        const fetchedYoutubeMetadata = await youtubeAPIService.fetchVideoMetadata(videoId);
-        const mediaData = youtubeMetadataService.extractMediaData(fetchedYoutubeMetadata);
-        const youtubeData = await youtubeMetadataService.extractYoutubeData(fetchedYoutubeMetadata);
-        mediaData.tags = await youtubeMetadataService.extractTags(fetchedYoutubeMetadata, mediaData, youtubeData);
+        const link = `https://youtube.com/shorts/I22DE7Hw8fY?si=pEZdvhEPVJ22_eSP`;
+        const { mediaData, youtubeData } = await tp(link);
         return NextResponse.json({body: { mediaData, youtubeData }, status: 200})
-    } catch(error:any) {
-        console.error("Caught error in GET handler:", error.message);
-        return new NextResponse(
-            JSON.stringify({ message: 'Error fetching videos', error: error.message }),
-            { status: 500, headers: { 'Content-Type': 'application/json' } }
-        );
+    } catch(error:any){
+        console.error(`Failed to transcribe the video`,error)
+        return NextResponse.json({message:`Failed to transcribe the video`, status: 500});
+    }
+}
+
+const tp = async (link:string):Promise<{mediaData: Media, youtubeData: YoutubeMedia}> => {
+    const youtubeAPIService = new YoutubeAPIService();
+    const youtubeMetadataService = new YoutubeMetadataSevice();
+    const youtubeTranscriptionService = new YoutubeTranscriptService();
+
+    const videoId = youtubeAPIService.parseVideoId(link);
+    const fetchedYoutubeMetadata = await youtubeAPIService.fetchVideoMetadata(videoId);
+    
+    const mediaData = youtubeMetadataService.extractMediaData(fetchedYoutubeMetadata);
+    const youtubeData = await youtubeMetadataService.extractYoutubeData(fetchedYoutubeMetadata);
+    youtubeData.englishCaptions = await youtubeTranscriptionService.fetchTranscript(videoId, mediaData.title);
+    return {
+        mediaData,
+        youtubeData
     }
 }
