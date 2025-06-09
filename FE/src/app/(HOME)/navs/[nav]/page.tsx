@@ -17,7 +17,7 @@ const page = async (
     };
 
     return (
-        <div className="w-screen bg-[#181818] overflow-y-auto max-h-[calc(100vh-2rem)]">
+        <div className="w-screen bg-dark scrollbar-hide overflow-y-auto max-h-[calc(100vh-2rem)]">
             { componentMap[nav] }
         </div>
     )
