@@ -11,31 +11,37 @@ export const Summary_Template:string = "Summarize the main points or the main th
 export const categories = (): Category[] => {
     const categories: Category[] = [
         {
+            id: 1,
             title: "Learning & Skills",
             url: `/categories/${encodeURIComponent('Learning & Skills')}`,
             icon: 'skill'
         },
         {
+            id: 2,
             title: "Mindset & Focus",
             url: `/categories/${encodeURIComponent('Mindset & Focus')}`,
             icon: 'mindset'
         },
         {
+            id: 3,
             title: "Descision Making",
             url: `/categories/${encodeURIComponent('Descision Making & Strategy')}`,
             icon: 'strategy'
         },
         {
+            id: 4,
             title: "Industry Trends",
             url: `/categories/${encodeURIComponent('Industry Trends')}`,
             icon: 'trends'
         },
         {
+            id: 5,
             title: "Health & Wellness",
             url: `/categories/${encodeURIComponent('Health & Wellness')}`,
             icon: 'health'
         },
         {
+            id: 6,
             title: "Career Growth",
             url: `/categories/${encodeURIComponent('Career Growth')}`,
             icon: 'growth'
@@ -63,11 +69,13 @@ export const Platforms = (): Platfrom[] => {
 export const navComponents = (): NavComponent[] => {
     const navs: NavComponent[] = [
         {
+            'id': 1, 
             'title': 'dashboard',
             'url': `/navs/dashboard`,
             'icon': 'dashboard'
         },
         {
+            'id': 2,
             'title': 'insert',
             'url': '/navs/insert',
             'icon': 'insert'
