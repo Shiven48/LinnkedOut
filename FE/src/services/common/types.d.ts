@@ -85,6 +85,7 @@
 // }
 
 export interface BaseItem{
+    id: number,
     title: string;
     url: string;
     icon: any;
