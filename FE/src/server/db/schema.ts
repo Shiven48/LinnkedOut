@@ -78,7 +78,7 @@ export const media = pgTable('media', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
   category: text("category").notNull(),
-  tags: text('tags').array().default([]),
+  // tags: text('tags').array().default([]),
   redditId: integer('reddit_id').references(() => redditMedia.id).unique(),
   youtubeId: integer('youtube_id').references(() => youtubeMedia.id).unique(),
   embeddingId: integer('embedding_id').references(() => contentVectors.id).unique(),
