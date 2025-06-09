@@ -1,11 +1,11 @@
 'use client'
+import { navComponents, SERVER_BASE_URL } from "@/services/common/constants";
+import { usePathname } from "next/navigation";
+import { useSidebarState } from "../../../../hooks/useSideBarState";
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { navComponents } from "@/services/common/constants";
-import { usePathname } from "next/navigation";
-import Image from "next/image";
 import SearchBar from "../shared/SearchBar";
-import { useSidebarState } from "../../../../hooks/useSideBarState";
+import Image from "next/image";
 
 export default function App() {
     const [activeNavComponent, setActiveNavComponent] = useState<string | null>(null);
@@ -22,7 +22,6 @@ export default function App() {
 
     return (
         <nav className="h-12 bg-dark sticky-top-0 w-full flex items-center justify-between px-4 border border-white z-10">
-
             <div className="flex items-center h-full">
                 <button
                     className={`bg-white rounded-xl w-8 h-8 absolute bg-golden border border-white transition-all duration-200 ease-in-out flex items-center justify-center hover-side`}
@@ -56,7 +55,7 @@ export default function App() {
                                 }`}
                         >
                             <Image
-                                src={`${nav.title}.svg`}
+                                src={`${SERVER_BASE_URL}/${nav.title}.svg`}
                                 width={30}
                                 height={30}
                                 alt={`${nav.title}`}

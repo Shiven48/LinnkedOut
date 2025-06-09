@@ -1,8 +1,9 @@
 'use client'
 
-import { categories, Platforms } from '@/services/common/constants';
+import { categories, Platforms, SERVER_BASE_URL } from '@/services/common/constants';
 import { Category, Platfrom } from '@/services/common/types';
 import { Plus, Link2, Hash, Sparkles, Filter, Search, X } from 'lucide-react';
+import Image from 'next/image';
 import React, { ChangeEvent, useState } from 'react';
 
 type UrlValidation = {
@@ -95,16 +96,16 @@ const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
 };
 
   return (
-    <div className="bg-gray-900 p-6">
+    <div className="p-6">
       <div className="max-w-4xl mx-auto">
 
         {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-3 mb-4">
-            <div className="p-3 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-xl">
+            <div className="p-3 bg-gradient-to-r from-golden to-dark-golden rounded-xl">
               <Plus className="w-6 h-6 text-black" />
             </div>
-            <h1 className="text-3xl font-bold text-white">Add Content</h1>
+            <h1 className="text-3xl font-bold text-gray-400">Add Post</h1>
           </div>
           <p className="text-gray-400 max-w-2xl mx-auto">
             Submit URLs from YouTube, Reddit, and other platforms to curate content for your feed. 
@@ -115,10 +116,11 @@ const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
         <div className="space-y-8">
 
           {/* URL Input Section */}
-          <div className="bg-gray-800 rounded-2xl p-6 border border-gray-700">
+          <div className="bg-darker rounded-2xl p-6 border border-gray-800 shadow-md shadow-golden">
             <div className="flex items-center gap-3 mb-4">
-              <Link2 className="w-5 h-5 text-yellow-400" />
+              <Link2 className="w-5 h-5 text-golden" />
               <h2 className="text-xl font-semibold text-white">Content URL</h2>
+              <span className='text-gray-400'> To add multiple links use *SPACE* as a seperator</span>
             </div>
             
             <div className="space-y-4">
@@ -128,7 +130,7 @@ const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
                   value={formData.url}
                   onChange={handleUrlChange}
                   placeholder="Paste your YouTube, Reddit, or any content URL here..."
-                  className="w-full bg-gray-900 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:border-yellow-400 focus:outline-none focus:ring-2 focus:ring-yellow-400/20 pr-12"
+                  className="w-full bg-[#484848] bg-opacity-50 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:border-golden focus:outline-none focus:ring-2 focus:ring-yellow-400/20 pr-12"
                 />
                 <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
                   {urlValidation.isValid === true && urlValidation.platform !== null && platformIconsObj[urlValidation.platform]}
@@ -143,14 +145,14 @@ const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
           </div>
 
           {/* Category Selection */}
-          <div className="bg-gray-800 rounded-2xl p-6 border border-gray-700">
+          <div className="bg-darker bg-opacity-40 rounded-2xl p-6 border border-gray-800 shadow-md shadow-golden">
             <div className="flex items-center gap-3 mb-4">
-              <Hash className="w-5 h-5 text-yellow-400" />
+              <Hash className="w-5 h-5 text-golden" />
               <h2 className="text-xl font-semibold text-white">Category</h2>
               <span className="text-sm text-gray-400">(Optional)</span>
             </div>
             
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-3 md:grid-cols-3 gap-3">
               {categories().map((category:Category) => (
                 <button
                   key={category.title}
@@ -158,21 +160,27 @@ const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
                   onClick={() => setFormData({ ...formData, category: category.title })}
                   className={`p-4 rounded-xl border-2 transition-all duration-200 ${
                     formData.category === category.title
-                      ? 'border-yellow-400 bg-yellow-400/10'
-                      : 'border-gray-600 hover:border-gray-500 bg-gray-900'
-                  }`}
+                      ? 'border-dark-golden bg-yellow-500/10'
+                      : 'border-gray-800 hover:border-[#484848] bg-[#484848] bg-opacity-50'
+                  } flex justify-items-center items-center`}
                 >
-                  <div className="text-2xl mb-2">{category.icon}</div>
-                  <div className="text-white font-medium text-sm">{category.title}</div>
+                  <Image 
+                    className="text-2xl mb-2 object-contain opacity-10"
+                    src={`${SERVER_BASE_URL}/${category.icon}.svg`}
+                    width={100}
+                    height={100}
+                    alt={category.title}
+                  />
+                  <div className="text-dark-golden font-medium text-sm">{category.title}</div>
                 </button>
               ))}
             </div>
           </div>
 
           {/* Custom Tags */}
-          <div className="bg-gray-800 rounded-2xl p-6 border border-gray-700">
+          <div className="bg-darker rounded-2xl p-6 border border-gray-800 shadow-md shadow-golden">
             <div className="flex items-center gap-3 mb-4">
-              <Sparkles className="w-5 h-5 text-yellow-400" />
+              <Sparkles className="w-5 h-5 text-golden" />
               <h2 className="text-xl font-semibold text-white">Custom Tags</h2>
               <span className="text-sm text-gray-400">(Optional)</span>
             </div>
@@ -185,12 +193,12 @@ const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
                   onChange={(e) => setNewTag(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
                   placeholder="Add a custom tag..."
-                  className="flex-1 bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 text-white placeholder-gray-400 focus:border-yellow-400 focus:outline-none"
+                  className="flex-1 bg-[#484848] opacity-50 border border-gray-800 rounded-large px-3 py-2 text-white placeholder-gray-400 focus:border-golden focus:outline-none"
                 />
                 <button
                   type="button"
                   onClick={addTag}
-                  className="px-4 py-2 bg-yellow-400 text-black rounded-lg hover:bg-yellow-500 transition-colors font-medium"
+                  className="px-4 py-2 bg-golden text-black rounded-large hover:bg-dark-golden transition-colors font-medium"
                 >
                   Add
                 </button>
@@ -219,9 +227,9 @@ const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
           </div>
 
           {/* AI Features */}
-          <div className="bg-gray-800 rounded-2xl p-6 border border-gray-700">
+          <div className="bg-darker rounded-2xl p-6 border border-gray-800 shadow-md shadow-golden">
             <div className="flex items-center gap-3 mb-4">
-              <Filter className="w-5 h-5 text-yellow-400" />
+              <Filter className="w-5 h-5 text-golden" />
               <h2 className="text-xl font-semibold text-white">AI Features</h2>
             </div>
             
@@ -237,12 +245,12 @@ const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
                   type="button"
                   onClick={() => setFormData({ ...formData, fetchSimilar: !formData.fetchSimilar })}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    formData.fetchSimilar ? 'bg-yellow-400' : 'bg-gray-600'
+                    formData.fetchSimilar ? 'bg-dark-golden' : 'bg-golden'
                   }`}
                 >
                   <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      formData.fetchSimilar ? 'translate-x-6' : 'translate-x-1'
+                    className={`inline-block h-4 w-4 transform rounded-full transition-transform ${
+                      formData.fetchSimilar ? 'translate-x-6 bg-darker' : 'translate-x-1 bg-white'
                     }`}
                   />
                 </button>
@@ -258,10 +266,10 @@ const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
                         key={level}
                         type="button"
                         onClick={() => setFormData({ ...formData, similarityLevel: level })}
-                        className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                        className={`px-4 py-2 rounded-large font-medium transition-colors ${
                           formData.similarityLevel === level
-                            ? 'bg-yellow-400 text-black'
-                            : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                            ? 'bg-dark-golden text-black'
+                            : 'bg-dark text-gray-300 hover:bg-[#484848]'
                         }`}
                       >
                         {level.charAt(0).toUpperCase() + level.slice(1)}
@@ -280,7 +288,7 @@ const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
             <button
               onClick={handleSubmit}
               disabled={!formData.url || urlValidation.isValid !== true || isSubmitting}
-              className="px-8 py-4 bg-gradient-to-r from-yellow-400 to-yellow-600 text-black font-bold rounded-xl hover:from-yellow-500 hover:to-yellow-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3 text-lg"
+              className="px-8 py-4 bg-golden text-black font-bold rounded-xl hover:bg-dark-golden transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-3 text-lg"
             >
               {isSubmitting ? (
                 <>
