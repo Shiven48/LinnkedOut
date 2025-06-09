@@ -10,9 +10,7 @@ import { useSidebarState } from "../../../../hooks/useSideBarState";
 export default function App() {
     const [activeNavComponent, setActiveNavComponent] = useState<string | null>(null);
     const pathname = usePathname();
-    const isOpen = useSidebarState((state) => (state.isOpen))
-    const toggle = useSidebarState((state) => state.toggle)    
-    // Fetch the navigation components only once
+    const toggle = useSidebarState((state) => state.toggle)
     const navComponent = navComponents();
 
     useEffect(() => {
@@ -44,20 +42,26 @@ export default function App() {
                 <SearchBar />
             </div>
 
-            <div className="flex items-center gap-4 bg-golden rounded-xl hover-side">
+            <div className="flex items-center gap-4">
                 {navComponent.map((nav) => (
-                    <div key={nav.title} className="h-8 flex items-center bg-gray-color rounded-xl border border-black text-black shadow shadow-white transition ease-out 0.3">
-                        <Link 
+                    <div
+                        key={nav.title}
+                        className="h-auto w-auto flex items-center justify-center rounded-xl transition-colors duration-300 ease-out"
+                    >
+                        <Link
                             href={nav.url}
-                            className={`px-2 py-1 rounded-lg
-                                hover-nav hover:text-black
-                                ${activeNavComponent === nav.title 
-                                    ? ' bg-dark-golden h-8 rounded-xl border-2 border-black shadow shadow-[#d4d450]' 
-                                    : ''
-                                }`
-                            }
+                            className={`p-[2px] rounded-large duration-300 ease-out hover:scale-110 ${activeNavComponent === nav.title
+                                    ? 'bg-[#484848] text-dark-golden border border-white'
+                                    : 'text-gray-300 hover:text-dark-golden hover:bg-[#484848] hover:bg-opacity-25 hover:rounded-large'
+                                }`}
                         >
-                            {nav.title}
+                            <Image
+                                src={`${nav.title}.svg`}
+                                width={30}
+                                height={30}
+                                alt={`${nav.title}`}
+                                className="object-contain"
+                            />
                         </Link>
                     </div>
                 ))}

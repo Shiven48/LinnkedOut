@@ -1,0 +1,26 @@
+DONE:-
+1 error in reddit specific video  - done
+no comments visible- done
+youtube by id view totally fucked - done
+Here on homepage I am giving mediaId - done
+in sidebar the image is shown as short - done
+sidebar Link href change - done
+change the platformId and mediaId places in slugs - done 
+All Reddit videos line 33 // change here - done
+The changes I did with homepage id will break code so check youtube check thoroughly (reddit is working just fine) - done
+Handle all the summarization flow and find something to do with it - done
+When I jump to home using home button I am getting no page found because the server is at 3000 and I am running it on 3001 - done
+Changed the project structure to make easy to scgregate the code based on functionalities
+Reddit video data fetch is happening on client make it a server thing - done
+segregate components that so async operations - done
+Change the project structure - done
+see how ffmpeg can be used to get the video captions if they are not present in the api - done
+
+
+TODO:- (08/06/25)
+- For now i have performed the generation of tags part but its testing is still remaining
+- Do ffmpeg part for reddit
+- Do tags part for reddit
+- Change the db and perform schema migration and then check if insert is working properly or not
+- Find a way to get more data from api or something and add it in the db to get more similar data that user needs
+- Set the Cloudflare cron job for getting the reddit token every hour and save it in cloudflare KV  
