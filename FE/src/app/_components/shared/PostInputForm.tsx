@@ -12,7 +12,7 @@ type UrlValidation = {
 } 
 
 type FormDataType = {
-    url: string,
+    url: string[],
     category: string,
     customTags: string[],
     fetchSimilar: boolean,
@@ -23,7 +23,7 @@ type FormDataType = {
 export const PostInputForm:React.FC = () => {
 
   const [formData, setFormData] = useState<FormDataType>({
-    url: '',
+    url: [],
     category: '',
     customTags: [],
     fetchSimilar: true,
@@ -31,6 +31,7 @@ export const PostInputForm:React.FC = () => {
     contentType: 'auto'
   });
   const [newTag, setNewTag] = useState<string>('');
+  const [newUrl, setNewUrl] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [urlValidation, setUrlValidation] = useState<UrlValidation>({ isValid: null, platform: null });
 
@@ -41,9 +42,9 @@ export const PostInputForm:React.FC = () => {
 
 
   const handleUrlChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const url:string = e.target.value;
-    setFormData({ ...formData, url });
+    let url = e.target.value.trim();
     validateUrl(url);
+    setNewUrl(url);
   };
 
   const validateUrl = (url: string) => {
@@ -77,6 +78,14 @@ export const PostInputForm:React.FC = () => {
     }
   };
 
+  const handleTagInput = (e: ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value;
+    if (value && !value.startsWith('#')) {
+      value = `#${value}`;
+    }
+    setNewTag(value);
+  }
+
   const removeTag = (tagToRemove: string) => {
     setFormData({
       ...formData,
@@ -84,16 +93,32 @@ export const PostInputForm:React.FC = () => {
     });
   };
 
-  // See into this more
-const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
-  e.preventDefault();
-  setIsSubmitting(true);
+  const removeUrl = (urlToRemove: string) => {
+    setFormData({
+      ...formData,
+      url: formData.url.filter(url => url !== urlToRemove)
+    });
+  };
 
-  setTimeout(() => {
-    setIsSubmitting(false);
-    alert('Content submitted successfully!');
-  }, 2000);
-};
+  const addUrl = () => {
+    if (newUrl && !formData.url.includes(newUrl)) {
+      setFormData({
+        ...formData,
+        url: [...formData.url, newUrl]
+      });
+      setNewUrl('');
+    }
+  }
+
+  const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    setTimeout(() => {
+      setIsSubmitting(false);
+      alert('Content submitted successfully!');
+    }, 2000);
+  };
 
   return (
     <div className="p-6">
@@ -120,26 +145,52 @@ const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
             <div className="flex items-center gap-3 mb-4">
               <Link2 className="w-5 h-5 text-golden" />
               <h2 className="text-xl font-semibold text-white">Content URL</h2>
-              <span className='text-gray-400'> To add multiple links use *SPACE* as a seperator</span>
+              <span className='text-medium text-red-500'> (maximum 5 Urls)</span>
             </div>
             
             <div className="space-y-4">
-              <div className="relative">
+              <div className="flex relative gap-2">
                 <input
                   type="url"
-                  value={formData.url}
-                  onChange={handleUrlChange}
+                  value={newUrl}
+                  onChange={(e) => handleUrlChange(e)}
+                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addUrl())}
                   placeholder="Paste your YouTube, Reddit, or any content URL here..."
                   className="w-full bg-[#484848] bg-opacity-50 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:border-golden focus:outline-none focus:ring-2 focus:ring-yellow-400/20 pr-12"
                 />
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                  {urlValidation.isValid === true && urlValidation.platform !== null && platformIconsObj[urlValidation.platform]}
-                  {urlValidation.isValid === false && <X className="w-5 h-5 text-red-500" />}
+                <div className="absolute right-20 top-1/2 transform -translate-y-1/2">
+                  {urlValidation.isValid === false && <X onClick={() => (setNewUrl(''))} className="w-5 h-5 text-red-500" />}
                 </div>
+                <button
+                  type="button"
+                  disabled={formData.url.length > 5 || urlValidation.isValid === false}
+                  onClick={addUrl}
+                  className="px-4 py-2 bg-golden text-black rounded-large hover:bg-dark-golden transition-colors font-medium"
+                >
+                  Add
+                </button>
               </div>
               
-              {urlValidation.isValid === false && (
+              {urlValidation.isValid === false && newUrl ? (
                 <p className="text-red-400 text-sm">Please enter a valid URL starting with http:// or https://</p>
+              ) : formData.url.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {formData.url.map((url, index) => (
+                    <span
+                      key={index}
+                      className="inline-flex items-center gap-2 px-3 py-1 bg-gray-700 text-white rounded-full text-sm"
+                    >
+                      {url}
+                      <button
+                        type="button"
+                        onClick={() => removeUrl(url)}
+                        className="hover:text-red-400 transition-colors"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
               )}
             </div>
           </div>
@@ -190,7 +241,7 @@ const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
                 <input
                   type="text"
                   value={newTag}
-                  onChange={(e) => setNewTag(e.target.value)}
+                  onChange={(e) => handleTagInput(e)}
                   onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
                   placeholder="Add a custom tag..."
                   className="flex-1 bg-[#484848] opacity-50 border border-gray-800 rounded-large px-3 py-2 text-white placeholder-gray-400 focus:border-golden focus:outline-none"
