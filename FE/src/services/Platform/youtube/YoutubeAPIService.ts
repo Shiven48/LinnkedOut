@@ -15,15 +15,47 @@ export class YoutubeAPIService {
     // parsing id from url
     public parseVideoId(url:string): string {
         try{
-            const videoId:string | null = HelperFunctions.parseYoutubeEmbeddedLink(url);
-            if (!videoId || typeof videoId !== 'string' || videoId === undefined) {
-                throw new Error('parseVideoId: The videoid is not acceptable');
-            }
-            if (!process.env.YOUTUBE_API_KEY) {
-                throw new Error('parseVideoId: Unable to fetch environment keys');
+            if (!process.env.YOUTUBE_API_KEY) throw new Error('parseVideoId: Unable to fetch environment keys');
+            const videoId:string | null = this.parseYoutubeEmbeddedLink(url);
+            if (
+                !videoId || 
+                typeof videoId !== 'string' || 
+                videoId === undefined || 
+                videoId !== null
+            ) {
+                throw new Error('The videoid is not valid');
             }
             return videoId;
         } catch(error){
+            console.error(`Error parsing youtube link`,error)
+            throw error;
+        }
+    }
+
+    public parseYoutubeEmbeddedLink(link: string): string | null {
+        try {
+            if(!link) throw new Error('Invalid link')
+            const url = new URL(link);
+            
+            // Handle youtube.com domain links
+            if (url.hostname.includes('youtube.com')) {
+                if(url.searchParams.has('v')){
+                    return url.searchParams.get('v')
+                }
+                else if(url.pathname.includes('shorts')){
+                    const pathParts = url.pathname.split('/');
+                    return pathParts.length > 2 ? pathParts[2] : null;
+                }
+                return null;
+            }
+            // Handle youtu.be short links
+            else if (url.hostname === 'youtu.be') {
+                const pathParts = url.pathname.split('/');
+                return pathParts.length > 1 ? pathParts[1] : null;
+            }
+
+            throw new Error('HelperFuncs: The link format is unrecognizable');
+        } catch (error) {
             throw error;
         }
     }
@@ -36,24 +68,23 @@ export class YoutubeAPIService {
             method: 'GET', 
             headers: { 
                 'Content-Type': 'application/json' 
-            } 
+            },
         }
-        
-        const response:any = await utility.apicaller(url,options);
-        if (!response.ok) {
-            throw new Error(`YouTube API error: ${response.status} ${response.statusText}`);
-        }
-      
+        const response:any = await utility.apicaller(url, options, 5, 1000);
+        if (!response.ok) throw new Error(`YouTube API error: ${response.status} ${response.statusText}`);
         const data = await response.json();
-        if (!data.items || data.items.length === 0) {
-            throw new Error('No video data found in the YouTube response');
-        }
+        if (!data.items || data.items.length === 0) throw new Error('No video data found in the YouTube response');
         
         return data.items[0];
     } catch (error) {
       console.error('Error fetching YouTube metadata:', error);
       throw error;
     }
-  }
+    }
+
+    // get platform from the links
+    public getPlatformFromLinks(link: string[]) {
+        
+    }
 
 }

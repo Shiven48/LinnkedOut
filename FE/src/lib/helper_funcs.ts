@@ -1,6 +1,8 @@
+import { FormDataType } from '@/app/_components/shared/PostInputForm';
 import { Media } from '@/services/common/types';
+import { SummaryService } from '@/services/content/summaryService';
+import RedditOrchestrator from '@/services/orchestrators/RedditOrchestrator';
 import YoutubeOrchestrator from "@/services/orchestrators/YoutubeOrchestrator";
-// import { exec } from "child_process"
 
 export class HelperFunctions {
 
@@ -9,35 +11,6 @@ export class HelperFunctions {
         const link: string = 'someURL'
         const youtubeOrchestrator = new YoutubeOrchestrator();
         return () => youtubeOrchestrator.mainYoutubeOrchestrator(link);
-    }
-
-    // change here -> currently i am using data that i have declared, and not the data provided by the bot 
-    public static parseYoutubeEmbeddedLink(link: string): string | null {
-        try {
-            if(!link) throw new Error('Invalid link')
-            const url = new URL(link);
-            
-            // Handle youtube.com domain links
-            if (url.hostname.includes('youtube.com')) {
-                if(url.searchParams.has('v')){
-                    return url.searchParams.get('v')
-                }
-                else if(url.pathname.includes('shorts')){
-                    const pathParts = url.pathname.split('/');
-                    return pathParts.length > 2 ? pathParts[2] : null;
-                }
-                return null;
-            }
-            // Handle youtu.be short links
-            else if (url.hostname === 'youtu.be') {
-                const pathParts = url.pathname.split('/');
-                return pathParts.length > 1 ? pathParts[1] : null;
-            }
-
-            throw new Error('HelperFuncs: The link format is unrecognizable');
-        } catch (error) {
-            throw error;
-        }
     }
 
     public static getIdOfplatform = (media: Media):number => {
@@ -66,20 +39,52 @@ export class HelperFunctions {
                 throw Error('Not assigned any id see the issue properly!!');
             }
             return platformId;
-  }
+    }
 
-    // This is to download the audio source file
-    // public static accessDLP(videoId:string) {
-    //     exec(`yt-dlp -x --audio-format mp3 -o "output_audio.mp3" https://www.youtube.com/watch?v=${videoId}`, (error:Error, stdout:any, stderr:any) => {
-    //     if (error) {
-    //         console.error(`exec error: ${error}`);
-    //         return;
-    //     }
-    //     if (stderr) {
-    //         console.error(`stderr: ${stderr}`);
-    //         return;
-    //     }
-    //         console.log(`stdout: ${stdout}`);
-    //     });
-    // }
+    static async PipelineInitializer(data:FormDataType){
+        const { url:links, category, customTags, fetchSimilar, similarityLevel } = data;
+        const summaryService = new SummaryService();
+        await this.parseLinksForPlatform(links);
+
+        // For tags query generation
+        // const result:string = await summaryService.generateSearchQuery(category, customTags, similarityLevel);
+    }
+
+    public static async parseLinksForPlatform(links: string[]) {
+        try{
+            if(links && links.length >= 1){
+                if(links.length === 1) {
+                    await this.OrchestratorCaller(links[0]);
+                }
+                else if(links.length > 1) {
+                    const orchestratorCalls:Promise<any>[] = links.map((link: string) =>
+                        this.OrchestratorCaller(link)
+                    );
+                    const results = await Promise.allSettled(orchestratorCalls);
+
+                    results.forEach((result, index) => {
+                        if (result.status === "fulfilled") {
+                        console.log(`Link ${links[index]} processed successfully.`);
+                        } else {
+                        console.error(`Link ${links[index]} failed:`, result.reason);
+                        }
+                    });
+                }
+            }
+        } catch(error){
+            console.error(`Unable to fetch platfrom type from link`,error)
+            throw error;
+        }
+    }
+
+    static async OrchestratorCaller(link: string): Promise<any>{
+        if(link.includes(`youtube`) || link.includes(`youtu.be`)){
+            const youtubeOrchestrator:YoutubeOrchestrator = new YoutubeOrchestrator(); 
+            // await youtubeOrchestrator.mainYoutubeOrchestrator(link)
+        }
+        else if(link.includes('www.reddit.com/r') || link.includes(`reddit`)){
+            const redditOrchestrator:RedditOrchestrator = new RedditOrchestrator();
+            // await redditOrchestrator.mainRedditOrchestrator(link);
+        }
+    }
 }

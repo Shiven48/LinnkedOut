@@ -68,7 +68,7 @@ export class RedditAPIService {
                     'Authorization': `Bearer ${this.redditAuthToken}`,
                 },
             }    
-            const fetchedRedditPost: any = await utility.apicaller(url, options);
+            const fetchedRedditPost: any = await utility.apicaller(url, options, 5, 1000);
             
             if (!fetchedRedditPost.ok) {
                 const errorBody = await fetchedRedditPost.text();

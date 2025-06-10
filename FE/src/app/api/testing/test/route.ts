@@ -1,8 +1,10 @@
+import { FormDataType } from '@/app/_components/shared/PostInputForm';
+import { HelperFunctions } from '@/lib/helper_funcs';
 import { Media, YoutubeMedia } from '@/services/common/types';
 import { YoutubeAPIService } from '@/services/Platform/youtube/YoutubeAPIService';
 import { YoutubeMetadataSevice } from '@/services/Platform/youtube/YoutubeMetadataService';
 import { YoutubeTranscriptService } from '@/services/Platform/youtube/YoutubeTranscriptionService';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 // export async function GET() {
 //     try{
@@ -68,14 +70,33 @@ import { NextResponse } from 'next/server';
 // }
 
 // For captions
-export async function GET() {
+// export async function GET() {
+//     try{
+//         const link = `https://youtube.com/shorts/I22DE7Hw8fY?si=pEZdvhEPVJ22_eSP`;
+//         const { mediaData, youtubeData } = await tp(link);
+//         return NextResponse.json({body: { mediaData, youtubeData }, status: 200})
+//     } catch(error:any){
+//         console.error(`Failed to transcribe the video`,error)
+//         return NextResponse.json({message:`Failed to transcribe the video`, status: 500});
+//     }
+// }
+
+export async function POST(
+    request: NextRequest
+) {
     try{
-        const link = `https://youtube.com/shorts/I22DE7Hw8fY?si=pEZdvhEPVJ22_eSP`;
-        const { mediaData, youtubeData } = await tp(link);
-        return NextResponse.json({body: { mediaData, youtubeData }, status: 200})
-    } catch(error:any){
-        console.error(`Failed to transcribe the video`,error)
-        return NextResponse.json({message:`Failed to transcribe the video`, status: 500});
+        const formContents:FormDataType = await request.json();
+        await HelperFunctions.PipelineInitializer(formContents);
+        return NextResponse.json({
+            body: 'Success',      
+            status: 200
+        })
+    } catch(error: any){
+        console.error("Caught error in POST handler:", error.message);
+        return new NextResponse(
+            JSON.stringify({ message: 'Error saving videos', error: error.message }),
+            { status: 500, headers: { 'Content-Type': 'application/json' } }
+        );
     }
 }
 

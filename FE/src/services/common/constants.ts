@@ -1,9 +1,10 @@
 import { Category, NavComponent, Platfrom, Resource } from "./types";
 
 export const YOUTUBE_BASE_URL: string = `https://www.googleapis.com/youtube/v3/videos`;
-export const SUMMARY_API_URL: string = `/api/summarize`;
-export const SERVER_BASE_URL: string = `http://localhost:3000/`;
 export const REDDIT_BEARER_TOKEN_ENDPOINT: string = `https://www.reddit.com/api/v1/access_token`
+export const SERVER_BASE_URL: string = `http://localhost:3000/`;
+export const FORM_INSERT_API_URL:string = `/api/testing` 
+export const SUMMARY_API_URL: string = `/api/summarize`;
 export const DESKTOPSIZE:number = 1080;
 export const MEDIA_PER_PAGE:number = 9;
 export const Summary_Template:string = "Summarize the main points or the main theme of the whole document such that it can be used as notes for revision of concept maintaining all the scientific concepts and terms and explaining and adding the core idea in summary: {context}";
