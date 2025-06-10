@@ -77,4 +77,19 @@ export class SummaryService {
     const output: string[] = await chain.invoke({ data: prompt })
     return output;
   }
+
+  public async generateSearchQuery(category:string, customTags:string[], similarity:string): Promise<string>{
+    const formattedTags = customTags.map((tag:string) => tag.replace('#', '')).join(', ')    
+    const prompt = `
+      Generate a single, rich YouTube search query from the following intent:
+      The user wants to watch high-quality videos to improve in the category: "${category}".
+      Their interests include: ${formattedTags} avoid vague phrases or tags that has less semantic meaning.
+      The resulting tags should be ${similarity} similar to the provided category and tags list.
+      Return a single comma-separated list of 3–5 dense keyword phrases that will help find such videos.
+      Avoid vague terms. Prioritize hands-on content,more-exposure to topic and skill-building.
+    `;
+
+    const tags = await this.generateTags(prompt);
+    return tags.join(' ');
+  }
 }

@@ -40,9 +40,9 @@ export default class RedditOrchestrator {
             const embeddingsId: number = await this.embeddingStorageOrchestrator(mediaData, redditData)
             mediaData.embeddingId = embeddingsId;
             const metaDataId: number = await this.redditRepository.saveRedditPostToDatabase(mediaData, redditData);
-            console.log('Inserted all data successfully')
+            console.log('Inserted all data successfully', metaDataId, embeddingsId)
 
-            return { videoMetadataId: metaDataId, embeddingsId: embeddingsId }
+            // return { videoMetadataId: metaDataId, embeddingsId: embeddingsId }
         } catch (error) {
             console.error('Error in fetching Reddit post:', error);
             throw error;

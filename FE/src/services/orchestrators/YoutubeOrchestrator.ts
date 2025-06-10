@@ -8,6 +8,7 @@ import { categoryDefinitions } from "@/services/common/constants";
 import { ProcessingService } from "../vector/PreprocessingService";
 import { VectorStore } from "../content/VectorStoreService";
 import { YoutubeMediaRepository } from "../database/YoutubeMediaRepository";
+import { media } from "@/server/db";
 
 export default class YoutubeOrchestrator {
 
@@ -18,7 +19,7 @@ export default class YoutubeOrchestrator {
     private preprocessingService:ProcessingService;
     private vectorStore:VectorStore;
     private embeddingRepository:EmbeddingRepository;
-    private youtubeRepository;
+    private youtubeRepository:YoutubeMediaRepository;
 
     constructor(){
         this.youtubeAPIService = new YoutubeAPIService();
@@ -31,7 +32,7 @@ export default class YoutubeOrchestrator {
         this.youtubeRepository = new YoutubeMediaRepository();
     }
 
-    async mainYoutubeOrchestrator(link:string){
+    async mainYoutubeOrchestrator(link:string):Promise<void> {
         try{
             const videoId = this.youtubeAPIService.parseVideoId(link);
             const fetchedYoutubeMetadata = await this.youtubeAPIService.fetchVideoMetadata(videoId);
@@ -44,15 +45,14 @@ export default class YoutubeOrchestrator {
             const embeddingsId:number = await this.embeddingStorageOrchestrator(mediaData, youtubeData)
             mediaData.embeddingId = embeddingsId;
             const metaDataId:number = await this.youtubeRepository.saveYoutubeMediaData(mediaData, youtubeData);
-            console.log('Inserted all data successfully')
-            
-            return { videoMetadataId:metaDataId, embeddingsId: embeddingsId }
+            console.log('Inserted all data successfully', metaDataId, embeddingsId)
         } catch(error){
+            console.error(`Error Orchestrating youtube video`,error);
             throw error;
         }
     }
 
-    private async embeddingStorageOrchestrator(mediaData:Media, youtubeData:YoutubeMedia):Promise<number> {
+    async embeddingStorageOrchestrator(mediaData:Media, youtubeData:YoutubeMedia):Promise<number> {
         try{
             const categoryEmbeddings:Record<string, number[]> = await this.embeddingService.initializeEmbeddings(categoryDefinitions)
             console.log("Categories available for classification:", Object.keys(categoryEmbeddings));

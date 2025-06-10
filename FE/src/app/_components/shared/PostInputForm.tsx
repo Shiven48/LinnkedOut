@@ -1,8 +1,9 @@
 'use client'
 
-import { categories, Platforms, SERVER_BASE_URL } from '@/services/common/constants';
+import { categories, FORM_INSERT_API_URL, Platforms, SERVER_BASE_URL } from '@/services/common/constants';
 import { Category, Platfrom } from '@/services/common/types';
 import { Plus, Link2, Hash, Sparkles, Filter, Search, X } from 'lucide-react';
+import { utility } from '@/services/common/utils'
 import Image from 'next/image';
 import React, { ChangeEvent, useState } from 'react';
 
@@ -11,14 +12,14 @@ type UrlValidation = {
   platform: any | null;
 } 
 
-type FormDataType = {
+export interface FormDataType {
     url: string[],
     category: string,
     customTags: string[],
     fetchSimilar: boolean,
     similarityLevel: string,
     contentType: string
-  }
+}
 
 export const PostInputForm:React.FC = () => {
 
@@ -114,10 +115,38 @@ export const PostInputForm:React.FC = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    setTimeout(() => {
+    setTimeout(async () => {
+      const options = { 
+        method: 'POST', 
+        body: JSON.stringify(formData),
+        headers: { 
+          'Content-Type': 'application/json',  
+        },
+      }
+      
+      try{
+        const response = await utility.apicaller(FORM_INSERT_API_URL, options)
+        const { body, status } = await response.json()
+        if(status === 200) {
+          console.log(JSON.stringify(body))
+        }
+      } catch(error){
+        console.error(error)
+      }
+      
       setIsSubmitting(false);
       alert('Content submitted successfully!');
     }, 2000);
+
+    // See if this is working or not 
+    setFormData({
+       url: [],
+      category: '',
+      customTags: [],
+      fetchSimilar: true,
+      similarityLevel: 'medium',
+      contentType: 'auto'
+    });
   };
 
   return (
@@ -144,7 +173,7 @@ export const PostInputForm:React.FC = () => {
           <div className="bg-darker rounded-2xl p-6 border border-gray-800 shadow-md shadow-golden">
             <div className="flex items-center gap-3 mb-4">
               <Link2 className="w-5 h-5 text-golden" />
-              <h2 className="text-xl font-semibold text-white">Content URL</h2>
+              <h2 className="text-xl font-semibold text-white">Content URL<sup className='text-golden text-xl mt-1'>*</sup></h2>
               <span className='text-medium text-red-500'> (maximum 5 Urls)</span>
             </div>
             
@@ -233,7 +262,7 @@ export const PostInputForm:React.FC = () => {
             <div className="flex items-center gap-3 mb-4">
               <Sparkles className="w-5 h-5 text-golden" />
               <h2 className="text-xl font-semibold text-white">Custom Tags</h2>
-              <span className="text-sm text-gray-400">(Optional)</span>
+              <span className="text-sm text-red-500">(Add your favorite topics as tags to see related content)</span>
             </div>
             
             <div className="space-y-4">
