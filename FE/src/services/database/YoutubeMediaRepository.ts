@@ -3,7 +3,7 @@ import { insertMedia, insertYoutubeMedia } from '@/server/functions/media';
 
 export class YoutubeMediaRepository {
 
-  public async saveYoutubeMediaData(mediaData: Media, youtubeData: YoutubeMedia): Promise<number> {
+  public async saveYoutubeMediaData(mediaData: Media, youtubeData: YoutubeMedia): Promise<void> {
     try {
       const { id: youtubeId } = await this.insert_YoutubeMedia(youtubeData);    
       if (youtubeId === undefined || youtubeId === null || isNaN(youtubeId) || youtubeId <= 0) throw new Error('Error saving metadata to the database');
@@ -11,7 +11,7 @@ export class YoutubeMediaRepository {
 
       const { id: mediaId } = await this.insert_Media(mediaData);
       if (mediaId === undefined || mediaId === null || isNaN(mediaId) || mediaId <= 0) throw new Error('Error saving metadata to the database');
-      return mediaId;
+      mediaData.id = mediaId;
     } catch (error) {
       console.error('Error saving media data to database:', error);
       throw error;

@@ -86,9 +86,10 @@ export async function POST(
 ) {
     try{
         const formContents:FormDataType = await request.json();
-        await HelperFunctions.PipelineInitializer(formContents);
+        const result:Media[] = await HelperFunctions.PipelineInitializer(formContents);
         return NextResponse.json({
-            body: 'Success',      
+            body: result,
+            length: result.length,      
             status: 200
         })
     } catch(error: any){

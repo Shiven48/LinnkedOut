@@ -1,5 +1,5 @@
 import { categoryDefinitions } from "../common/constants";
-import { Media, RedditMedia } from "../common/types";
+import { EmbeddingReturntype, GlobalMetadata, Media, RedditMedia } from "../common/types";
 import { VectorStore } from "../content/VectorStoreService";
 import { EmbeddingRepository } from "../database/EmbeddingRepository";
 import { RedditMediaRepository } from "../database/RedditMediaRepository";
@@ -28,7 +28,7 @@ export default class RedditOrchestrator {
         this.redditRepository = new RedditMediaRepository();
     }
 
-    async mainRedditOrchestrator(link: string) {
+    async mainRedditOrchestrator(link: string):Promise<GlobalMetadata> {
         try {
             const redditId = this.redditAPIService.parseRedditUrlForId(link);
             const subreddit = this.redditAPIService.parseRedditUrlForSubreddit(link);
@@ -37,10 +37,10 @@ export default class RedditOrchestrator {
             const redditData: RedditMedia = await this.redditMetadataService.extractRedditData(fetchedRedditMetaData);
             redditData.comments = await this.redditMetadataService.extractTopComments(fetchedRedditMetaData);
 
-            const embeddingsId: number = await this.embeddingStorageOrchestrator(mediaData, redditData)
-            mediaData.embeddingId = embeddingsId;
-            const metaDataId: number = await this.redditRepository.saveRedditPostToDatabase(mediaData, redditData);
-            console.log('Inserted all data successfully', metaDataId, embeddingsId)
+            const EmbeddingMetadata: EmbeddingReturntype = await this.embeddingStorageOrchestrator(mediaData, redditData)
+            mediaData.embeddingId = EmbeddingMetadata.embeddingId;
+            // const metaDataId: number = await this.redditRepository.saveRedditPostToDatabase(mediaData, redditData);
+            return({media:mediaData, embeddingsType:EmbeddingMetadata})
 
             // return { videoMetadataId: metaDataId, embeddingsId: embeddingsId }
         } catch (error) {
@@ -49,7 +49,7 @@ export default class RedditOrchestrator {
         }
     }
 
-    private async embeddingStorageOrchestrator(mediaData: Media, redditData: RedditMedia): Promise<number> {
+    private async embeddingStorageOrchestrator(mediaData: Media, redditData: RedditMedia): Promise<EmbeddingReturntype> {
         try {
             const categoryEmbeddings: Record<string, number[]> = await this.embeddingService.initializeEmbeddings(categoryDefinitions)
             console.log("Categories available for classification:", Object.keys(categoryEmbeddings));
@@ -61,8 +61,9 @@ export default class RedditOrchestrator {
 
             const assignedCategory = this.vectorStore.classifyEmbedding(contentEmbeddings, categoryEmbeddings);
             mediaData.category = assignedCategory;
-            const embeddingIdInDatabase: number = await this.embeddingRepository.storeContent(preprocessedContent, contentEmbeddings, assignedCategory);
-            return embeddingIdInDatabase;
+            // const embeddingIdInDatabase: number = await this.embeddingRepository.storeContent(preprocessedContent, contentEmbeddings, assignedCategory);
+            // return embeddingIdInDatabase;
+            return {embeddingId:200, embeddings: contentEmbeddings};
         } catch (error) {
             console.error("RedditOrchestrator: Error in storig embeddings:", error);
             throw error;
