@@ -21,7 +21,7 @@ export class YoutubeAPIService {
                 !videoId || 
                 typeof videoId !== 'string' || 
                 videoId === undefined || 
-                videoId !== null
+                videoId === null
             ) {
                 throw new Error('The videoid is not valid');
             }
@@ -82,9 +82,24 @@ export class YoutubeAPIService {
     }
     }
 
-    // get platform from the links
-    public getPlatformFromLinks(link: string[]) {
+    public async fetchMultipleVideosFromQuery(query: string):Promise<any> {
+    try {
+        const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&q=${encodeURIComponent(query)}&maxResults=${20}&key=${this.apikey}`;
+        const options = { 
+            method: 'GET', 
+            headers: { 
+                'Content-Type': 'application/json' 
+            },
+        }
+        const response:any = await utility.apicaller(url, options, 5, 1000);
+        if (!response.ok) throw new Error(`YouTube API error: ${response.status} ${response.statusText}`);
+        const data = await response.json();
+        if (!data.items || data.items.length === 0) throw new Error('No video data found in the YouTube response');
         
+        return data?.items;
+    } catch (error) {
+      console.error('Error fetching YouTube metadata:', error);
+      throw error;
     }
-
+    }
 }

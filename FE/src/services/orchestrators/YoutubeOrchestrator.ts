@@ -2,7 +2,7 @@ import { YoutubeAPIService } from "../Platform/youtube/YoutubeAPIService";
 import { YoutubeMetadataSevice } from "../Platform/youtube/YoutubeMetadataService";
 import { YoutubeTranscriptService } from "../Platform/youtube/YoutubeTranscriptionService";
 import { EmbeddingRepository } from "../database/EmbeddingRepository";
-import { Media, YoutubeMedia } from "../common/types";
+import { EmbeddingReturntype, GlobalMetadata, Media, YoutubeMedia} from "../common/types";
 import { EmbeddingService } from "../vector/EmbeddingService";
 import { categoryDefinitions } from "@/services/common/constants";
 import { ProcessingService } from "../vector/PreprocessingService";
@@ -32,27 +32,37 @@ export default class YoutubeOrchestrator {
         this.youtubeRepository = new YoutubeMediaRepository();
     }
 
-    async mainYoutubeOrchestrator(link:string):Promise<void> {
+    async mainYoutubeOrchestrator(link:string):Promise<GlobalMetadata> {
         try{
             const videoId = this.youtubeAPIService.parseVideoId(link);
             const fetchedYoutubeMetadata = await this.youtubeAPIService.fetchVideoMetadata(videoId);
 
-            const mediaData = this.youtubeMetadataService.extractMediaData(fetchedYoutubeMetadata);
+            // Extraction
+            const mediaData:Media = this.youtubeMetadataService.extractMediaData(fetchedYoutubeMetadata);
             const youtubeData = await this.youtubeMetadataService.extractYoutubeData(fetchedYoutubeMetadata);
             youtubeData.englishCaptions = await this.youtubeTranscriptionService.fetchTranscript(videoId, mediaData.title);
             mediaData.tags = await this.youtubeMetadataService.extractTags(fetchedYoutubeMetadata, mediaData, youtubeData);
 
-            const embeddingsId:number = await this.embeddingStorageOrchestrator(mediaData, youtubeData)
-            mediaData.embeddingId = embeddingsId;
-            const metaDataId:number = await this.youtubeRepository.saveYoutubeMediaData(mediaData, youtubeData);
-            console.log('Inserted all data successfully', metaDataId, embeddingsId)
+            // Embedding
+            const { preprocessedContent, contentEmbeddings, assignedCategory } = await this.embeddingOrchestrator(mediaData, youtubeData)
+            
+            //Storing
+            // mediaData.embeddingId = await this.embeddingRepository.storeContent(preprocessedContent, contentEmbeddings, assignedCategory);  
+            // await this.youtubeRepository.saveYoutubeMediaData(mediaData, youtubeData);
+            const EmbeddingMetadata:EmbeddingReturntype = { embeddingId: 2000, embeddings: contentEmbeddings}
+            
+            return({media:mediaData, embeddingsType:EmbeddingMetadata})
         } catch(error){
             console.error(`Error Orchestrating youtube video`,error);
             throw error;
         }
     }
 
-    async embeddingStorageOrchestrator(mediaData:Media, youtubeData:YoutubeMedia):Promise<number> {
+    async embeddingOrchestrator(mediaData:Media, youtubeData:YoutubeMedia):Promise<{
+        preprocessedContent: string,
+        contentEmbeddings: number[],
+        assignedCategory: string
+    }> {
         try{
             const categoryEmbeddings:Record<string, number[]> = await this.embeddingService.initializeEmbeddings(categoryDefinitions)
             console.log("Categories available for classification:", Object.keys(categoryEmbeddings));
@@ -64,8 +74,7 @@ export default class YoutubeOrchestrator {
 
             const assignedCategory = this.vectorStore.classifyEmbedding(contentEmbeddings, categoryEmbeddings);
             mediaData.category = assignedCategory;
-            const embeddingIdInDatabase:number = await this.embeddingRepository.storeContent(preprocessedContent, contentEmbeddings, assignedCategory);
-            return embeddingIdInDatabase;  
+            return { preprocessedContent, contentEmbeddings, assignedCategory };
         } catch (error) {
             console.error("YoutubeOrchestrator: Error in storig embeddings:", error);
             throw error;

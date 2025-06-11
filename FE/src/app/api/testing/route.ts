@@ -54,14 +54,9 @@ export async function POST(
         const { url, category, customTags, fetchSimilar, similarityLevel} = body;
         const summaryService = new SummaryService();
         const result:string = await summaryService.generateSearchQuery(category, customTags, similarityLevel);
-        // await HelperFunctions.parseLinksForPlatform(url);
         return NextResponse.json({
             body: {
-                url,
-                category, 
-                customTags, 
-                fetchSimilar, 
-                similarityLevel, 
+                result
             }, 
             status: 200
         })

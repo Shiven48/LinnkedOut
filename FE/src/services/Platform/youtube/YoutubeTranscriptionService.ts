@@ -13,11 +13,13 @@ export class YoutubeTranscriptService {
 
       if (transcriptItems && transcriptItems.length > 0) {
         console.log('Found youtube native transcripts.');
-        return this.extractEnglishCaptions(transcriptItems)
+        // return this.extractEnglishCaptions(transcriptItems)
       }
+      return this.extractEnglishCaptions(transcriptItems)
 
-      console.warn('⚠️ No native transcripts found. Generating transcripts via Whisper...'); 
-      return await this.generateTranscriptsFromAudio(videoId, title)      
+      // This takes a lot of time
+      // console.warn('⚠️ No native transcripts found. Generating transcripts via Whisper...'); 
+      // return await this.generateTranscriptsFromAudio(videoId, title)      
     } catch (error) {
       if (error instanceof Error && error.message.includes('Transcript is disabled')) {
         console.error('Transcripts are disabled for this video');
