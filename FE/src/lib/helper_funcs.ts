@@ -62,9 +62,11 @@ export class HelperFunctions {
             console.log(`Taking long route`);
             const allVideosEmbeddings:number[][] = await this.parallelEmbedVideos(extractedVideoData);
             return await this.extractTopYoutubeVideos(embeddings,allVideosEmbeddings, extractedVideoData);
+        } else {
+            console.log(`Taking short route`);
+            console.log(extractedVideoData);
+            return extractedVideoData.splice(10).map(media => media.mediaData);
         }
-        console.log(`Taking short route`);
-        return extractedVideoData.splice(10).map(media => media.mediaData);
     }
 
     public static async parseLinksForPlatform(links: string[]):Promise<GlobalMetadata> {
