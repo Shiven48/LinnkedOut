@@ -82,7 +82,7 @@ export class YoutubeAPIService {
     }
     }
 
-    public async fetchMultipleVideosFromQuery(query: string):Promise<any> {
+    public async fetchMultipleYtVideosFromQuery(query: string):Promise<any> {
     try {
         const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&q=${encodeURIComponent(query)}&maxResults=${20}&key=${this.apikey}`;
         const options = { 
