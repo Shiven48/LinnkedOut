@@ -73,20 +73,44 @@ export class SummaryService {
       this.llm,
       parser
     ])
-    
+
     const output: string[] = await chain.invoke({ data: prompt })
     return output;
   }
 
-  public async generateSearchQuery(category:string, customTags:string[], similarity:string): Promise<string>{
-    const formattedTags = customTags.map((tag:string) => tag.replace('#', '')).join(', ')    
-    const prompt = `
-      Generate a single, rich YouTube search query from the following intent:
-      The user wants to watch high-quality videos to improve in the category: "${category}".
-      Their interests include: ${formattedTags} avoid vague phrases or tags that has less semantic meaning.
-      The resulting tags should be ${similarity} similar to the provided category and tags list.
-      Return a single comma-separated list of 3–5 dense keyword phrases that will help find such videos.
-      Avoid vague terms. Prioritize hands-on content,more-exposure to topic and skill-building.
+  public async generateSearchQuery(category: string, customTags: string[], similarity: string): Promise<string> {
+    const formattedTags = customTags.map((tag: string) => tag.replace('#', '')).join(', ')
+    const prompt:string = `
+      You are an expert at creating YouTube search queries that find high-quality educational content.
+
+      TASK: Generate a single YouTube search query based on the following:
+
+      CATEGORY: "${category}"
+      USER INTERESTS: ${formattedTags}
+      SIMILARITY LEVEL: ${similarity}
+
+      REQUIREMENTS:
+      1. Create ONE search query (not multiple queries)
+      2. Use 3-5 specific, technical keywords separated by spaces (not commas)
+      3. Focus on practical, hands-on content rather than theory
+      4. Prioritize implementation tutorials, coding examples, and skill-building videos
+      5. Avoid generic terms like "tutorial", "guide", "beginner", "advanced"
+      6. Include specific technologies, frameworks, or methodologies from the interests
+      7. Target content that shows actual code, demonstrations, or real-world applications
+
+      EXAMPLES OF GOOD QUERIES:
+      - "OpenGL shader programming vertex fragment"
+      - "Vulkan rendering pipeline implementation"
+      - "game engine architecture systems design"
+      - "graphics programming optimization techniques"
+
+      AVOID:
+      - Roadmap or theoretical content
+      - Vague terms like "basics", "introduction", "overview"
+      - Generic phrases like "how to learn"
+      - Broad categories without specificity
+
+      Generate a single search query that will find high-quality, practical videos for someone interested in these topics:
     `;
 
     const tags = await this.generateTags(prompt);
