@@ -56,7 +56,7 @@ export class ProcessingService {
     } 
   }
     
-  private cleanText(text: string): string {
+  public cleanText(text: string): string {
       let cleaned = text.toLowerCase().replace(/https?:\/\/\S+/g, '');
       
       // Tokenize
