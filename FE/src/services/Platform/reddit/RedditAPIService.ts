@@ -1,5 +1,3 @@
-import { REDDIT_BEARER_TOKEN_ENDPOINT } from "@/services/common/constants";
-import { RedditBearerApiEndpointResponse } from "@/services/common/types";
 import { utility } from "@/services/common/utils";
 
 export class RedditAPIService {
@@ -56,10 +54,10 @@ export class RedditAPIService {
         }
     }
 
-    async fetchVideoMetadata(subreddit:string, redditId: string) {
+    async fetchVideoMetadata(subreddit: string, redditId: string) {
         try {
             // if(tokenIsEpired(this.redditAuthToken)) throw new Error('Token is expired!')
-            
+
             const url = `https://oauth.reddit.com/r/${subreddit}/comments/${redditId}.json`;
             const options = {
                 method: 'GET',
@@ -67,9 +65,9 @@ export class RedditAPIService {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${this.redditAuthToken}`,
                 },
-            }    
+            }
             const fetchedRedditPost: any = await utility.apicaller(url, options, 5, 1000);
-            
+
             if (!fetchedRedditPost.ok) {
                 const errorBody = await fetchedRedditPost.text();
                 console.error('Reddit API error details:', {
@@ -89,4 +87,38 @@ export class RedditAPIService {
         }
     }
 
+    async fetchMultipleRDTVideosFromQuery(query: string): Promise<any[]> {
+    try {
+        const url = `https://oauth.reddit.com/search?q=${encodeURIComponent(query)}&limit=20&sort=relevance&type=link&restrict_sr=false`;
+        const options = {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${this.redditAuthToken}`,
+            },
+        }
+        const fetchedRedditPost: any = await utility.apicaller(url, options, 5, 1000);
+        if (!fetchedRedditPost.ok) {
+            const errorBody = await fetchedRedditPost.text();
+            console.error('Reddit API error details:', {
+                status: fetchedRedditPost.status,
+                statusText: fetchedRedditPost.statusText,
+                body: errorBody,
+            });
+            throw new Error(`Reddit API error: ${fetchedRedditPost.status} ${fetchedRedditPost.statusText}. Details: ${errorBody}`);
+        }
+        const fetchedRedditMetaData = await fetchedRedditPost.json();
+        if (!fetchedRedditMetaData || !fetchedRedditMetaData.data || !fetchedRedditMetaData.data.children) throw new Error('Invalid reddit api structure');
+       
+        const posts = fetchedRedditMetaData.data.children;
+        if(!Array.isArray(posts) || posts.length === 0){
+            throw new Error(`No posts found in Reddit Response`)
+        }        
+        
+        return posts.map((post: any) => post.data);
+    } catch(error: any){
+        console.error(error);
+        throw error;
+    }
+}
 }
