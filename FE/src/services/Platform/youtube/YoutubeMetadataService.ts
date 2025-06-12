@@ -32,10 +32,10 @@ export class YoutubeMetadataSevice {
         return tags;
     }
 
-    private generateTags = async (mediaData: Media, youtubeData: YoutubeMedia):Promise<string[]> => {
+    public generateTags = async (mediaData: Media, youtubeData: YoutubeMedia):Promise<string[]> => {
         const processingService = new ProcessingService();
-        const preprocessedDataForTags:string = processingService.extractAndPreprocessData(mediaData, youtubeData);
         const summaryService = new SummaryService();
+        const preprocessedDataForTags:string = processingService.extractAndPreprocessData(mediaData, youtubeData);
         return await summaryService.generateTags(preprocessedDataForTags);
     } 
 
