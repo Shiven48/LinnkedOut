@@ -93,9 +93,9 @@ export async function POST(
             status: 200
         })
     } catch(error: any){
-        console.error("Caught error in POST handler:", error.message);
+        console.error("Caught error in POST handler:", error);
         return new NextResponse(
-            JSON.stringify({ message: 'Error saving videos', error: error.message }),
+            JSON.stringify({ message: 'Error saving videos', error: error }),
             { status: 500, headers: { 'Content-Type': 'application/json' } }
         );
     }
