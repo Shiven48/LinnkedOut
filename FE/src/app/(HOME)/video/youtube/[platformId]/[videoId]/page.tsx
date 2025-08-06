@@ -1,14 +1,11 @@
 'use client'
 import { use, useEffect, useState, useRef } from "react";
 import { useSidebarState } from "../../../../../../../hooks/useSideBarState";
-import SideVideo from "@/app/_components/SideVideo";
+import SideVideo from "@/app/_components/shared/SideVideo";
 import { CaptionItem, Media, YoutubeMedia } from '@/services/common/types';
 import { usePlayingState } from "../../../../../../../hooks/useIsPlaying";
 import Loading from "@/app/_components/shared/Loading";
-import Link from "next/link";
 import Image from "next/image";
-import { SideChat } from "@/app/_components/shared/SideChat";
-import { useParams } from "next/navigation";
 import { YoutubeMetadataDisplay } from "@/app/_components/shared/YoutubeMetadataDisplay";
 
 declare global {

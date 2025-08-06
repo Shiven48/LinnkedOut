@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { usePlayingState } from "../../../hooks/useIsPlaying";
+import { usePlayingState } from "../../../../hooks/useIsPlaying";
 import { usePathname } from "next/navigation";
 import { Media } from '@/services/common/types';
-import Loading from "./shared/Loading";
+import Loading from "@/app/_components/shared/Loading";
 import Link from "next/link";
 import Image from "next/image";
 
