@@ -4,11 +4,10 @@ import { ProcessingService } from "@/services/vector/PreprocessingService";
 
 export class RedditMetadataSevice {
 
-    extractMediaData = async (redditPostMetaData: any): Promise<Media> => {
+    extractMediaData = (redditPostMetaData: any): Media => {
         // Since multipleRedditVideos is now an array of post.data objects,
         // redditPostMetaData is already the post data, not the full response
-        const postData = redditPostMetaData; // Remove the [0].data.children[0].data part
-
+        const postData = redditPostMetaData;
         const { title, post_hint, id, media, preview } = postData;
 
         const resolutions = preview?.images[0]?.resolutions || [];
@@ -20,7 +19,7 @@ export class RedditMetadataSevice {
         const parsedThumbnailUrl = thumbnailUrl ? this.parseImage(thumbnailUrl) : undefined;
         const durationMs: number = this.parseDuration(duration)
 
-        return {
+        const generalizedMedia:Media = {
             type: this.getType(post_hint),
             platform: 'reddit',
             thumbnailUrl: parsedThumbnailUrl,
@@ -29,6 +28,7 @@ export class RedditMetadataSevice {
             durationMs: durationMs!,
             postId: id
         };
+        return generalizedMedia;
     }
 
     parseImage(unParsedImageUrl: string): string {
@@ -44,12 +44,13 @@ export class RedditMetadataSevice {
         }
     }
 
-    getType(post_hint: string): "short" | "image" | "video" | "photo" {
-        console.log(post_hint)
+    getType(post_hint: string): "short" | "image" | "video" | "photo" | "self" {
         if (post_hint === 'hosted:video') {
             return 'video';
         } else if (post_hint === 'hosted:image' || post_hint === 'photo' || post_hint === 'image') {
             return 'image';
+        } else if (post_hint === 'self'){
+            return 'self' 
         } else {
             return 'short';
         }
@@ -67,22 +68,36 @@ export class RedditMetadataSevice {
         return durationMs
     }
 
-    extractRedditData = async (redditPostMetaData: any): Promise<RedditMedia> => {
+    extractRedditData = (redditPostMetaData: any): RedditMedia => {
         const postData = redditPostMetaData;
-        const { subreddit, author, permalink } = postData;
+        const { subreddit, author, url, selftext, post_hint} = postData;
+        const type = this.getType(post_hint)
 
-        return {
+        const redditMedia:RedditMedia = {
             subreddit: subreddit,
             author: author,
-            postLink: `https://reddit.com${permalink}`
+            postLink: url
         };
+
+        type === 'self' ? redditMedia.selftext = selftext : redditMedia;  
+        return redditMedia;
     }
 
-    extractTopComments = async (data: any) => {
-        const comments: RedditComment[] = data[1]?.data?.children || [];
-
+    extractTopComments = (fullRedditResponse: any) => {
+        // This are all of the video comments
+        const comments: RedditComment[] = fullRedditResponse.data?.children || [];
+        // {
+        //  kind: 'Listing',
+        //  data: {
+        //      after: null,
+        //      dist: null,
+        //      modhash: null,
+        //      geo_filter: '',
+        //      children: [Array],
+        //      before: null
+        //  }
+        // }
         const sortedComments = comments.sort((a, b) => b.data.score - a.data.score);
-
         const topComments: CommentData[] = sortedComments.slice(0, 10).map(comment => {
 
             const result: CommentData = {
@@ -162,6 +177,10 @@ export class RedditMetadataSevice {
         const summaryService = new SummaryService();
         const preprocessedDataForTags: string = processingService.extractAndPreprocessData(mediaData, redditData);
         return await summaryService.generateTags(preprocessedDataForTags);
+    }
+
+    public extractAllIds = (extractedMedias:any[]) => {
+        return extractedMedias.map((media:any) => media.id);
     }
 
 }

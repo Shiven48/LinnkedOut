@@ -32,17 +32,16 @@ export default class RedditOrchestrator {
         try {
             const redditId = this.redditAPIService.parseRedditUrlForId(link);
             const subreddit = this.redditAPIService.parseRedditUrlForSubreddit(link);
-            const fetchedRedditMetaData = await this.redditAPIService.fetchVideoMetadata(subreddit, redditId);
-            const mediaData: Media = await this.redditMetadataService.extractMediaData(fetchedRedditMetaData);
-            const redditData: RedditMedia = await this.redditMetadataService.extractRedditData(fetchedRedditMetaData);
-            redditData.comments = await this.redditMetadataService.extractTopComments(fetchedRedditMetaData);
-
+            const retrievedMetaData = await this.redditAPIService.fetchVideoMetadata(subreddit, redditId);
+            const fetchedRedditMetaData = retrievedMetaData[0].data.children[0].data
+            const mediaData: Media = this.redditMetadataService.extractMediaData(fetchedRedditMetaData);
+            const redditData: RedditMedia =  this.redditMetadataService.extractRedditData(fetchedRedditMetaData);
+            mediaData.tags = await this.redditMetadataService.extractTags(fetchedRedditMetaData, mediaData, redditData);
+            redditData.comments = this.redditMetadataService.extractTopComments(retrievedMetaData[1]);
             const EmbeddingMetadata: EmbeddingReturntype = await this.embeddingStorageOrchestrator(mediaData, redditData)
             mediaData.embeddingId = EmbeddingMetadata.embeddingId;
             // const metaDataId: number = await this.redditRepository.saveRedditPostToDatabase(mediaData, redditData);
             return({media:mediaData, embeddingsType:EmbeddingMetadata})
-
-            // return { videoMetadataId: metaDataId, embeddingsId: embeddingsId }
         } catch (error) {
             console.error('Error in fetching Reddit post:', error);
             throw error;

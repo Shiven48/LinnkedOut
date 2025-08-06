@@ -1,23 +1,44 @@
 import { Resources } from '@/services/common/constants';
 import { NextRequest, NextResponse } from 'next/server';
-import { revalidatePath } from 'next/cache';
+import { FormDataType } from '@/app/_components/shared/PostInputForm';
+import { SummaryService } from '@/services/content/summaryService';
 import YoutubeOrchestrator from '@/services/orchestrators/YoutubeOrchestrator'
 import RedditOrchestrator from '@/services/orchestrators/RedditOrchestrator';
-import { FormDataType } from '@/app/_components/shared/PostInputForm';
-import { HelperFunctions } from '@/lib/helper_funcs';
-import { SummaryService } from '@/services/content/summaryService';
+import { RedditMetadataSevice } from '@/services/Platform/reddit/RedditMetadataService';
+import { RedditAPIService } from '@/services/Platform/reddit/RedditAPIService';
+import { CommentData, RedditComment } from '@/services/common/types';
+import { forEach } from 'lodash';
 
 export async function GET(
 ) {
     try {
         const youtubeOrchestrator = new YoutubeOrchestrator(); 
         const redditOrchestrator = new RedditOrchestrator();
+        const apiService = new RedditAPIService();
+        const redditMetadataService = new RedditMetadataSevice();
 
-        // const mappedVideo = await youtubeOrchestrator.mainYoutubeOrchestrator(Resources()[13].link)
-        const mappedVideo = await redditOrchestrator.mainRedditOrchestrator(Resources()[3].link)
-        revalidatePath('/'); 
+        const mappedVideo = await youtubeOrchestrator.mainYoutubeOrchestrator(Resources()[13].link)
+        // const mappedVideo = await redditOrchestrator.mainRedditOrchestrator(Resources()[14].link)
         
-        return NextResponse.json({ body:mappedVideo, status: 200});       
+        const query = `learning skills graphics programming game engine development opengl vulkan technical skills programming tutorials code implementation software development advanced learning learning skills graphics programming game engine development opengl vulkan technical skills programming tutorials career development technology software development`;
+        const redditVideos = await apiService.fetchMultipleRDTVideosFromQuery(query);
+        const ids:string[] = redditMetadataService.extractAllIds(redditVideos)
+        
+        // here fetching comments of 20 videos by their ids 
+        const comments:any[] = await apiService.fetchCommentsFromIds(ids);
+        const result:CommentData[][] = comments.map((videoComment:any) => {
+            // This gives comments of every single video
+            return redditMetadataService.extractTopComments(videoComment);
+        })
+
+        result.forEach((comment:CommentData[], index) => {
+            console.log({index: index, comment: comment})
+        })
+        
+        // This actually lets you fetch the comments of the video -> for e.g 64 comments
+        // comments[0].data.children.length
+        // fullRedditResponse[1]?.data?.children
+        return NextResponse.json(result);
     } catch (error: any) {
         console.error("Caught error in GET handler:", error.message);
         return new NextResponse(

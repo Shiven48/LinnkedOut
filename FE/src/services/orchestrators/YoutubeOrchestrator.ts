@@ -36,17 +36,11 @@ export default class YoutubeOrchestrator {
         try{
             const videoId = this.youtubeAPIService.parseVideoId(link);
             const fetchedYoutubeMetadata = await this.youtubeAPIService.fetchVideoMetadata(videoId);
-
-            // Extraction
             const mediaData:Media = this.youtubeMetadataService.extractMediaData(fetchedYoutubeMetadata);
             const youtubeData = await this.youtubeMetadataService.extractYoutubeData(fetchedYoutubeMetadata);
             youtubeData.englishCaptions = await this.youtubeTranscriptionService.fetchTranscript(videoId, mediaData.title);
             mediaData.tags = await this.youtubeMetadataService.extractTags(fetchedYoutubeMetadata, mediaData, youtubeData);
-
-            // Embedding
-            const { preprocessedContent, contentEmbeddings, assignedCategory } = await this.embeddingOrchestrator(mediaData, youtubeData)
-            
-            //Storing
+            const { preprocessedContent, contentEmbeddings, assignedCategory } = await this.embeddingOrchestrator(mediaData, youtubeData)            
             // mediaData.embeddingId = await this.embeddingRepository.storeContent(preprocessedContent, contentEmbeddings, assignedCategory);  
             // await this.youtubeRepository.saveYoutubeMediaData(mediaData, youtubeData);
             const EmbeddingMetadata:EmbeddingReturntype = { embeddingId: 2000, embeddings: contentEmbeddings}

@@ -54,7 +54,7 @@ export class RedditAPIService {
         }
     }
 
-    async fetchVideoMetadata(subreddit: string, redditId: string) {
+    async fetchVideoMetadata(subreddit: string, redditId: string):Promise<any> {
         try {
             // if(tokenIsEpired(this.redditAuthToken)) throw new Error('Token is expired!')
 
@@ -79,7 +79,7 @@ export class RedditAPIService {
             }
 
             const fetchedRedditMetaData = await fetchedRedditPost.json();
-            if (!fetchedRedditMetaData || fetchedRedditMetaData === 'undefined') throw new Error('No data found in the Reddit response');
+            if (!fetchedRedditMetaData || fetchedRedditMetaData === 'undefined') throw new Error('No data found in the Reddit response'); 
             return fetchedRedditMetaData;
         } catch (error) {
             console.error('Error fetching YouTube metadata:', error);
@@ -114,11 +114,39 @@ export class RedditAPIService {
         if(!Array.isArray(posts) || posts.length === 0){
             throw new Error(`No posts found in Reddit Response`)
         }        
-        
         return posts.map((post: any) => post.data);
     } catch(error: any){
         console.error(error);
         throw error;
     }
 }
+
+    async fetchCommentsFromIds(ids: string[]) {
+        const commentPromises = ids.map(async (postId:String) => {
+            const url = `https://oauth.reddit.com/comments/${postId}.json`;
+            const options = {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${this.redditAuthToken}`,
+                },
+            }
+            const fetchedRedditPost: any = await utility.apicaller(url, options, 5, 1000);  
+            console.log(`Called the reddit comments api`)
+
+            if (!fetchedRedditPost.ok) {
+                const errorBody = await fetchedRedditPost.text();
+                console.error('Reddit API error details:', {
+                    status: fetchedRedditPost.status,
+                    statusText: fetchedRedditPost.statusText,
+                    body: errorBody,
+                });
+                throw new Error(`Reddit API error: ${fetchedRedditPost.status} ${fetchedRedditPost.statusText}. Details: ${errorBody}`);
+            }
+            const fetchedRedditMetaData = await fetchedRedditPost.json();
+            if (!fetchedRedditMetaData || fetchedRedditMetaData === 'undefined') throw new Error('No data found in the Reddit response');
+            return fetchedRedditMetaData;
+        })
+        return await Promise.all(commentPromises);
+    }
 }

@@ -65,7 +65,8 @@ export class HelperFunctions {
         return platformId;
     }
 
-    static async PipelineInitializer(data: FormDataType): Promise<Media[]> {
+    // Finally return Promise<Media[]>
+    static async RootOrchestrator(data: FormDataType): Promise<any> {
         const summaryService = new SummaryService();
         const youtubeAPIService = new YoutubeAPIService();
         const redditAPIService = new RedditAPIService();
@@ -79,76 +80,82 @@ export class HelperFunctions {
             similarityLevel
         } = data;
 
-        // fetch and structure the video provided in URL
+        // saved the link data in database using appropriate orchestrator
         const platfromInfo:PlatformInfo = this.parseLinksForPlatform(links);
         const orchestratorResult = await this.OrchestratorCaller(platfromInfo);
 
         // Convert the fetched data into array, if already an array then just return it
-        const videos: GlobalMetadata[] = Array.isArray(orchestratorResult)
-            ? orchestratorResult
-            : [orchestratorResult];
-
+        // const videos: GlobalMetadata[] = Array.isArray(orchestratorResult)
+        //     ? orchestratorResult
+        //     : [orchestratorResult];
+        
         // Parallelly generate search queries for each video
-        const videoProcessingPromises = videos.map(async (video:GlobalMetadata) => {
-        const embeddings:number[] = video.embeddingsType.embeddings;
-        const searchQuery = await summaryService.generateSearchQuery(
-                category, 
-                customTags, 
-                similarityLevel
-            );
-            return { video, embeddings, searchQuery };
-        });
-        const processedVideos = await Promise.all(videoProcessingPromises);
+        // const videoProcessingPromises = videos.map(async (video:GlobalMetadata) => {
+        // const embeddings:number[] = video.embeddingsType.embeddings;
+        // const searchQuery = await summaryService.generateSearchQuery(
+        //         category, 
+        //         customTags, 
+        //         similarityLevel
+        //     );
+        //     return { video, embeddings, searchQuery };
+        // });
+        // const processedVideos = await Promise.all(videoProcessingPromises);
 
         // Combining and Cleaning the generated search queries
-        const searchQuery:string =  this.combineSearchQueries(
-            processedVideos.map(pv => pv.searchQuery)
-        );
+        // const searchQuery:string =  this.combineSearchQueries(
+        //     processedVideos.map(pv => pv.searchQuery)
+        // );
 
         // Calling Youtube api for getting 10-20 videos based on search query
-        const multipleYtVideos: any[] = await youtubeAPIService.fetchMultipleYtVideosFromQuery(searchQuery);
+        // const multipleYtVideos: any[] = await youtubeAPIService.fetchMultipleYtVideosFromQuery(searchQuery);
         
         // Calling Reddit api for getting 10-20 videos based on search query
-        const multipleRedditVideos: any[] = await redditAPIService.fetchMultipleRDTVideosFromQuery(searchQuery);
+        // const fullRedditResponse:any[] = await redditAPIService.fetchMultipleRDTVideosFromQuery(searchQuery);      
+        // const multipleRedditVideos = fullRedditResponse.map((post: any) =>{
+        //     const redditMetadata = post.data.children
+        //     return redditMetadata.data
+        // });
 
         // Structuring the fetched videos according to defined types
-        const extractedYTVideoData : { mediaData: Media, youtubeData: YoutubeMedia }[] = await this.parallelExtractYoutubeMedia(multipleYtVideos);
-        const extractedRDTVideoData: { mediaData: Media, redditData:  RedditMedia  }[] = await this.parallelExtractRedditMedia(multipleRedditVideos);
+        // const extractedYTVideoData : { mediaData: Media, youtubeData: YoutubeMedia }[] = await this.parallelExtractYoutubeMedia(multipleYtVideos);
+        // const extractedRDTVideoData: { mediaData: Media, redditData:  RedditMedia  }[] = await this.parallelExtractRedditMedia(fullRedditResponse, multipleRedditVideos);
 
+        // const length = extractedYTVideoData.length + extractedRDTVideoData.length
+        // return { extractedYTVideoData, extractedRDTVideoData, length }
         if (fetchSimilar) {
             // generating embeddings of extracted structired videos
-            const fetchedYTVideosEmbeddings : number[][] = await this.batchEmbedYTVideos(extractedYTVideoData);
-            const fetchedRDTVideosEmbeddings: number[][] = await this.batchEmbedRDTVideos(extractedRDTVideoData);
+            // const fetchedYTVideosEmbeddings : number[][] = await this.batchEmbedYTVideos(extractedYTVideoData);
+            // const fetchedRDTVideosEmbeddings: number[][] = await this.batchEmbedRDTVideos(extractedRDTVideoData);
 
             // Mapping videos and sorting by Similarity
-            const allInputEmbeddings:number[][] = processedVideos.map(pv => pv.embeddings);
-            const ytVideos : SimilarYT[]  = this.extractTopYoutubeVideos(allInputEmbeddings, fetchedYTVideosEmbeddings, extractedYTVideoData);
-            const rdtVideos: SimilarRDT[] = this.extractTopRedditVideos(allInputEmbeddings, fetchedRDTVideosEmbeddings, extractedRDTVideoData);
+            // const allInputEmbeddings:number[][] = processedVideos.map(pv => pv.embeddings);
+            // const ytVideos : SimilarYT[]  = this.extractTopYoutubeVideos(allInputEmbeddings, fetchedYTVideosEmbeddings, extractedYTVideoData);
+            // const rdtVideos: SimilarRDT[] = this.extractTopRedditVideos(allInputEmbeddings, fetchedRDTVideosEmbeddings, extractedRDTVideoData);
 
             // Returning Media
-            return this.fetchTopTenMedias(ytVideos, rdtVideos);
+            // return this.fetchTopTenMedias(ytVideos, rdtVideos);
         } else {
-            const mediaPerPlatfrom:number = 20;
-            const inputMedias = [...extractedYTVideoData, ...extractedRDTVideoData]
-            const topTenMedias = [];
-            const noOfPlatforms = inputMedias.length / mediaPerPlatfrom; // 2
-            const allowedMediaPerPlatfrom = Math.ceil(mediaPerPlatfrom / noOfPlatforms); // 10  
-            console.log(noOfPlatforms, mediaPerPlatfrom, allowedMediaPerPlatfrom);
+            // const topTenMedias = [];
+            // const mediaPerPlatfrom:number = 20;
+            // const inputMedias = [...extractedYTVideoData, ...extractedRDTVideoData] // 40
+            // const noOfPlatforms = Math.ceil(inputMedias.length / mediaPerPlatfrom); // 2
+            // const allowedMediaPerPlatfrom = Math.ceil(mediaPerPlatfrom / noOfPlatforms); // 10  
+            // console.log(noOfPlatforms, mediaPerPlatfrom, allowedMediaPerPlatfrom);
 
-            let platform = 0;
-            for(platform; platform < noOfPlatforms; platform++){
-                let initialIndex = platform * mediaPerPlatfrom 
-                let finalIndex = (platform * mediaPerPlatfrom) + mediaPerPlatfrom;
-                topTenMedias.push(
-                    ...inputMedias
-                        .slice(initialIndex, finalIndex)
-                        .slice(0,allowedMediaPerPlatfrom)
-                        .map(media => media.mediaData)
-                );
-            }
-            console.log(`topTenMedias: ${JSON.stringify(topTenMedias, null, 2)}`);
-            return topTenMedias;
+            // let platform = 0;
+            // for(platform; platform < noOfPlatforms; platform++){
+            //     let initialIndex = platform * mediaPerPlatfrom 
+            //     let finalIndex = (platform * mediaPerPlatfrom) + mediaPerPlatfrom;
+            //     topTenMedias.push(
+            //         ...inputMedias
+            //             .slice(initialIndex, finalIndex)
+            //             .slice(0,allowedMediaPerPlatfrom)
+            //             .map(media => media.mediaData)
+            //     );
+            // }
+            // return topTenMedias;
         }
+        return orchestratorResult;
     }
 
     public static parseLinksForPlatform(links: string[]):PlatformInfo {
@@ -185,7 +192,7 @@ export class HelperFunctions {
         }
     }
 
-    static async OrchestratorCaller(platfromInfo: PlatformInfo): Promise<GlobalMetadata | GlobalMetadata[]> {
+    private static async OrchestratorCaller(platfromInfo: PlatformInfo): Promise<GlobalMetadata | GlobalMetadata[]> {
 
         const { platformLinkAndType, length } = platfromInfo;
         const entries = Object.entries(platformLinkAndType);
@@ -198,11 +205,13 @@ export class HelperFunctions {
             throw new Error('No platforms provided');
         }
 
+        // handling single link
         if (length === 1) {
             const [key, platform] = entries[0];
             return await this.processOrchestrator(key, platform);
         }
 
+        // handling multiple links
         const orchestratorPromises = entries.map(([key, platform]) =>
             this.processOrchestrator(key, platform)
         );
@@ -247,21 +256,32 @@ export class HelperFunctions {
         const videoPromises: Promise<{ mediaData: Media; youtubeData: YoutubeMedia }>[] = multipleYtVideos.map(async (video: any) => {
             const mediaData = youtubeMetadataService.extractMediaData(video);
             const youtubeData = await youtubeMetadataService.extractYoutubeData(video);
-            mediaData.tags = await youtubeMetadataService.extractTags(video, mediaData, youtubeData);
+            
+            const [tags] = await Promise.all([
+                youtubeMetadataService.extractTags(video, mediaData, youtubeData)
+            ]);
+            mediaData.tags = tags;
+            
             return { mediaData, youtubeData };
         });
 
         return await Promise.all(videoPromises);
     }
 
-    static async parallelExtractRedditMedia(multipleYtVideos: any[]): Promise<{ mediaData: Media, redditData: RedditMedia }[]> {
+    static async parallelExtractRedditMedia(fullRedditResponse:any[], multipleRedditVideos: any[], ): Promise<{ mediaData: Media, redditData: RedditMedia }[]> {
         const redditMetadataService = new RedditMetadataSevice();
 
-        const videoPromises: Promise<{ mediaData: Media; redditData: RedditMedia }>[] = multipleYtVideos.map(async (video: any) => {
-            const mediaData:Media = await redditMetadataService.extractMediaData(video);
-            const redditData: RedditMedia = await redditMetadataService.extractRedditData(video);
-            redditData.comments = await redditMetadataService.extractTopComments(video);
-            mediaData.tags = await redditMetadataService.extractTags(video, mediaData, redditData);
+        const videoPromises: Promise<{ mediaData: Media; redditData: RedditMedia }>[] = multipleRedditVideos.map(async (video: any) => {
+            
+            const mediaData:Media = redditMetadataService.extractMediaData(video);
+            const redditData: RedditMedia = redditMetadataService.extractRedditData(video);
+            redditData.comments = redditMetadataService.extractTopComments(fullRedditResponse);
+            
+            const [tags] = await Promise.all([
+                await redditMetadataService.extractTags(video, mediaData, redditData)
+            ]);
+
+            mediaData.tags = tags;
             return { mediaData, redditData };
         });
 
