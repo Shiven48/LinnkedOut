@@ -162,7 +162,7 @@ export const PostInputForm:React.FC = () => {
             <h1 className="text-3xl font-bold text-gray-400">Add Post</h1>
           </div>
           <p className="text-gray-400 max-w-2xl mx-auto">
-            Submit URLs from YouTube, Reddit, and other platforms to curate content for your feed. 
+            Submit YouTube URLs to curate content for your feed. 
             Our AI will find similar posts and categorize them automatically.
           </p>
         </div>
@@ -184,7 +184,7 @@ export const PostInputForm:React.FC = () => {
                   value={newUrl}
                   onChange={(e) => handleUrlChange(e)}
                   onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addUrl())}
-                  placeholder="Paste your YouTube, Reddit, or any content URL here..."
+                  placeholder="Paste your YouTube content URL here..."
                   className="w-full bg-[#484848] bg-opacity-50 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:border-golden focus:outline-none focus:ring-2 focus:ring-yellow-400/20 pr-12"
                 />
                 <div className="absolute right-20 top-1/2 transform -translate-y-1/2">

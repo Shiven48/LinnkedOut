@@ -58,11 +58,11 @@ export const Platforms = (): Platfrom[] => {
             url: `/video/${encodeURIComponent('youtube')}`,
             icon: `youtube`
         },
-        {
-            name: 'reddit',
-            url: `/video/${encodeURIComponent('reddit')}`,
-            icon: `reddit`
-        }
+        // {
+        //     name: 'reddit',
+        //     url: `/video/${encodeURIComponent('reddit')}`,
+        //     icon: `reddit`
+        // }
     ]
     return platforms as Platfrom[];
 }
