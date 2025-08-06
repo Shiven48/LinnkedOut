@@ -142,6 +142,10 @@ export const Resources = (): Resource[] => {
         {
             'id': 14,
             'link': 'https://youtu.be/E4K7JgPJ8-s?si=85hsxzoixoE1X9Dm'
+        },
+        {
+            'id': 15,
+            'link': 'https://www.reddit.com/r/Python/comments/zqpnm5/normally_i_teach_python_as_a_cs_professor_now_im/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button'
         }
     ]
     return resos as Resource[];

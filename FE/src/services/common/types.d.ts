@@ -29,7 +29,7 @@ export interface videoMetaData {
 
 export interface Media {
     id?: number;                                     // This is the id of the media in the database (This id is acting FK in other schemas)
-    type: 'short' | 'image' | 'video' | 'photo';
+    type: 'short' | 'image' | 'video' | 'photo' | 'self';
     platform: string;                                // This will be any of reddit | youtube | or any other platform
     thumbnailUrl?: string;                           // This is the thumbnail url
     postUrl: string;                                 // This is the video | image url
@@ -104,6 +104,7 @@ export interface RedditMedia {
     subreddit: string;                  
     author: string;                                 // Author of the post
     postLink: string;                               // This is the link to the thread on reddit
+    selftext?: string;                              // This is the post that contains only text
     comments?: CommentData[];                       // High level comments and the nested ones
 }
 

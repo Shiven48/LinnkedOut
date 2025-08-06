@@ -142,7 +142,7 @@ export const getMediaFromRedditById = async (id: number):Promise<RedditMedia | n
 }
 
 
-export const getAllMediaWherePlatformYoutube = async(offset: number):Promise<Media[]> => {
+export const getAllMediaWherePlatformYoutube = async(offset: number = 1):Promise<Media[]> => {
     try {
         return await db.select()
             .from(media)
@@ -155,7 +155,7 @@ export const getAllMediaWherePlatformYoutube = async(offset: number):Promise<Med
     }
 }
 
-export const getAllMediaWherePlatformReddit = async(offset: number):Promise<Media[]> => {
+export const getAllMediaWherePlatformReddit = async(offset: number = 1):Promise<Media[]> => {
     // 'use server'
     try {
         return await db.select()

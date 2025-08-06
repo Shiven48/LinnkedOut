@@ -86,7 +86,8 @@ export async function POST(
 ) {
     try{
         const formContents:FormDataType = await request.json();
-        const result:Media[] = await HelperFunctions.PipelineInitializer(formContents);
+        // const result:Media[] = await HelperFunctions.RootOrchestrator(formContents);
+        const result = await HelperFunctions.RootOrchestrator(formContents);
         return NextResponse.json({
             body: result,
             length: result.length,      
