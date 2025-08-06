@@ -53,11 +53,9 @@ export default function Card({ video }: CardProps) {
     }
     let platformId: number = 0;
     if (platform === 'youtube' && media.youtubeId) {
-      console.log(platform)
       platformId = media.youtubeId;
     }
     else if (platform === 'reddit' && media.redditId) {
-      console.log(platform)
       platformId = media.redditId;
     }
 

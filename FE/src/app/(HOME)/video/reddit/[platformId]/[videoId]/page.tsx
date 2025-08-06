@@ -1,14 +1,14 @@
 'use client'
 import { use, useEffect, useState, useRef } from "react";
 import { useSidebarState } from "../../../../../../../hooks/useSideBarState";
-import SideVideo from "@/app/_components/SideVideo";
+import SideVideo from "@/app/_components/shared/SideVideo";
 import { Media, RedditMedia } from '@/services/common/types';
 import { usePlayingState } from "../../../../../../../hooks/useIsPlaying";
 import Loading from "@/app/_components/shared/Loading";
 import CommentsDisplay from "@/app/_components/comments/CommentsDisplay";
 import Link from "next/link";
 import Image from "next/image";
-import { RedditCommentComponent } from "@/app/_components/RedditCommentComponent";
+import { RedditCommentComponent } from "@/app/_components/comments/RedditCommentComponent";
 
 export default function Reddit(
   { params }: {

@@ -1,7 +1,7 @@
 'use client'
 import Image from "next/image"
 import { useState } from "react";
-import CommentsDisplay from "./comments/CommentsDisplay";
+import CommentsDisplay from "@/app/_components/comments/CommentsDisplay";
 import { RedditMedia } from "@/services/common/types";
 
 interface redditData {
