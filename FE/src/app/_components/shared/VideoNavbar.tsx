@@ -44,9 +44,9 @@ export default function App() {
                 <SearchBar />
             </div>
 
-            {/* <div className="flex justify-center">
+            <div className="flex justify-center">
                 <Switch/>
-            </div> */}
+            </div>
 
             <div className="flex items-center gap-4">
                 {navComponent.map((nav) => (

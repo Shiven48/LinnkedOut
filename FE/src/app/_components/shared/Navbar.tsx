@@ -1,10 +1,10 @@
 'use client'
 import { navComponents, SERVER_BASE_URL } from "@/services/common/constants";
 import { usePathname } from "next/navigation";
-import { useSidebarState } from "../../../../hooks/useSideBarState";
+import { useSidebarState } from "@/../hooks/useSideBarState";
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import SearchBar from "../shared/SearchBar";
+import SearchBar from "@/app/_components/shared/SearchBar";
 import Image from "next/image";
 
 export default function App() {

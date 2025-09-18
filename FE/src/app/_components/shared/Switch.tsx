@@ -1,4 +1,4 @@
-import { usePlayingState } from "../../../../hooks/useIsPlaying"
+import { usePlayingState } from "@/../hooks/useIsPlaying"
 import Image from "next/image"
 
 export default function Switch() {

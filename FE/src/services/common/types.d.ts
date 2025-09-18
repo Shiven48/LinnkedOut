@@ -60,7 +60,7 @@ export interface AppState {
 } 
 
 export interface GlobalMetadata {
-    media: mediaData, 
+    media: Media, 
     embeddingsType: EmbeddingReturntype
 }
 
@@ -167,4 +167,21 @@ export interface WhisperSegment {
   avg_logprob: number;
   compression_ratio: number;
   no_speech_prob: number;
+}
+
+interface ApiResultResponse {
+    message: string,
+    formData: FormDataResponse,
+    videos: Media[],
+    totalVideos: number,
+    processedAt: string
+}
+
+interface FormDataResponse {
+    urls: string[],
+    category: string,
+    customTags: string[],
+    fetchSimilar: boolean,
+    similarityLevel: string,
+    contentType: string
 }

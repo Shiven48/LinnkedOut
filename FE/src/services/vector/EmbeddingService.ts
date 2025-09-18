@@ -64,24 +64,77 @@ export class EmbeddingService {
   async generateBatchEmbeddings(contents: string[]): Promise<number[][]> {
     try {
       if (!contents || contents.length === 0) throw new Error(`The content is not valid`);
-      console.log("Embedding", contents.length, "documents");
-      console.log(contents)
-
-      const result = await this.voyageEmbeddings.embedDocuments(contents);
-      if (!result || !Array.isArray(result) || !Array.isArray(result[0])) {
-        console.error("Invalid result from voyageEmbeddings:", result);
-        throw new Error("Voyage embedding API returned an invalid result");
+      
+      if (!this.voyageEmbeddings) {
+        throw new Error("voyageEmbeddings is not initialized");
+      }
+      
+      const validContents = contents.filter(content => 
+        content && typeof content === 'string' && content.trim().length > 0
+      );
+      
+      if (validContents.length === 0) {
+        throw new Error("No valid content to embed");
+      }
+      
+      console.log(`Embedding ${validContents.length} valid documents out of ${contents.length} total`);
+      console.log("First content sample:", validContents[0]?.substring(0, 100) + "...");
+      
+      const result = await this.voyageEmbeddings.embedDocuments(validContents);
+      
+      console.log("Raw result type:", typeof result);
+      console.log("Raw result is array:", Array.isArray(result));
+      console.log("Result length:", result?.length);
+      if (result && Array.isArray(result) && result.length > 0) {
+        console.log("First embedding type:", typeof result[0]);
+        console.log("First embedding is array:", Array.isArray(result[0]));
+        console.log("First embedding length:", result[0]?.length);
+      }
+      
+      if (!result) {
+        throw new Error("Voyage embedding API returned null/undefined result");
+      }
+      
+      if (!Array.isArray(result)) {
+        throw new Error(`Expected array result, got ${typeof result}: ${JSON.stringify(result)}`);
+      }
+      
+      if (result.length === 0) {
+        throw new Error("Voyage embedding API returned empty array");
+      }
+      
+      for (let i = 0; i < result.length; i++) {
+        if (!Array.isArray(result[i])) {
+          throw new Error(`Embedding at index ${i} is not an array: ${typeof result[i]}`);
+        }
+        if (result[i].length === 0) {
+          throw new Error(`Embedding at index ${i} is empty array`);
+        }
       }
 
+      console.log(`Successfully generated ${result.length} embeddings`);
       return result;
-    } catch (error:any) {
+      
+    } catch (error: any) {
+      // Enhanced error handling
+      console.error("Batch Embedding Generation Error Details:");
+      console.error("Error type:", typeof error);
+      console.error("Error message:", error?.message);
+      console.error("Error stack:", error?.stack);
+      
       if (error.response?.status === 429) {
-        console.warn("Rate limit hit. You need to retry after a delay.");
+        console.warn("Rate limit hit. Implementing retry logic...");
+        throw new Error("Rate limit exceeded. Please try again later.");
       }
-      console.error("Batch Embedding Generation Error:", error);
+      
+      if (error.message?.includes('API key')) {
+        throw new Error("Invalid or missing Voyage API key");
+      }
+      
       throw error;
     }
   }
+
 
   async generateCategoryEmbeddings(): Promise<Record<string, number[]>> {
     const categories: Record<string, string> = categoryDefinitions;

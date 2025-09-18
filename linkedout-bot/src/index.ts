@@ -4,6 +4,7 @@ import { getDB } from "./db";
 import { messages, usersTable, postsTable } from "./schema";
 import { eq } from "drizzle-orm";
 import { getEnv, type Env } from "./env";
+
 interface TelegramUpdate {
   update_id: number;
   message?: {

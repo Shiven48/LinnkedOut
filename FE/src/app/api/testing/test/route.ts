@@ -81,40 +81,50 @@ import { NextRequest, NextResponse } from 'next/server';
 //     }
 // }
 
-export async function POST(
+// export async function POST(
+//     request: NextRequest
+// ) {
+//     try{
+//         const formContents:FormDataType = await request.json();
+//         // const result:Media[] = await HelperFunctions.RootOrchestrator(formContents);
+//         const result = await HelperFunctions.RootOrchestrator(formContents);
+//         return NextResponse.json({
+//             body: result,
+//             length: result.length,      
+//             status: 200
+//         })
+//     } catch(error: any){
+//         console.error("Caught error in POST handler:", error);
+//         return new NextResponse(
+//             JSON.stringify({ message: 'Error saving videos', error: error }),
+//             { status: 500, headers: { 'Content-Type': 'application/json' } }
+//         );
+//     }
+// }
+
+// const tp = async (link:string):Promise<{mediaData: Media, youtubeData: YoutubeMedia}> => {
+//     const youtubeAPIService = new YoutubeAPIService();
+//     const youtubeMetadataService = new YoutubeMetadataSevice();
+//     const youtubeTranscriptionService = new YoutubeTranscriptService();
+
+//     const videoId = youtubeAPIService.parseVideoId(link);
+//     const fetchedYoutubeMetadata = await youtubeAPIService.fetchVideoMetadata(videoId);
+    
+//     const mediaData = youtubeMetadataService.extractMediaData(fetchedYoutubeMetadata);
+//     const youtubeData = await youtubeMetadataService.extractYoutubeData(fetchedYoutubeMetadata);
+//     youtubeData.englishCaptions = await youtubeTranscriptionService.fetchTranscript(videoId, mediaData.title);
+//     return {
+//         mediaData,
+//         youtubeData
+//     }
+// }
+
+export async function GET(
     request: NextRequest
 ) {
-    try{
-        const formContents:FormDataType = await request.json();
-        // const result:Media[] = await HelperFunctions.RootOrchestrator(formContents);
-        const result = await HelperFunctions.RootOrchestrator(formContents);
-        return NextResponse.json({
-            body: result,
-            length: result.length,      
-            status: 200
-        })
-    } catch(error: any){
-        console.error("Caught error in POST handler:", error);
-        return new NextResponse(
-            JSON.stringify({ message: 'Error saving videos', error: error }),
-            { status: 500, headers: { 'Content-Type': 'application/json' } }
-        );
-    }
-}
-
-const tp = async (link:string):Promise<{mediaData: Media, youtubeData: YoutubeMedia}> => {
-    const youtubeAPIService = new YoutubeAPIService();
-    const youtubeMetadataService = new YoutubeMetadataSevice();
-    const youtubeTranscriptionService = new YoutubeTranscriptService();
-
-    const videoId = youtubeAPIService.parseVideoId(link);
-    const fetchedYoutubeMetadata = await youtubeAPIService.fetchVideoMetadata(videoId);
-    
-    const mediaData = youtubeMetadataService.extractMediaData(fetchedYoutubeMetadata);
-    const youtubeData = await youtubeMetadataService.extractYoutubeData(fetchedYoutubeMetadata);
-    youtubeData.englishCaptions = await youtubeTranscriptionService.fetchTranscript(videoId, mediaData.title);
-    return {
-        mediaData,
-        youtubeData
-    }
+    const query = `Javascript`
+    console.log(`The query is: ${query}`)
+    const service:YoutubeAPIService = new YoutubeAPIService()
+    const videoDetails = await service.fetchMultipleYtVideosFromQuery(query)
+    return NextResponse.json(videoDetails)
 }
