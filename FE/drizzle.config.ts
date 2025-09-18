@@ -4,17 +4,15 @@ import { Pool } from 'pg';
 
 dotenv.config({ path: '.env.local' });
 
-const requiredEnvVars = ['LOCAL_PG_DATABASE', 'REMOTE_DATABASE_URL'] as const;
+const requiredEnvVars = ['REMOTE_DATABASE_URL'] as const;
 for (const envVar of requiredEnvVars) {
   if (!process.env[envVar]) {
     throw new Error(`${envVar} is missing from .env.local`);
   }
 }
 
-const localDbUrl = process.env.LOCAL_PG_DATABASE!;
 const remoteDbUrl = process.env.REMOTE_DATABASE_URL!;
-const isProduction = process.env.NODE_ENV === 'production';
-const databaseUrl:string = isProduction ? remoteDbUrl : localDbUrl;
+const databaseUrl:string = remoteDbUrl;
 
 // Connection pool for runtime
 export const db = new Pool({
