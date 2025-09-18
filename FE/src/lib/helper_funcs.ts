@@ -1,3 +1,4 @@
+import YoutubeOrchestrator from "@/services/orchestrators/YoutubeOrchestrator";
 import { FormDataType } from '@/app/_components/shared/PostInputForm';
 import { GlobalMetadata, Media, RedditMedia, YoutubeMedia } from '@/services/common/types';
 import { SummaryService } from '@/services/content/summaryService';
@@ -6,10 +7,10 @@ import { YoutubeMetadataSevice } from '@/services/Platform/youtube/YoutubeMetada
 import { EmbeddingService } from '@/services/vector/EmbeddingService';
 import { ProcessingService } from '@/services/vector/PreprocessingService';
 import { VectorStore } from '@/services/content/VectorStoreService';
-import { RedditAPIService } from '@/services/Platform/reddit/RedditAPIService';
 import { RedditMetadataSevice } from '@/services/Platform/reddit/RedditMetadataService';
-import YoutubeOrchestrator from "@/services/orchestrators/YoutubeOrchestrator";
-import RedditOrchestrator from '@/services/orchestrators/RedditOrchestrator';
+import { EmbeddingRepository } from '@/services/database/EmbeddingRepository';
+import { YoutubeMediaRepository } from '@/services/database/YoutubeMediaRepository';
+import { categoryDefinitions } from '@/services/common/constants';
 
 interface PlatformInfo { 
     platformLinkAndType: Record<string, string>, 
@@ -20,6 +21,7 @@ interface SimilarYT {
     similarityScore: number;
     mediaData: Media;
     youtubeData: YoutubeMedia;
+    embeddings: number[]
 }
 
 interface SimilarRDT {
@@ -65,11 +67,105 @@ export class HelperFunctions {
         return platformId;
     }
 
-    // Finally return Promise<Media[]>
-    static async RootOrchestrator(data: FormDataType): Promise<any> {
+    // Finally return Promise<Media[]> this is for reddit and youtube
+    // static async RootOrchestrator(data: FormDataType): Promise<any> {
+    //     const summaryService = new SummaryService();
+    //     const youtubeAPIService = new YoutubeAPIService();
+    //     const redditAPIService = new RedditAPIService();
+
+    //     // Destructuring the form data;
+    //     const {
+    //         url: links,
+    //         category,
+    //         customTags,
+    //         fetchSimilar,
+    //         similarityLevel
+    //     } = data;
+
+    //     // saved the link data in database using appropriate orchestrator
+    //     const platfromInfo:PlatformInfo = this.parseLinksForPlatform(links);
+    //     const orchestratorResult = await this.OrchestratorCaller(platfromInfo);
+
+    //     // Convert the fetched data into array, if already an array then just return it
+    //     const videos: GlobalMetadata[] = Array.isArray(orchestratorResult)
+    //         ? orchestratorResult
+    //         : [orchestratorResult];
+        
+    //     // Parallelly generate search queries for each video
+    //     const videoProcessingPromises = videos.map(async (video:GlobalMetadata) => {
+    //     const embeddings:number[] = video.embeddingsType.embeddings;
+    //     const searchQuery = await summaryService.generateSearchQuery(
+    //             category, 
+    //             customTags, 
+    //             similarityLevel
+    //         );
+    //         return { video, embeddings, searchQuery };
+    //     });
+    //     const processedVideos = await Promise.all(videoProcessingPromises);
+
+    //     // Combining and Cleaning the generated search queries
+    //     const searchQuery:string =  this.combineSearchQueries(
+    //         processedVideos.map(pv => pv.searchQuery)
+    //     );
+
+    //     // Calling Youtube api for getting 10-20 videos based on search query
+    //     const multipleYtVideos: any[] = await youtubeAPIService.fetchMultipleYtVideosFromQuery(searchQuery);
+        
+    //     // Calling Reddit api for getting 10-20 videos based on search query
+    //     const fullRedditResponse:any[] = await redditAPIService.fetchMultipleRDTVideosFromQuery(searchQuery);      
+    //     const multipleRedditVideos = fullRedditResponse.map((post: any) =>{
+    //         const redditMetadata = post.data.children
+    //         return redditMetadata.data
+    //     });
+
+    //     // Structuring the fetched videos according to defined types
+    //     const extractedYTVideoData : { mediaData: Media, youtubeData: YoutubeMedia }[] = await this.parallelExtractYoutubeMedia(multipleYtVideos);
+    //     const extractedRDTVideoData: { mediaData: Media, redditData:  RedditMedia  }[] = await this.parallelExtractRedditMedia(fullRedditResponse, multipleRedditVideos);
+
+    //     // const length = extractedYTVideoData.length + extractedRDTVideoData.length
+    //     // return { extractedYTVideoData, extractedRDTVideoData, length }
+    //     if (fetchSimilar) {
+    //         // generating embeddings of extracted structured videos
+    //         const fetchedYTVideosEmbeddings : number[][] = await this.batchEmbedYTVideos(extractedYTVideoData);
+    //         const fetchedRDTVideosEmbeddings: number[][] = await this.batchEmbedRDTVideos(extractedRDTVideoData);
+
+    //         // Sorting videos by Similarity with the input link
+    //         const allInputEmbeddings:number[][] = processedVideos.map(pv => pv.embeddings);
+    //         const ytVideos : SimilarYT[]  = this.extractTopYoutubeVideos(allInputEmbeddings, fetchedYTVideosEmbeddings, extractedYTVideoData);
+    //         const rdtVideos: SimilarRDT[] = this.extractTopRedditVideos(allInputEmbeddings, fetchedRDTVideosEmbeddings, extractedRDTVideoData);
+
+    //         // Returning Media
+    //         return this.fetchTopTenMedias(ytVideos, rdtVideos);
+    //     } else {
+    //         const topTenMedias = [];
+    //         const mediaPerPlatfrom:number = 20;
+    //         const inputMedias = [...extractedYTVideoData, ...extractedRDTVideoData] // 40
+    //         const noOfPlatforms = Math.ceil(inputMedias.length / mediaPerPlatfrom); // 2
+    //         const allowedMediaPerPlatfrom = Math.ceil(mediaPerPlatfrom / noOfPlatforms); // 10  
+    //         console.log(noOfPlatforms, mediaPerPlatfrom, allowedMediaPerPlatfrom);
+
+    //         // let platform = 0;
+    //         // for(platform; platform < noOfPlatforms; platform++){
+    //         //     let initialIndex = platform * mediaPerPlatfrom 
+    //         //     let finalIndex = (platform * mediaPerPlatfrom) + mediaPerPlatfrom;
+    //         //     topTenMedias.push(
+    //         //         ...inputMedias
+    //         //             .slice(initialIndex, finalIndex)
+    //         //             .slice(0,allowedMediaPerPlatfrom)
+    //         //             .map(media => media.mediaData)
+    //         //     );
+    //         // }
+    //         // return topTenMedias;
+    //     }
+    //     return orchestratorResult;
+    // }
+
+    // Single video YT platform orchestrator
+    
+    static async RootOrchestrator(data: FormDataType): Promise<SimilarYT[]> {
         const summaryService = new SummaryService();
         const youtubeAPIService = new YoutubeAPIService();
-        const redditAPIService = new RedditAPIService();
+        const embeddingService = new EmbeddingService();
 
         // Destructuring the form data;
         const {
@@ -85,78 +181,104 @@ export class HelperFunctions {
         const orchestratorResult = await this.OrchestratorCaller(platfromInfo);
 
         // Convert the fetched data into array, if already an array then just return it
-        // const videos: GlobalMetadata[] = Array.isArray(orchestratorResult)
-        //     ? orchestratorResult
-        //     : [orchestratorResult];
+        const inputVideos: GlobalMetadata[] = Array.isArray(orchestratorResult)
+            ? orchestratorResult
+            : [orchestratorResult];
         
-        // Parallelly generate search queries for each video
-        // const videoProcessingPromises = videos.map(async (video:GlobalMetadata) => {
-        // const embeddings:number[] = video.embeddingsType.embeddings;
-        // const searchQuery = await summaryService.generateSearchQuery(
-        //         category, 
-        //         customTags, 
-        //         similarityLevel
-        //     );
-        //     return { video, embeddings, searchQuery };
-        // });
-        // const processedVideos = await Promise.all(videoProcessingPromises);
+        // If 1 video array then process for 1 else process for N
+        // Parallely generate search queries for each video
+        const inputVideoProcessingPromises = inputVideos.map(async (video:GlobalMetadata) => {
+            const embeddings:number[] = video.embeddingsType.embeddings;
+            const searchQuery = await summaryService.generateSearchQuery(
+                category,
+                customTags, 
+                similarityLevel
+            );
+            return { video, embeddings, searchQuery };
+        });
+        const inputProcessedVideos = await Promise.all(inputVideoProcessingPromises);
 
         // Combining and Cleaning the generated search queries
-        // const searchQuery:string =  this.combineSearchQueries(
-        //     processedVideos.map(pv => pv.searchQuery)
-        // );
+        // Here it can be made using 20 videos or only one but we will get a single string as we are
+        // concatinating the strings
+        const searchQuery:string =  this.combineSearchQueries(
+            inputProcessedVideos.map(pv => pv.searchQuery)
+        );
 
         // Calling Youtube api for getting 10-20 videos based on search query
-        // const multipleYtVideos: any[] = await youtubeAPIService.fetchMultipleYtVideosFromQuery(searchQuery);
-        
-        // Calling Reddit api for getting 10-20 videos based on search query
-        // const fullRedditResponse:any[] = await redditAPIService.fetchMultipleRDTVideosFromQuery(searchQuery);      
-        // const multipleRedditVideos = fullRedditResponse.map((post: any) =>{
-        //     const redditMetadata = post.data.children
-        //     return redditMetadata.data
-        // });
+        const unprocessedFetchedVideos: any[] = await youtubeAPIService.fetchMultipleYtVideosFromQuery(searchQuery);
 
-        // Structuring the fetched videos according to defined types
-        // const extractedYTVideoData : { mediaData: Media, youtubeData: YoutubeMedia }[] = await this.parallelExtractYoutubeMedia(multipleYtVideos);
-        // const extractedRDTVideoData: { mediaData: Media, redditData:  RedditMedia  }[] = await this.parallelExtractRedditMedia(fullRedditResponse, multipleRedditVideos);
+        // Structuring the all 20 fetched videos according to defined types
+        const extractedYTVideoData : { mediaData: Media, youtubeData: YoutubeMedia}[] = await this.parallelExtractYoutubeMedia(unprocessedFetchedVideos);
+        let finalizedMedias:SimilarYT[] = []
+        let categoryEmbeddings: Record<string, number[]> = {}
 
-        // const length = extractedYTVideoData.length + extractedRDTVideoData.length
-        // return { extractedYTVideoData, extractedRDTVideoData, length }
         if (fetchSimilar) {
-            // generating embeddings of extracted structired videos
-            // const fetchedYTVideosEmbeddings : number[][] = await this.batchEmbedYTVideos(extractedYTVideoData);
-            // const fetchedRDTVideosEmbeddings: number[][] = await this.batchEmbedRDTVideos(extractedRDTVideoData);
+            // Map all embeddings of input videos into an array (1 because of i passed 1 link)
+            const allInputEmbeddings:number[][] = inputProcessedVideos.map(pv => pv.embeddings);
 
-            // Mapping videos and sorting by Similarity
-            // const allInputEmbeddings:number[][] = processedVideos.map(pv => pv.embeddings);
-            // const ytVideos : SimilarYT[]  = this.extractTopYoutubeVideos(allInputEmbeddings, fetchedYTVideosEmbeddings, extractedYTVideoData);
-            // const rdtVideos: SimilarRDT[] = this.extractTopRedditVideos(allInputEmbeddings, fetchedRDTVideosEmbeddings, extractedRDTVideoData);
+            // Now batch the embedding creation of all the fetched videos (N because i fetched N links from api)
+            let fetchedYTVideosEmbeddings: {preprocessedContents:string[], contentEmbeddings: number[][]} = 
+                await this.batchEmbedYTVideos(extractedYTVideoData);
 
-            // Returning Media
-            // return this.fetchTopTenMedias(ytVideos, rdtVideos);
+            // Here i have return 20 videos with their extracted data as well as embedding and similarity score with input media
+            const contentEmbedding = fetchedYTVideosEmbeddings.contentEmbeddings
+            const ytVideos : SimilarYT[]  = this.extractTopYoutubeVideos(allInputEmbeddings, contentEmbedding, extractedYTVideoData);
+            console.log(`Must be 20: ${ytVideos.length}`)
+
+            // return top 10 videos
+            finalizedMedias = this.fetchTopTenMedias(ytVideos)
+            categoryEmbeddings = await embeddingService.initializeEmbeddings(categoryDefinitions)
+
+            // This batch is for saving all the data
+            const batchResults:SimilarYT[] = await this.processBatch(
+                finalizedMedias,
+                categoryEmbeddings,
+                fetchedYTVideosEmbeddings
+            );
+
+            return batchResults
         } else {
-            // const topTenMedias = [];
-            // const mediaPerPlatfrom:number = 20;
-            // const inputMedias = [...extractedYTVideoData, ...extractedRDTVideoData] // 40
-            // const noOfPlatforms = Math.ceil(inputMedias.length / mediaPerPlatfrom); // 2
-            // const allowedMediaPerPlatfrom = Math.ceil(mediaPerPlatfrom / noOfPlatforms); // 10  
-            // console.log(noOfPlatforms, mediaPerPlatfrom, allowedMediaPerPlatfrom);
-
-            // let platform = 0;
-            // for(platform; platform < noOfPlatforms; platform++){
-            //     let initialIndex = platform * mediaPerPlatfrom 
-            //     let finalIndex = (platform * mediaPerPlatfrom) + mediaPerPlatfrom;
-            //     topTenMedias.push(
-            //         ...inputMedias
-            //             .slice(initialIndex, finalIndex)
-            //             .slice(0,allowedMediaPerPlatfrom)
-            //             .map(media => media.mediaData)
-            //     );
-            // }
-            // return topTenMedias;
+            throw Error(`Fetch similar is not True: ${fetchSimilar}`)
         }
-        return orchestratorResult;
     }
+
+    static async processBatch(
+            batch: SimilarYT[], 
+            categoryEmbeddings:Record<string, number[]>,
+            fetchedYTVideosEmbeddings: {preprocessedContents:string[], contentEmbeddings: number[][]}
+        ):Promise<SimilarYT[]> {
+        const embeddingRepository = new EmbeddingRepository();
+        const youtubeRepository = new YoutubeMediaRepository()
+        const vectorStore = new VectorStore();
+
+        const {contentEmbeddings, preprocessedContents} = fetchedYTVideosEmbeddings
+
+        return Promise.all(
+            batch.map(async (data,index) => {
+                const { mediaData, youtubeData } = data;                
+                const assignedCategory = vectorStore.classifyEmbedding(data.embeddings, categoryEmbeddings);
+                mediaData.category = assignedCategory;
+
+                const preprocessedContent = preprocessedContents[index]
+                const contentEmbedding = contentEmbeddings[index]
+                
+                // Store embeddings
+                mediaData.embeddingId = await embeddingRepository.storeContent(
+                    preprocessedContent, 
+                    contentEmbedding, 
+                    assignedCategory
+                );
+
+                console.log(`Stored embeddingId: ${mediaData.embeddingId}`)
+                
+                // Store media and YT data
+                await youtubeRepository.saveYoutubeMediaData(mediaData, youtubeData);
+                
+                return data
+            })
+        );
+    };
 
     public static parseLinksForPlatform(links: string[]):PlatformInfo {
         try {
@@ -167,9 +289,9 @@ export class HelperFunctions {
                     if (links[0].includes(`youtube`) || links[0].includes(`youtu.be`)) {
                         linkMapper[links[0]] = 'youtube'.toLowerCase().trim();
                     }
-                    else if (links[0].includes('www.reddit.com/r') || links[0].includes(`reddit`)) {
-                        linkMapper[links[0]] = 'reddit'.toLowerCase().trim();
-                    }
+                    // else if (links[0].includes('www.reddit.com/r') || links[0].includes(`reddit`)) {
+                    //     linkMapper[links[0]] = 'reddit'.toLowerCase().trim();
+                    // }
                     return { platformLinkAndType: linkMapper, length: 1 };
                 }
                 // For Multiple link
@@ -178,9 +300,9 @@ export class HelperFunctions {
                         if (link.includes(`youtube`) || link.includes(`youtu.be`)) {
                             linkMapper[link] = 'youtube'.toLowerCase().trim();
                         }
-                        else if (link.includes('www.reddit.com/r') || link.includes(`reddit`)) {
-                            linkMapper[link] = 'reddit'.toLowerCase().trim();
-                        }
+                        // else if (link.includes('www.reddit.com/r') || link.includes(`reddit`)) {
+                        //     linkMapper[link] = 'reddit'.toLowerCase().trim();
+                        // }
                     })
                     return { platformLinkAndType: linkMapper, length: links.length };
                 }
@@ -234,9 +356,9 @@ export class HelperFunctions {
                 const youtubeOrchestrator = new YoutubeOrchestrator();
                 return await youtubeOrchestrator.mainYoutubeOrchestrator(key);
 
-            case 'reddit':
-                const redditOrchestrator = new RedditOrchestrator();
-                return await redditOrchestrator.mainRedditOrchestrator(key);
+            // case 'reddit':
+            //     const redditOrchestrator = new RedditOrchestrator();
+            //     return await redditOrchestrator.mainRedditOrchestrator(key);
 
             default:
                 throw new Error(`Unsupported platform type: ${platform}`);
@@ -252,19 +374,18 @@ export class HelperFunctions {
 
     static async parallelExtractYoutubeMedia(multipleYtVideos: any[]): Promise<{ mediaData: Media, youtubeData: YoutubeMedia }[]> {
         const youtubeMetadataService = new YoutubeMetadataSevice();
-
-        const videoPromises: Promise<{ mediaData: Media; youtubeData: YoutubeMedia }>[] = multipleYtVideos.map(async (video: any) => {
-            const mediaData = youtubeMetadataService.extractMediaData(video);
-            const youtubeData = await youtubeMetadataService.extractYoutubeData(video);
-            
-            const [tags] = await Promise.all([
-                youtubeMetadataService.extractTags(video, mediaData, youtubeData)
-            ]);
-            mediaData.tags = tags;
-            
-            return { mediaData, youtubeData };
+        const videoPromises = multipleYtVideos.map(async (video: any) => {
+            try {
+                const mediaData = youtubeMetadataService.extractMediaData(video);
+                const youtubeData = await youtubeMetadataService.extractYoutubeData(video);
+                const tags = await youtubeMetadataService.extractTags(video, mediaData, youtubeData);
+                mediaData.tags = tags;
+                return { mediaData, youtubeData };
+            } catch (error) {
+                console.error('Error processing video:', video, error);
+                throw error;
+            }
         });
-
         return await Promise.all(videoPromises);
     }
 
@@ -290,7 +411,7 @@ export class HelperFunctions {
 
     static async batchEmbedYTVideos(
         extractedVideos: { mediaData: Media; youtubeData: YoutubeMedia }[]
-    ): Promise<number[][]> {
+    ): Promise<{preprocessedContents: string[], contentEmbeddings: number[][]}> {
         const embeddingService = new EmbeddingService();
         const preprocessingService = new ProcessingService();
 
@@ -300,7 +421,7 @@ export class HelperFunctions {
         });
 
         const contentEmbeddings: number[][] = await embeddingService.generateBatchEmbeddings(preprocessedContents);
-        return contentEmbeddings;
+        return {preprocessedContents: preprocessedContents, contentEmbeddings: contentEmbeddings};
     }
 
     static async batchEmbedRDTVideos(
@@ -319,29 +440,34 @@ export class HelperFunctions {
     }
 
     static extractTopYoutubeVideos(
-        inputEmbeddings: number[][], 
-        fetchedEmbeddings: number[][], 
+        inputEmbeddings: number[][], // 1
+        fetchedEmbeddings: number[][], // N
         extractedVideoData: { mediaData: Media, youtubeData: YoutubeMedia }[]
     ):SimilarYT[] {
         const vecStore = new VectorStore()
+        // This scoredVideos is giving top videos for a single link so map is giving an array
         const scoredVideos = extractedVideoData.map((videoData, index) => {
-        const fetchedEmbedding = fetchedEmbeddings[index];
-        
-        const maxSimilarity = Math.max(
-            ...inputEmbeddings.map(inputEmbedding => 
-                vecStore.cosineSimilarity(inputEmbedding, fetchedEmbedding)
-            )
-        );
-        
-        return {
-            ...videoData,
-            similarityScore: maxSimilarity
-        };
-    });
+                // Video to embedding map
+                const fetchedEmbedding = fetchedEmbeddings[index];
+                
+                // Each fetched media's embedding similarity is being calculated with the user input media
+                // For each pass it will work N times so for N passes it will work N X N times
+                const maxSimilarity = Math.max(
+                    ...inputEmbeddings.map(inputEmbedding => 
+                        vecStore.cosineSimilarity(inputEmbedding, fetchedEmbedding)
+                    )
+                );
+                
+                return {
+                    ...videoData,
+                    similarityScore: maxSimilarity,
+                    embeddings: fetchedEmbedding
+                };
+            });
        
-    return scoredVideos
-        .sort((a, b) => b.similarityScore - a.similarityScore)
-        .slice(0, 10)
+        return scoredVideos
+            .sort((a, b) => b.similarityScore - a.similarityScore)
+            // .slice(0, 10)
     }
 
     static extractTopRedditVideos(
@@ -370,14 +496,59 @@ export class HelperFunctions {
         .slice(0, 10)
     }
 
-    static fetchTopTenMedias(ytVideos:SimilarYT[], rdtVideos:SimilarRDT[]):Media[] {
-        return [
-            ...ytVideos, 
-            ...rdtVideos
-        ]
-        .map(media => ({media: media.mediaData, maxSimilarity: media.similarityScore}))
-        .sort((a,b) => b.maxSimilarity - a.maxSimilarity)
-        .slice(0,10)
-        .map(media => media.media)
+    // For reddit and youtube
+    // static fetchTopTenMedias(ytVideos:SimilarYT[], rdtVideos: SimilarRDT[] = []):Media[] {
+    //     // Input validation
+    //     if (!Array.isArray(ytVideos)) {
+    //         throw new Error('ytVideos must be an array');
+    //     }
+        
+    //     if (!Array.isArray(rdtVideos)) {
+    //         throw new Error('rdtVideos must be an array');
+    //     }
+
+    //     // Filter out invalid entries
+    //     const validYtVideos = ytVideos.filter(video => 
+    //         video?.mediaData && typeof video.similarityScore === 'number'
+    //     );
+        
+    //     const validRdtVideos = rdtVideos.filter(video => 
+    //         video?.mediaData && typeof video.similarityScore === 'number'
+    //     );
+    //     return [
+    //         ...validYtVideos, 
+    //         ...validRdtVideos
+    //     ]
+    //     .map(media => ({
+    //         media: media.mediaData, 
+    //         maxSimilarity: media.similarityScore || 0
+    //     }))
+    //     .sort((a, b) => b.maxSimilarity - a.maxSimilarity)
+    //     .slice(0, 10)
+    //     .map(media => media.media);
+
+    // }
+
+    // Here you will get all the metadata of 20 videos
+    static fetchTopTenMedias(ytVideos:SimilarYT[]):SimilarYT[] {
+        // Input validation
+        if (!Array.isArray(ytVideos)) {
+            throw new Error('ytVideos must be an array');
+        }
+
+        // Filter out invalid entries
+        const validYtVideos:SimilarYT[] = ytVideos.filter(video => 
+            video?.mediaData && typeof video.similarityScore === 'number'
+        );
+        
+        // Return 20 videos based on the max similarity
+        return [...validYtVideos].map(media => ({
+            mediaData: media.mediaData, 
+            similarityScore: media.similarityScore || 0,
+            youtubeData: media.youtubeData,
+            embeddings: media.embeddings
+        }))
+        .sort((a, b) => b.similarityScore - a.similarityScore)
+        .slice(0, 10)
     }
 }

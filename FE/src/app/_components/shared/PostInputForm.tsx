@@ -1,11 +1,12 @@
 'use client'
 
 import { categories, FORM_INSERT_API_URL, Platforms, SERVER_BASE_URL } from '@/services/common/constants';
-import { Category, Platfrom } from '@/services/common/types';
+import { ApiResultResponse, Category, Media, Platfrom } from '@/services/common/types';
 import { Plus, Link2, Hash, Sparkles, Filter, Search, X } from 'lucide-react';
 import { utility } from '@/services/common/utils'
 import Image from 'next/image';
 import React, { ChangeEvent, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 type UrlValidation = {
   isValid: boolean | null,
@@ -23,6 +24,8 @@ export interface FormDataType {
 
 export const PostInputForm:React.FC = () => {
 
+  const router = useRouter();
+
   const [formData, setFormData] = useState<FormDataType>({
     url: [],
     category: '',
@@ -31,6 +34,7 @@ export const PostInputForm:React.FC = () => {
     similarityLevel: 'medium',
     contentType: 'auto'
   });
+  const [videoResults, setVideoResults] = useState<Media[]>([])
   const [newTag, setNewTag] = useState<string>('');
   const [newUrl, setNewUrl] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -111,43 +115,50 @@ export const PostInputForm:React.FC = () => {
     }
   }
 
+  
   const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    setTimeout(async () => {
-      const options = { 
-        method: 'POST', 
-        body: JSON.stringify(formData),
-        headers: { 
-          'Content-Type': 'application/json',  
-        },
-      }
-      
-      try{
-        const response = await utility.apicaller(FORM_INSERT_API_URL, options)
-        const { body, status } = await response.json()
-        if(status === 200) {
-          console.log(JSON.stringify(body))
+      e.preventDefault();
+      setIsSubmitting(true);
+      setTimeout(async () => {
+        const options = { 
+          method: 'POST', 
+          body: JSON.stringify(formData),
+          headers: { 
+            'Content-Type': 'application/json',  
+          },
         }
-      } catch(error){
-        console.error(error)
-      }
+        
+        try {
+          const response = await utility.apicaller(FORM_INSERT_API_URL, options)
+          const { body, status } = await response.json()
+          
+          if (status === 200) {
+            console.log('Success! Received data:', body);
+            
+            sessionStorage.setItem('processedVideos', JSON.stringify(body.videos));
+            sessionStorage.setItem('formSubmissionData', JSON.stringify(body.formData));
+            
+            setFormData({
+              url: [],
+              category: '',
+              customTags: [],
+              fetchSimilar: true,
+              similarityLevel: 'medium',
+              contentType: 'auto'
+            });
+            router.push('/?page=1&newContent=true');
+          }
+          if(status == 400) {
+
+          }
+        } catch (error) {
+          console.error(error)
+        }
       
       setIsSubmitting(false);
       alert('Content submitted successfully!');
     }, 2000);
-
-    // See if this is working or not 
-    setFormData({
-       url: [],
-      category: '',
-      customTags: [],
-      fetchSimilar: true,
-      similarityLevel: 'medium',
-      contentType: 'auto'
-    });
-  };
+};
 
   return (
     <div className="p-6">
@@ -174,7 +185,7 @@ export const PostInputForm:React.FC = () => {
             <div className="flex items-center gap-3 mb-4">
               <Link2 className="w-5 h-5 text-golden" />
               <h2 className="text-xl font-semibold text-white">Content URL<sup className='text-golden text-xl mt-1'>*</sup></h2>
-              <span className='text-medium text-red-500'> (maximum 5 Urls)</span>
+              {/* <span className='text-medium text-red-500'> (maximum 5 Urls)</span> */}
             </div>
             
             <div className="space-y-4">
@@ -323,7 +334,7 @@ export const PostInputForm:React.FC = () => {
                 </div>
                 <button
                   type="button"
-                  onClick={() => setFormData({ ...formData, fetchSimilar: !formData.fetchSimilar })}
+                  onClick={() => setFormData({ ...formData, fetchSimilar: true })}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                     formData.fetchSimilar ? 'bg-dark-golden' : 'bg-golden'
                   }`}

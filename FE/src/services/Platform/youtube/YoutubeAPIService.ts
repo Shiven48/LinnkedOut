@@ -1,6 +1,6 @@
 import { HelperFunctions  } from "@/lib/helper_funcs";
 import { utility } from "../../common/utils";
-import { YOUTUBE_BASE_URL } from "../../common/constants";
+import { MEDIA_FETCH_LIMIT, YOUTUBE_BASE_URL } from "../../common/constants";
 
 export class YoutubeAPIService {
     private apikey:string;
@@ -63,7 +63,7 @@ export class YoutubeAPIService {
     // fetching metadata using v3 api
     public async fetchVideoMetadata(videoId: string) {
     try {
-        const url = `${YOUTUBE_BASE_URL}?id=${videoId}&key=${this.apikey}&part=snippet,contentDetails,statistics,status`;
+        const url = `${YOUTUBE_BASE_URL}?id=${videoId}&key=${this.apikey}&part=snippet,contentDetails`;
         const options = { 
             method: 'GET', 
             headers: { 
@@ -74,7 +74,6 @@ export class YoutubeAPIService {
         if (!response.ok) throw new Error(`YouTube API error: ${response.status} ${response.statusText}`);
         const data = await response.json();
         if (!data.items || data.items.length === 0) throw new Error('No video data found in the YouTube response');
-        
         return data.items[0];
     } catch (error) {
       console.error('Error fetching YouTube metadata:', error);
@@ -82,24 +81,63 @@ export class YoutubeAPIService {
     }
     }
 
-    public async fetchMultipleYtVideosFromQuery(query: string):Promise<any> {
+    public async fetchMultipleYtVideosFromQuery(query: string): Promise<any> {
     try {
-        const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&q=${encodeURIComponent(query)}&maxResults=${20}&key=${this.apikey}`;
-        const options = { 
+        const searchUrl = `https://www.googleapis.com/youtube/v3/search?type=video&q=${encodeURIComponent(query)}&maxResults=${MEDIA_FETCH_LIMIT}&key=${this.apikey}&part=snippet`;
+        const searchOptions = { 
             method: 'GET', 
             headers: { 
                 'Content-Type': 'application/json' 
             },
-        }
-        const response:any = await utility.apicaller(url, options, 5, 1000);
-        if (!response.ok) throw new Error(`YouTube API error: ${response.status} ${response.statusText}`);
-        const data = await response.json();
-        if (!data.items || data.items.length === 0) throw new Error('No video data found in the YouTube response');
+        };
         
-        return data?.items;
+        console.log('Searching for videos...');
+        const searchResponse: any = await utility.apicaller(searchUrl, searchOptions, 5, 1000);
+        
+        if (!searchResponse.ok) {
+            throw new Error(`YouTube Search API error: ${searchResponse.status} ${searchResponse.statusText}`);
+        }
+        
+        const searchData = await searchResponse.json();
+        if (!searchData.items || searchData.items.length === 0) {
+            throw new Error('No videos found for the search query');
+        }
+        console.log(`Found ${searchData.items.length} videos`);
+        
+        const videoIds: string[] = searchData.items.map((item: any) => item.id.videoId);
+        console.log('Video IDs:', videoIds);
+        
+        console.log('Fetching detailed video data in parallel...');
+        const videoDataPromises = videoIds.map(videoId => this.fetchVideoMetadata(videoId));
+        const detailedVideos = await Promise.all(videoDataPromises);
+        
+        return detailedVideos;        
     } catch (error) {
-      console.error('Error fetching YouTube metadata:', error);
-      throw error;
+        console.error('Error in fetchMultipleYtVideosFromQuery:', error);
+        throw error;
     }
-    }
+}
+
+
+    // public async fetchMultipleYtVideosFromQuery(query: string):Promise<any> {
+    // try {
+    //     const url = `https://www.googleapis.com/youtube/v3/search?&type=video&q=${encodeURIComponent(query)}&maxResults=${20}&key=${this.apikey}&part=snippet,contentDetails`;
+    //     const options = { 
+    //         method: 'GET', 
+    //         headers: { 
+    //             'Content-Type': 'application/json' 
+    //         },
+    //     }
+    //     const response:any = await utility.apicaller(url, options, 5, 1000);
+    //     if (!response.ok) throw new Error(`YouTube API error: ${response.status} ${response.statusText}`);
+    //     const data = await response.json();
+    //     if (!data.items || data.items.length === 0) throw new Error('No video data found in the YouTube response');
+        
+    //     console.log(`raw data for batch fetch: ${JSON.stringify(data, null, 2)}`)
+    //     return data?.items;
+    // } catch (error) {
+    //   console.error('Error fetching YouTube metadata:', error);
+    //   throw error;
+    // }
+    // }
 }

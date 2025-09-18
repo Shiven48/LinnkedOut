@@ -12,6 +12,7 @@ export class YoutubeMediaRepository {
       const { id: mediaId } = await this.insert_Media(mediaData);
       if (mediaId === undefined || mediaId === null || isNaN(mediaId) || mediaId <= 0) throw new Error('Error saving metadata to the database');
       mediaData.id = mediaId;
+      console.log(`Stored media and YT data: ${mediaId} : ${youtubeId}`)
     } catch (error) {
       console.error('Error saving media data to database:', error);
       throw error;
