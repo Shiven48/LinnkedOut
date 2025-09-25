@@ -1,7 +1,7 @@
 import { db } from '../db/index'
 import { media, redditMedia, youtubeMedia } from '../db/schema'
 import { CaptionItem, CommentData, Media, RedditMedia, YoutubeMedia } from '@/services/common/types';
-import { count, eq, sql } from 'drizzle-orm';
+import { count, desc, eq, sql } from 'drizzle-orm';
 import { MEDIA_PER_PAGE } from '@/services/common/constants';
 import * as schema from "../db/schema"
 
@@ -9,7 +9,7 @@ export const getAllMedia = async (offset: number) => {
     try {
         return await db.select()
             .from(schema.media)
-            .orderBy(schema.media.createdAt)
+            .orderBy(desc(schema.media.createdAt))
             .limit(MEDIA_PER_PAGE)
             .offset(offset);
     } catch (error: any) {

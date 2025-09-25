@@ -96,7 +96,7 @@ export default function Card({ video }: CardProps) {
       {/* For video duration and platform */}
       <div className="span-prop relative flex top-68 rounded-[5px] text-white">
         <div className="w-10 h-6 absolute -top-14 end-2 bg-black bg-opacity-80 rounded text-center text-sm">
-          <span className="text-white flex items-center justify-center pt-1">{viewTime(video.durationMs)}</span>
+          <span className="text-white flex items-center justify-center pt-1">{viewTime(video.durationMs!)}</span>
       </div>
 
         {/* For Showing if the video is HD or not */}

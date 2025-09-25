@@ -90,7 +90,7 @@ export class YoutubeAPIService {
                 type: 'video',
                 videoDuration: 'medium',
                 order: 'relevance',
-                maxResults: '30',
+                maxResults: '20',
                 key: this.apikey!
         });
         if (categoryId) {
