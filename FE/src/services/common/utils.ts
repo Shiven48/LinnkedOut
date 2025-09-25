@@ -1,6 +1,7 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { ErrorObj } from '@/services/common/types';
+import { CATEGORY_MAPPING } from "./constants";
 
 export class utility {
     
@@ -30,17 +31,34 @@ export class utility {
     }
 
     public HandleError(error:any){
-    if (error instanceof Error) {
-        console.error("Error fetching videos:", error);
-        const errorObj:ErrorObj = { 
-        name: error.name, 
-        message: error.message 
-        };
-        return errorObj
-    } else {
-        console.warn("Caught an unknown error type:", error);
-        return error
+      if (error instanceof Error) {
+          console.error("Error fetching videos:", error);
+          const errorObj:ErrorObj = { 
+          name: error.name, 
+          message: error.message 
+          };
+          return errorObj
+      } else {
+          console.warn("Caught an unknown error type:", error);
+          return error
+      }
     }
 
-    }
+    public getCategoryFromId(id: string): string {
+      return CATEGORY_MAPPING[id] || "General"
+    } 
+
+    public getQualityTermsForCategory(categoryId: string): string[] {
+    const qualityTermsByCategory: Record<string, string[]> = {
+      '10': ['live session', 'acoustic version', 'studio recording', 'original mix', 'unreleased'],
+      '28': ['implementation', 'architecture', 'deep dive', 'production', 'case study'],
+      '27': ['comprehensive', 'in-depth', 'professional', 'expert analysis', 'detailed'],
+      '25': ['analysis', 'investigation', 'documentary', 'in-depth report', 'expert interview'],
+      '17': ['technique', 'training method', 'professional', 'coaching', 'skill development'],
+      '26': ['step-by-step', 'detailed process', 'professional technique', 'expert method'],
+      '19': ['authentic', 'local experience', 'cultural insight', 'hidden gems', 'off beaten path']
+    };
+    
+    return qualityTermsByCategory[categoryId] || ['detailed', 'professional', 'expert'];
+  }
 }
