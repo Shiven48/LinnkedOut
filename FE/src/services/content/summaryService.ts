@@ -88,6 +88,7 @@ export class SummaryService {
   ): Promise<{
     primary: SearchQueryResult;
     alternatives: string[];
+    categoryName: string;
     qualityMetrics: {
       qualityScore: number;
       expertiseLevel: 'beginner' | 'intermediate' | 'expert';
@@ -139,6 +140,7 @@ export class SummaryService {
           confidence: classification.confidence
         },
         alternatives,
+        categoryName,
         qualityMetrics: {
           qualityScore,
           expertiseLevel,
@@ -156,6 +158,7 @@ export class SummaryService {
           confidence: 'low'
         },
         alternatives: [],
+        categoryName: this.utils.getCategoryFromId('27'),
         qualityMetrics: {
           qualityScore: 0,
           expertiseLevel: 'beginner',
@@ -168,13 +171,12 @@ export class SummaryService {
   public async getRotatedSearchQueries(
     category: string,
     customTags: string[],
-    similarity: string
   ): Promise<string[]> {
     
     console.log('🔄 Generating rotated search queries for comprehensive coverage');
     
     try {
-      const classification = await this.classifyContent(category, customTags, category);
+      const classification:CategoryClassification = await this.classifyContent(category, customTags, category);
       const categoryName = this.utils.getCategoryFromId(classification.categoryId);
       
       const advancedResult = await this.generateAdvancedQuery(

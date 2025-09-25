@@ -113,6 +113,7 @@ export class YoutubeMetadataSevice {
             return preprocessingService.extractAndPreprocessData(mediaData, youtubeData);
         });
 
+        console.log(`Performing Embedding on ${preprocessedContents.length} documents... `)
         const contentEmbeddings: number[][] = await embeddingService.generateBatchEmbeddings(preprocessedContents);
         return {preprocessedContents: preprocessedContents, contentEmbeddings: contentEmbeddings};
     }

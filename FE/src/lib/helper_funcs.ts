@@ -123,7 +123,8 @@ export class HelperFunctions {
                 similarityLevel,
                 { includeAlternatives: true, maxAlternatives: 3 }
             );
-            
+
+            processedVideo.media.category = queryAnalysis.categoryName
             return { 
                 processedVideo, 
                 embeddings, 
@@ -155,15 +156,19 @@ export class HelperFunctions {
         const filteredVideos:ScoreExtractionResult[] = filterService.processVideos(
             videoResults
         )
-        
+
+        // Option 2: Process all at once (more efficient)
+        const extractedYTVideoData: {mediaData: Media; youtubeData: YoutubeMedia}[] = await Promise.all(
+            filteredVideos.map(async (scoreResult: ScoreExtractionResult) => {
+                return (await youtubeMetadataService.parallelExtractYoutubeMedia([scoreResult.video])).shift()!;
+            })
+        );
+
         // Semantic matching
         let ytVideos:SimilarYT[] = []
         let fetchedYTVideosEmbeddings: {preprocessedContents:string[], contentEmbeddings: number[][]} | null = null;
         if (fetchSimilar) {
             const allInputEmbeddings:number[][] = [video.embeddings]
-            const extractedYTVideoData : { mediaData: Media, youtubeData: YoutubeMedia }[] = 
-                await youtubeMetadataService.parallelExtractYoutubeMedia(videoResults);
-            
             // batch embedding fetched videos (N because we fetched N links from api)
             fetchedYTVideosEmbeddings = await youtubeMetadataService.batchEmbedYTVideos(extractedYTVideoData);
 
