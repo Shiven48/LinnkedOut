@@ -28,19 +28,19 @@ export interface videoMetaData {
 }
 
 export interface Media {
-    id?: number;                                     // This is the id of the media in the database (This id is acting FK in other schemas)
-    type: 'short' | 'image' | 'video' | 'photo' | 'self';
-    platform: string;                                // This will be any of reddit | youtube | or any other platform
-    thumbnailUrl?: string;                           // This is the thumbnail url
-    postUrl: string;                                 // This is the video | image url
-    title: string;                      
-    durationMs: number;                             
-    postId: string;                                  // The id of the post on that platform
-    category?: string,
-    tags?: string[],
-    redditId?: number | null, 
-    youtubeId?: number | null,
-    embeddingId?: number | null
+  id?: number;
+  type: 'short' | 'image' | 'video' | 'photo' | 'self';
+  platform: string;
+  postUrl: string;
+  title: string;
+  postId: string;
+  category: string;        // required (not optional)
+  thumbnailUrl?: string;   // optional
+  durationMs?: number;     // optional
+  tags?: string[] | null;
+  redditId?: number | null;
+  youtubeId?: number | null;
+  embeddingId?: number | null;
 }
 
 export interface MediaRelations {
@@ -169,7 +169,7 @@ export interface WhisperSegment {
   no_speech_prob: number;
 }
 
-interface ApiResultResponse {
+export interface ApiResultResponse {
     message: string,
     formData: FormDataResponse,
     videos: Media[],
@@ -177,11 +177,142 @@ interface ApiResultResponse {
     processedAt: string
 }
 
-interface FormDataResponse {
+export interface FormDataResponse {
     urls: string[],
     category: string,
     customTags: string[],
     fetchSimilar: boolean,
     similarityLevel: string,
     contentType: string
+}
+
+export interface YTThumbnail {
+  url: string;
+  width: number;
+  height: number;
+}
+
+export interface YTThumbnails {
+  default: YTThumbnail;
+  medium: YTThumbnail;
+  high: YTThumbnail;
+  standard: YTThumbnail;
+  maxres: YTThumbnail;
+}
+
+export interface YTVideoSnippet {
+  title: string;
+  description: string;
+  thumbnails: YTThumbnails;
+  tags: string[];
+  categoryId: string;
+}
+
+export interface YTContentDetails {
+  duration: string;     
+  definition: string;   
+  caption: string;      
+}
+
+export interface YTStatistics {
+    viewCount: string,
+    likeCount: string,
+    favoriteCount: string,
+    commentCount: string
+}
+
+export interface YTTopicDetails {
+  topicCategories: string[];
+}
+
+export interface YoutubeMetadata {
+  id: string;
+  snippet: YTVideoSnippet;
+  contentDetails: YTContentDetails;
+  statistics: YTStatistics;
+  topicDetails: YTTopicDetails;
+}
+
+export interface YouTubeVideoResponse {
+  items: YoutubeMetadata[];
+}
+
+export interface PlatformInfo { 
+    platformLinkAndType: Record<string, string>, 
+    length: number 
+}
+
+export interface SimilarYT {
+    similarityScore: number;
+    mediaData: Media;
+    youtubeData: YoutubeMedia;
+    embeddings: number[]
+}
+
+export interface SimilarRDT {
+    similarityScore: number,
+    mediaData: Media,
+    redditData: RedditMedia
+}
+
+export interface YTStatsAndTopics {
+    viewCount: string,
+    likeCount: string,
+    favoriteCount: string,
+    commentCount: string
+    topicCategories: string[]
+}
+
+export interface SearchQueryResult {
+    searchQuery: string;
+    categoryId: string;
+    topicId: string;
+    confidence: string;
+}
+
+interface CategoryClassification {
+  categoryId: string;
+  topicId: string;
+  confidence: 'high' | 'medium' | 'low';
+  reasoning: string;
+}
+
+interface AdvancedQueryResult {
+  primaryQuery: string;
+  alternativeQueries: string[];
+  qualityIndicators: string[];
+  antiAlgorithmTerms: string[];
+}
+
+interface EnhancedSearchQueryResult extends SearchQueryResult {
+  alternativeQueries?: string[];
+  qualityMetrics?: {
+    qualityScore: number;
+    expertiseLevel: 'beginner' | 'intermediate' | 'expert';
+    hasTechnicalTerms: boolean;
+  };
+}
+
+interface PipelineStageResult {
+    videos: YoutubeMetadata[],
+    stage: string,
+    inputCount: number,
+    outputCount: number,
+    filteringReason: string
+}
+
+interface QualityMetrics {
+    likeToViewRatio: number;
+    engagementRate: number;
+    commentToLikeRatio: number;
+    views: number;
+    likes: number,
+    comments: number,
+    duration: number,
+    qualityScore: number
+}
+
+interface ScoreExtractionResult {
+    metrics: QualityMetrics, 
+    video: YoutubeMetadata
 }

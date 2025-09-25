@@ -2,9 +2,9 @@ import { insertEmbeddings } from "@/server/functions/media";
 
 export class EmbeddingRepository {
 
-    async storeContent(content: string, contentEmbeddings:number[], category: string):Promise<number> {
+    async storeContent(content: string, contentEmbeddings:number[]):Promise<number> {
       try {
-        const { id } = await insertEmbeddings(content,contentEmbeddings,category); 
+        const { id } = await insertEmbeddings(content,contentEmbeddings); 
         if(!id) throw new Error('Id is not present on the returning object')
         return id;
       } catch (error) {
