@@ -4,7 +4,7 @@ import Home from "../_components/shared/Home";
 import { getAllMedia, getMediaCount } from "@/server/functions/media";
 import { MEDIA_PER_PAGE } from "@/services/common/constants";
 
-export default async function HomePage({ searchParams }: { searchParams : { page: string | undefined } }) {
+export default async function HomePage({ searchParams }: { searchParams : Promise<{ page: string | undefined }> }) {
   const { page } = await searchParams;
 
   const currentPage = page ? parseInt(page) : 1;

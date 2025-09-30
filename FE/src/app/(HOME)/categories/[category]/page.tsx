@@ -9,19 +9,20 @@ export default async function Category({
     searchParams, 
     params
 }: {
-    searchParams: {
+    searchParams: Promise<{
         page: string
-    }
-    params: { 
+    }>
+    params: Promise<{ 
         category: string 
-    }
+    }>
 }) {
 
     // Destructuring the slugs or the dynamic params
-    const decodedCategory = decodeURIComponent(params.category);
+    const { category } = await params;
+    const decodedCategory = decodeURIComponent(category);
     
     // Destructuring the page info to render the correct page
-    const page:string = await searchParams.page;
+    const { page } = await searchParams;
     const currentPage:number = page ? parseInt(page) : 1;
     const offset = MEDIA_PER_PAGE * (currentPage - 1);
     
