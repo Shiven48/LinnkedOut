@@ -107,10 +107,10 @@ export class SummaryService {
       6. Target content that shows real-world applications or demonstrations
 
       EXAMPLES OF GOOD QUERIES:
+      - "Roman empire daily life"
+      - "Supply chain logistics optimization"
       - "Quantum computing entanglement explained"
-      - "Machine learning model deployment flask"
-      - "Ancient Rome daily life documentary"
-      - "supply chain logistics optimization techniques"
+      - "Effective public speaking techniques"
 
       AVOID:
       - Roadmap or theoretical content

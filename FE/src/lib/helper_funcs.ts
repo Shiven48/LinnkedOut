@@ -218,6 +218,8 @@ export class HelperFunctions {
       inputProcessedVideos.map((pv) => pv.searchQuery)
     );
 
+    console.log(`[HelperFunctions] Generated Search Query: "${searchQuery}"`);
+
     // Calling Youtube api for getting 10-20 videos based on search query
     const unprocessedFetchedVideos: any[] =
       await youtubeAPIService.fetchMultipleYtVideosFromQuery(searchQuery);
