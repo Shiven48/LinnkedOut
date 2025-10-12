@@ -1,6 +1,7 @@
 import { FormDataType } from '@/app/_components/shared/PostInputForm';
 import { HelperFunctions } from '@/lib/helper_funcs';
 import { Media, YoutubeMedia } from '@/services/common/types';
+import { utility } from '@/services/common/utils';
 import { YoutubeAPIService } from '@/services/Platform/youtube/YoutubeAPIService';
 import { YoutubeMetadataSevice } from '@/services/Platform/youtube/YoutubeMetadataService';
 import { YoutubeTranscriptService } from '@/services/Platform/youtube/YoutubeTranscriptionService';
@@ -119,12 +120,22 @@ import { NextRequest, NextResponse } from 'next/server';
 //     }
 // }
 
-export async function GET(
-    request: NextRequest
-) {
-    const query = `Javascript`
-    console.log(`The query is: ${query}`)
-    const service:YoutubeAPIService = new YoutubeAPIService()
-    const videoDetails = await service.fetchMultipleYtVideosFromQuery(query)
-    return NextResponse.json(videoDetails)
+export async function GET() {
+    const service = new YoutubeAPIService();
+    const result = await service.fetchVideoMetadata(`VQALybIKQ4U`)
+    
+    // TEST 1: Simple query with medium duration
+    // console.log('=== TEST 1: Simple Query ===');
+    // const simpleContent = await ser.testSimpleSearch("javascript event loop");
+    // console.log('Simple search results:', simpleContent.length);
+    
+    // TEST 2: If simple works, try advanced
+    // if (simpleContent.length > 0) {
+    //     console.log('=== TEST 2: Advanced Query ===');
+    //     const advancedContent = await ser.getHighQualityTechContent("javascript event loop");
+    //     console.log('Advanced search results:', advancedContent.length);
+    //     return NextResponse.json({ simple: simpleContent, advanced: advancedContent });
+    // }
+    
+    return NextResponse.json(result);
 }

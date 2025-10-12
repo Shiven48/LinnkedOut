@@ -1,5 +1,7 @@
-import { CommentData, Media, RedditComment, RedditMedia } from "@/services/common/types";
+import { CommentData, Media, RedditComment, RedditMedia, SimilarRDT } from "@/services/common/types";
 import { SummaryService } from "@/services/content/summaryService";
+import { VectorStore } from "@/services/content/VectorStoreService";
+import { EmbeddingService } from "@/services/vector/EmbeddingService";
 import { ProcessingService } from "@/services/vector/PreprocessingService";
 
 export class RedditMetadataSevice {
@@ -182,5 +184,61 @@ export class RedditMetadataSevice {
     public extractAllIds = (extractedMedias:any[]) => {
         return extractedMedias.map((media:any) => media.id);
     }
+
+    static async parallelExtractRedditMedia(fullRedditResponse:any[], multipleRedditVideos: any[], ): Promise<{ mediaData: Media, redditData: RedditMedia }[]> {
+        const redditMetadataService = new RedditMetadataSevice();
+
+        const videoPromises: Promise<{ mediaData: Media; redditData: RedditMedia }>[] = multipleRedditVideos.map(async (video: any) => {
+            
+            const mediaData:Media = redditMetadataService.extractMediaData(video);
+            const redditData: RedditMedia = redditMetadataService.extractRedditData(video);
+            redditData.comments = redditMetadataService.extractTopComments(fullRedditResponse);
+            
+            const [tags] = await Promise.all([
+                await redditMetadataService.extractTags(video, mediaData, redditData)
+            ]);
+
+            mediaData.tags = tags;
+            return { mediaData, redditData };
+        });
+
+        return await Promise.all(videoPromises);
+    }
+
+    static async batchEmbedRDTVideos(
+        extractedVideos: { mediaData: Media; redditData: RedditMedia }[]
+    ):Promise<number[][]> {
+        const embeddingService = new EmbeddingService();
+        const preprocessingService = new ProcessingService();
+
+        const preprocessedContents: string[] = extractedVideos.map((video) => {
+            const { mediaData, redditData } = video;
+            return preprocessingService.extractAndPreprocessData(mediaData, redditData);
+        });
+
+        const contentEmbeddings: number[][] = await embeddingService.generateBatchEmbeddings(preprocessedContents);
+        return contentEmbeddings;
+    }
+
+    // static extractTopRedditVideos(
+    //     inputEmbeddings: number[][], 
+    //     fetchedEmbeddings: number[][], 
+    //     extractedVideoData: { mediaData: Media, redditData: RedditMedia }[]
+    // ):SimilarRDT[] {
+    //     const vecStore = new VectorStore()
+    //     const scoredVideos = extractedVideoData.map((videoData, index) => {
+    //     const fetchedEmbedding:number[] = fetchedEmbeddings[index];
+        
+    //     const maxSimilarity = Math.max(
+    //         ...inputEmbeddings.map((inputEmbedding:number[]) => 
+    //             vecStore.cosineSimilarity(inputEmbedding, fetchedEmbedding)
+    //         )
+    //     );
+        
+    //     return {
+    //         ...videoData,
+    //         similarityScore: maxSimilarity
+    //     };
+    // });
 
 }

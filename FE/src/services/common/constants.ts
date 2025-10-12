@@ -6,9 +6,9 @@ export const SERVER_BASE_URL: string = `http://localhost:3000/`;
 export const FORM_INSERT_API_URL:string = `/api/testing`
 export const SUMMARY_API_URL: string = `/api/summarize`;
 export const DESKTOPSIZE:number = 1080;
-export const MEDIA_PER_PAGE:number = 9;
+export const MEDIA_PER_PAGE:number = 12;
 export const Summary_Template:string = "Summarize the main points or the main theme of the whole document such that it can be used as notes for revision of concept maintaining all the scientific concepts and terms and explaining and adding the core idea in summary: {context}";
-export const MEDIA_FETCH_LIMIT:number = 50
+export const MEDIA_FETCH_LIMIT:number = 40
 
 export const categories = (): Category[] => {
     const categories: Category[] = [
@@ -186,3 +186,27 @@ export const Tags_Template:string = `You are an intelligent tagging agent. Your 
         Return only the tags, in a comma-separated format.`
 
 export const Audio_Output_Directory:string =`C://Users/Sheve/Desktop/crazy/linnkedOut_cloned/FE/audio`
+
+// Update your category mappings to include closest matches for legal content
+export const CATEGORY_MAPPING: Record<string, string> = {
+  "10": "Music",
+  "19": "Travel & Events",
+  "25": "News & Politics",
+  "26": "Howto & Style",
+  "27": "Education",
+  "28": "Science & Technology"
+} as const;
+
+export const TOPICS_MAPPING: Record<string, string> = {
+  "/m/04rlf": "Music",
+  "/m/05qt0": "Politics",
+  "/m/0kt51": "Health", 
+  "/m/07c1v": "Technology", 
+  "/m/027x7n": "Fitness", 
+  "/m/02wbm": "Food",
+  "/m/03glg": "Hobby",
+  "/m/07bxq": "Tourism",
+  "/m/09s1f": "Business",
+  "/m/0403l3g": "Education",
+  "/m/05qjc": "Knowledge"
+} as const;

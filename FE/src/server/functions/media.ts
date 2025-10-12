@@ -1,15 +1,15 @@
 import { db } from '../db/index'
 import { media, redditMedia, youtubeMedia } from '../db/schema'
-import { Media, RedditMedia, YoutubeMedia } from '@/services/common/types';
-import { count, eq, sql } from 'drizzle-orm';
+import { CaptionItem, CommentData, Media, RedditMedia, YoutubeMedia } from '@/services/common/types';
+import { count, desc, eq, sql } from 'drizzle-orm';
 import { MEDIA_PER_PAGE } from '@/services/common/constants';
 import * as schema from "../db/schema"
 
-export const getAllMedia = async (offset: number): Promise<Media[]> => {
+export const getAllMedia = async (offset: number) => {
     try {
         return await db.select()
             .from(schema.media)
-            .orderBy(schema.media.createdAt)
+            .orderBy(desc(schema.media.createdAt))
             .limit(MEDIA_PER_PAGE)
             .offset(offset);
     } catch (error: any) {
@@ -37,23 +37,23 @@ export const insertMedia = async (generalisedMedia: Media): Promise<{ id: number
         throw new Error('durationMs must be an integer');
     }
     try {
-        const durationMs = generalisedMedia.durationMs !== undefined
+        const durationMs = generalisedMedia.durationMs !== undefined 
             ? Math.floor(generalisedMedia.durationMs)
-            : null;
+            : 0;
         const [InsertedMedia] = await db.insert(media)
-            .values({
+            .values([{
                 type: generalisedMedia.type,
                 platform: generalisedMedia.platform,
                 thumbnailUrl: generalisedMedia.thumbnailUrl,
                 postUrl: generalisedMedia.postUrl,
                 title: generalisedMedia.title,
-                durationMs: durationMs,
+                durationMs,
                 postId: generalisedMedia.postId,
                 category: generalisedMedia.category,
                 redditId: generalisedMedia.redditId,
                 youtubeId: generalisedMedia.youtubeId,
                 embeddingId: generalisedMedia.embeddingId,
-            })
+            }])
             .returning({ id: media.id });
             return {id : InsertedMedia.id}
     } catch (error) {
@@ -100,7 +100,7 @@ export const insertRedditMedia = async (reddit: RedditMedia): Promise<{ id: numb
 export const getFromMediaById = async (id: number):Promise<Media> => {
     // 'use server'
     try {
-        const [fetchedVideo] = await db.select()
+        const [fetchedVideo]:Media[] = await db.select()
             .from(media)
             .where(eq(media.id, id))
             .limit(1)
@@ -115,11 +115,17 @@ export const getFromMediaById = async (id: number):Promise<Media> => {
 export const getMediaFromYoutubeById = async (id: number):Promise<YoutubeMedia> => {
     // 'use server'
     try {
-        const [fetchedYoutubeMedia] = await db.select()
+        const fetchedYoutubeMedia = await db.select()
             .from(youtubeMedia)
             .where(eq(youtubeMedia.id, id))
-            .limit(1)
-        return fetchedYoutubeMedia 
+            .limit(1);
+
+        const mapped: YoutubeMedia[] = fetchedYoutubeMedia.map(r => ({
+            ...r,
+            englishCaptions: r.englishCaptions as CaptionItem[]
+        }));
+
+        return mapped[0] ?? null;
     } catch (error) {
         console.error(`Failed to fetch media from youtube by Id :${id}`, error)
         throw new Error(`Failed to fetch media from youtube`)
@@ -130,11 +136,17 @@ export const getMediaFromYoutubeById = async (id: number):Promise<YoutubeMedia> 
 export const getMediaFromRedditById = async (id: number):Promise<RedditMedia | null> => {
     // 'use server'
     try {
-        const [fetchedRedditMedia]:RedditMedia[] = await db.select()
+        const fetchedRedditMedia = await db.select()
             .from(redditMedia)
             .where(eq(redditMedia.id, id))
             .limit(1)
-            return fetchedRedditMedia ?? null;
+
+            const mapped: RedditMedia[] = fetchedRedditMedia.map(r => ({
+                ...r,
+                comments: r.comments as CommentData[]
+            }));
+
+            return mapped[0] ?? null;
     } catch (error) {
         console.error('Detailed fetch error:', error);
         throw new Error(`Failed to fetch media from reddit: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -209,14 +221,13 @@ export const getMediaFromQuery = async (query: string): Promise<Media[]> => {
     }
 }
 
-export const insertEmbeddings = async (content: string, contentEmbeddings: number[], category: string): Promise<{ id: number }> => {
+export const insertEmbeddings = async (content: string, contentEmbeddings: number[]): Promise<{ id: number }> => {
     try {
         const insertedRecord = await db
             .insert(schema.contentVectors)
             .values({
                 content: content,
                 contentEmbedding: contentEmbeddings,
-                category: category
             })
             .returning({ id: schema.contentVectors.id });
         return { id: insertedRecord[0].id };

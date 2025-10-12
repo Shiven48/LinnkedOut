@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { Media } from '@/services/common/types';;
 import { getAllMediaWherePlatformReddit, getAllMediaWherePlatformYoutube } from "@/server/functions/media";
-import { redditMedia } from "@/server/db";
 
 export async function GET(
     _request: Request,
