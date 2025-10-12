@@ -8,7 +8,7 @@ export default async function HomePage({ searchParams }: { searchParams : { page
   const { page } = await searchParams;
 
   const currentPage = page ? parseInt(page) : 1;
-  const totalMedia = await getMediaCount(); 
+  const totalMedia = await getMediaCount();
   const totalPages = Math.ceil(totalMedia / MEDIA_PER_PAGE)
   const offset = MEDIA_PER_PAGE * (currentPage - 1);
   const paginationInfo = {

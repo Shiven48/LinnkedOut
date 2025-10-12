@@ -13,13 +13,4 @@ export class EmbeddingRepository {
       }
     }
 
-    // Yet to implement
-    // async semanticSearch(query: string, limit: number = 10){
-    //   try{
-    //     const queryEmbedding:number[] = await this.embeddingGenerator.generateEmbeddings(query);
-    //     return await getSimilarSearchedFromEmbeddings(queryEmbedding,limit);
-    //   } catch(error){
-    //   }
-    // }
-
 }
