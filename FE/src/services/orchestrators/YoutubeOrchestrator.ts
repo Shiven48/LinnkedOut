@@ -31,13 +31,13 @@ export default class YoutubeOrchestrator {
         this.youtubeRepository = new YoutubeMediaRepository();
     }
 
-    async mainYoutubeOrchestrator(link:string):Promise<GlobalMetadata> {
+    async mainYoutubeOrchestrator(link:string, userId: string):Promise<GlobalMetadata> {
         try{
             const videoId = this.youtubeAPIService.parseVideoId(link);
             console.log(`YTOrchestrator(videoId): ${videoId}`)
 
             const fetchedYoutubeMetadata = await this.youtubeAPIService.fetchVideoMetadata(videoId);            
-            const mediaData:Media = this.youtubeMetadataService.extractMediaData(fetchedYoutubeMetadata);
+            const mediaData:Media = this.youtubeMetadataService.extractMediaData(fetchedYoutubeMetadata, userId);
             const youtubeData = await this.youtubeMetadataService.extractYoutubeData(fetchedYoutubeMetadata);
             youtubeData.englishCaptions = await this.youtubeTranscriptionService.fetchTranscript(videoId, mediaData.title);
             mediaData.tags = await this.youtubeMetadataService.extractTags(fetchedYoutubeMetadata, mediaData, youtubeData);

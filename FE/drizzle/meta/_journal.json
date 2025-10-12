@@ -15,6 +15,20 @@
       "when": 1746290927742,
       "tag": "0001_slimy_juggernaut",
       "breakpoints": false
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1760273554664,
+      "tag": "0002_rare_luke_cage",
+      "breakpoints": false
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1760273777657,
+      "tag": "0003_even_marauders",
+      "breakpoints": false
     }
   ]
 }
