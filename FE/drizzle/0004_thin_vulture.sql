@@ -1,0 +1,6 @@
+ALTER TABLE "users" DISABLE ROW LEVEL SECURITY;
+DROP TABLE "users" CASCADE;
+ALTER TABLE "media" DROP CONSTRAINT "media_user_id_users_id_fk";
+
+ALTER TABLE "media" ALTER COLUMN "user_id" SET DATA TYPE varchar(256);
+ALTER TABLE "media" ALTER COLUMN "user_id" SET NOT NULL;
