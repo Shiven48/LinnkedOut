@@ -2,9 +2,14 @@ import { ChatPromptTemplate, PromptTemplate } from "@langchain/core/prompts";
 import { ChatGroq } from "@langchain/groq";
 import { createStuffDocumentsChain } from "langchain/chains/combine_documents";
 import { Document } from "langchain/document";
-import { StreamChunk } from '@/services/common/types';
+import { StreamChunk } from "@/services/common/types";
 import { Summary_Template, Tags_Template } from "../common/constants";
-import { CommaSeparatedListOutputParser, ListOutputParser, StringOutputParser, StructuredOutputParser } from "@langchain/core/output_parsers";
+import {
+  CommaSeparatedListOutputParser,
+  ListOutputParser,
+  StringOutputParser,
+  StructuredOutputParser,
+} from "@langchain/core/output_parsers";
 import { RunnableSequence } from "@langchain/core/runnables";
 
 export class SummaryService {
@@ -16,7 +21,7 @@ export class SummaryService {
 
   private initializeModel(): ChatGroq {
     return new ChatGroq({
-      model: 'llama-3.3-70b-versatile',
+      model: "llama-3.3-70b-versatile",
       apiKey: process.env.GROQ_API_KEY!,
       temperature: 0.7,
       streaming: true,
@@ -24,9 +29,7 @@ export class SummaryService {
   }
 
   public createTemplate(template: string): PromptTemplate {
-    return PromptTemplate.fromTemplate(
-      template
-    );
+    return PromptTemplate.fromTemplate(template);
   }
 
   public async createChain(prompt: PromptTemplate) {
@@ -43,12 +46,12 @@ export class SummaryService {
 
     const stream = new ReadableStream<Uint8Array>({
       async start(controller: ReadableStreamDefaultController<Uint8Array>) {
-        const asyncIterable: AsyncIterable<StreamChunk> = await chain.stream({ context: docs });
+        const asyncIterable: AsyncIterable<StreamChunk> = await chain.stream({
+          context: docs,
+        });
         for await (const chunk of asyncIterable) {
           const textChunk: string =
-            typeof chunk === 'string'
-              ? chunk
-              : chunk?.content ?? '';
+            typeof chunk === "string" ? chunk : chunk?.content ?? "";
           controller.enqueue(new TextEncoder().encode(textChunk));
         }
         controller.close();
@@ -57,30 +60,36 @@ export class SummaryService {
 
     return new Response(stream, {
       headers: {
-        'Content-Type': 'text/plain',
-        'Cache-Control': 'no-cache',
+        "Content-Type": "text/plain",
+        "Cache-Control": "no-cache",
       },
     });
   }
 
   public async generateTags(prompt: string): Promise<string[]> {
     const parser = new CommaSeparatedListOutputParser();
-    const template = this.createTemplate(Tags_Template)
+    const template = this.createTemplate(Tags_Template);
 
     const chain = RunnableSequence.from([
       (input: { data: string }) => ({ data: input }),
       template,
       this.llm,
-      parser
-    ])
+      parser,
+    ]);
 
-    const output: string[] = await chain.invoke({ data: prompt })
+    const output: string[] = await chain.invoke({ data: prompt });
     return output;
   }
 
-  public async generateSearchQuery(category: string, customTags: string[], similarity: string): Promise<string> {
-    const formattedTags = customTags.map((tag: string) => tag.replace('#', '')).join(', ')
-    const prompt:string = `
+  public async generateSearchQuery(
+    category: string,
+    customTags: string[],
+    similarity: string
+  ): Promise<string> {
+    const formattedTags = customTags
+      .map((tag: string) => tag.replace("#", ""))
+      .join(", ");
+    const prompt: string = `
       You are an expert at creating YouTube search queries that find high-quality educational content.
 
       TASK: Generate a single YouTube search query based on the following:
@@ -91,18 +100,17 @@ export class SummaryService {
 
       REQUIREMENTS:
       1. Create ONE search query (not multiple queries)
-      2. Use 3-5 specific, technical keywords separated by spaces (not commas)
+      2. Use 3-5 specific keywords separated by spaces (not commas)
       3. Focus on practical, hands-on content rather than theory
-      4. Prioritize implementation tutorials, coding examples, and skill-building videos
-      5. Avoid generic terms like "tutorial", "guide", "beginner", "advanced"
-      6. Include specific technologies, frameworks, or methodologies from the interests
-      7. Target content that shows actual code, demonstrations, or real-world applications
+      4. Avoid generic terms like "tutorial", "guide", "beginner", "advanced"
+      5. Include specific topics, concepts, or methodologies from the interests
+      6. Target content that shows real-world applications or demonstrations
 
       EXAMPLES OF GOOD QUERIES:
-      - "OpenGL shader programming vertex fragment"
-      - "Vulkan rendering pipeline implementation"
-      - "game engine architecture systems design"
-      - "graphics programming optimization techniques"
+      - "Quantum computing entanglement explained"
+      - "Machine learning model deployment flask"
+      - "Ancient Rome daily life documentary"
+      - "supply chain logistics optimization techniques"
 
       AVOID:
       - Roadmap or theoretical content
@@ -114,6 +122,6 @@ export class SummaryService {
     `;
 
     const tags = await this.generateTags(prompt);
-    return tags.join(' ');
+    return tags.join(" ");
   }
 }
