@@ -226,7 +226,10 @@ export class HelperFunctions {
     const extractedYTVideoData: {
       mediaData: Media;
       youtubeData: YoutubeMedia;
-    }[] = await this.parallelExtractYoutubeMedia(unprocessedFetchedVideos);
+    }[] = await this.parallelExtractYoutubeMedia(
+      unprocessedFetchedVideos,
+      userId
+    );
     let finalizedMedias: SimilarYT[] = [];
     let categoryEmbeddings: Record<string, number[]> = {};
 
@@ -415,12 +418,16 @@ export class HelperFunctions {
   }
 
   static async parallelExtractYoutubeMedia(
-    multipleYtVideos: any[]
+    multipleYtVideos: any[],
+    userId: string
   ): Promise<{ mediaData: Media; youtubeData: YoutubeMedia }[]> {
     const youtubeMetadataService = new YoutubeMetadataSevice();
     const videoPromises = multipleYtVideos.map(async (video: any) => {
       try {
-        const mediaData = youtubeMetadataService.extractMediaData(video);
+        const mediaData = youtubeMetadataService.extractMediaData(
+          video,
+          userId
+        );
         const youtubeData = await youtubeMetadataService.extractYoutubeData(
           video
         );
