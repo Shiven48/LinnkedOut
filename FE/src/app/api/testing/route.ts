@@ -4,7 +4,7 @@ import { Resources } from '@/services/common/constants';
 import { NextRequest, NextResponse } from 'next/server';
 import { RedditMetadataSevice } from '@/services/Platform/reddit/RedditMetadataService';
 import { RedditAPIService } from '@/services/Platform/reddit/RedditAPIService';
-import { ApiResultResponse, CommentData, FormDataResponse, Media } from '@/services/common/types';
+import { CommentData} from '@/services/common/types';
 import { FormDataType } from '@/app/_components/shared/PostInputForm';
 import { HelperFunctions } from '@/lib/helper_funcs';
 
@@ -77,11 +77,116 @@ export async function GET(
     }
 }
 
+// export async function POST(request: NextRequest) {
+//     try {
+//         // Parse the JSON body from the request
+//         const formData: FormDataType = await request.json();
+//         console.log('Received form data:', JSON.stringify(formData, null, 2));
+
+//         // Validate required fields
+//         if (!formData.url || formData.url.length === 0) {
+//             return NextResponse.json(
+//                 {
+//                     body: { error: 'URL list cannot be empty' },
+//                     status: 400
+//                 },
+//                 { status: 400 }
+//             );
+//         }
+
+//         if (!formData.category) {
+//             return NextResponse.json(
+//                 {
+//                     body: { error: 'Category is required' },
+//                     status: 400
+//                 },
+//                 { status: 400 }
+//             );
+//         }
+
+//         console.log('Starting RootOrchestrator processing...');
+//         // const orchestratorResult = await HelperFunctions.RootOrchestrator(formData);   
+//         console.log('RootOrchestrator completed successfully');
+
+//         const result = orchestratorResult.map(data => {
+//             return data.mediaData
+//         })
+
+//         const responseData:ApiResultResponse = {
+//             message: 'Content processed successfully!',
+//             formData: {
+//                     urls: formData.url,
+//                     category: formData.category,
+//                     customTags: formData.customTags,
+//                     fetchSimilar: formData.fetchSimilar,
+//                     similarityLevel: formData.similarityLevel,
+//                     contentType: formData.contentType
+//                 },
+//                 videos: result,
+//                 totalVideos: orchestratorResult.length,
+//                 processedAt: new Date().toISOString()
+//             };
+
+//         return NextResponse.json({
+//             body: responseData,
+//             status: 200
+//         });
+
+//     } catch (error: any) {
+//         console.error("Error processing form submission:", error);
+        
+//         // Handle different types of errors
+//         if (error instanceof SyntaxError) {
+//             return NextResponse.json(
+//                 {
+//                     body: { error: 'Invalid JSON format in request body' },
+//                     status: 400
+//                 },
+//                 { status: 400 }
+//             );
+//         }
+
+//         // Handle orchestrator-specific errors
+//         if (error.message && error.message.includes('Invalid link format')) {
+//             return NextResponse.json(
+//                 {
+//                     body: { error: 'Invalid URL format provided', details: error.message },
+//                     status: 400
+//                 },
+//                 { status: 400 }
+//             );
+//         }
+
+//         if (error.message && error.message.includes('Unsupported platform')) {
+//             return NextResponse.json(
+//                 {
+//                     body: { error: 'Unsupported platform detected', details: error.message },
+//                     status: 400
+//                 },
+//                 { status: 400 }
+//             );
+//         }
+
+//         // Generic error handling
+//         return NextResponse.json(
+//             {
+//                 body: { 
+//                     error: 'Internal server error', 
+//                     details: error.message,
+//                     timestamp: new Date().toISOString()
+//                 },
+//                 status: 500
+//             },
+//             { status: 500 }
+//         );
+//     }
+// }
+
 export async function POST(request: NextRequest) {
     try {
         // Parse the JSON body from the request
         const formData: FormDataType = await request.json();
-        console.log('Received form data:', JSON.stringify(formData, null, 2));
+        // console.log('Received form data:', JSON.stringify(formData, null, 2));
 
         // Validate required fields
         if (!formData.url || formData.url.length === 0) {
@@ -105,32 +210,9 @@ export async function POST(request: NextRequest) {
         }
 
         console.log('Starting RootOrchestrator processing...');
-        const orchestratorResult = await HelperFunctions.RootOrchestrator(formData);   
+        const orchestratorResult = await HelperFunctions.testFlow(formData);
         console.log('RootOrchestrator completed successfully');
-
-        const result = orchestratorResult.map(data => {
-            return data.mediaData
-        })
-
-        const responseData:ApiResultResponse = {
-            message: 'Content processed successfully!',
-            formData: {
-                    urls: formData.url,
-                    category: formData.category,
-                    customTags: formData.customTags,
-                    fetchSimilar: formData.fetchSimilar,
-                    similarityLevel: formData.similarityLevel,
-                    contentType: formData.contentType
-                },
-                videos: result,
-                totalVideos: orchestratorResult.length,
-                processedAt: new Date().toISOString()
-            };
-
-        return NextResponse.json({
-            body: responseData,
-            status: 200
-        });
+        return NextResponse.json(orchestratorResult)
 
     } catch (error: any) {
         console.error("Error processing form submission:", error);

@@ -1,4 +1,4 @@
-import { Media } from "../common/types";
+import { Media, YoutubeMetadata } from "../common/types";
 import { RedditMetadataSevice } from "@/services/Platform/reddit/RedditMetadataService";
 import { YoutubeTranscriptService } from "../Platform/youtube/YoutubeTranscriptionService";
 import natural from 'natural';
@@ -14,7 +14,7 @@ export class ProcessingService {
     this.redditMetaDataService = new RedditMetadataSevice(); 
   }
       
-  public extractAndPreprocessData(mediaData: Media, platformData: any):string {
+  public extractAndPreprocessData(mediaData: Media, platformData: any, youtubeMetadata?: YoutubeMetadata):string {
     let textSources = [];
     
     try {
@@ -29,6 +29,13 @@ export class ProcessingService {
       if (platformData?.englishCaptions) {
         const extractedCaptions = this.youtubeTranscriptionService.extractEnglishCaptions(platformData.englishCaptions);
         textSources.push(extractedCaptions);
+      }
+
+      if (youtubeMetadata?.topicDetails.topicCategories) {
+        for (const topicCategory in youtubeMetadata.topicDetails.topicCategories) {
+          const cleanedTopicCategory = this.cleanText(topicCategory)
+          textSources.push(cleanedTopicCategory)
+        }
       }
 
       // This will be solved with redditOrchestrator

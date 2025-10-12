@@ -1,11 +1,11 @@
 {
-  "id": "d675c303-50f4-4737-9088-20c98fa08539",
+  "id": "3c580977-21bd-4e90-8bbb-7da5bfd45c97",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.embeddings": {
-      "name": "embeddings",
+    "public.media_embeddings": {
+      "name": "media_embeddings",
       "schema": "",
       "columns": {
         "id": {
@@ -14,15 +14,15 @@
           "primaryKey": true,
           "notNull": true
         },
-        "text": {
-          "name": "text",
+        "content": {
+          "name": "content",
           "type": "text",
           "primaryKey": false,
           "notNull": true
         },
         "embedding": {
           "name": "embedding",
-          "type": "vector(768)",
+          "type": "vector(1024)",
           "primaryKey": false,
           "notNull": false
         }
@@ -62,7 +62,8 @@
           "name": "thumbnail_url",
           "type": "varchar(200)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true,
+          "default": "''"
         },
         "post_url": {
           "name": "post_url",
@@ -80,7 +81,7 @@
           "name": "duration_ms",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "default": 0
         },
         "post_id": {
@@ -102,12 +103,98 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
+        },
+        "category": {
+          "name": "category",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reddit_id": {
+          "name": "reddit_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "youtube_id": {
+          "name": "youtube_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "embedding_id": {
+          "name": "embedding_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},
-      "foreignKeys": {},
+      "foreignKeys": {
+        "media_reddit_id_reddit_media_id_fk": {
+          "name": "media_reddit_id_reddit_media_id_fk",
+          "tableFrom": "media",
+          "tableTo": "reddit_media",
+          "columnsFrom": [
+            "reddit_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "media_youtube_id_youtube_media_id_fk": {
+          "name": "media_youtube_id_youtube_media_id_fk",
+          "tableFrom": "media",
+          "tableTo": "youtube_media",
+          "columnsFrom": [
+            "youtube_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "media_embedding_id_media_embeddings_id_fk": {
+          "name": "media_embedding_id_media_embeddings_id_fk",
+          "tableFrom": "media",
+          "tableTo": "media_embeddings",
+          "columnsFrom": [
+            "embedding_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "media_reddit_id_unique": {
+          "name": "media_reddit_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "reddit_id"
+          ]
+        },
+        "media_youtube_id_unique": {
+          "name": "media_youtube_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "youtube_id"
+          ]
+        },
+        "media_embedding_id_unique": {
+          "name": "media_embedding_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "embedding_id"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -120,12 +207,6 @@
           "name": "id",
           "type": "serial",
           "primaryKey": true,
-          "notNull": true
-        },
-        "media_id": {
-          "name": "media_id",
-          "type": "integer",
-          "primaryKey": false,
           "notNull": true
         },
         "subreddit": {
@@ -154,31 +235,9 @@
         }
       },
       "indexes": {},
-      "foreignKeys": {
-        "reddit_media_media_id_media_id_fk": {
-          "name": "reddit_media_media_id_media_id_fk",
-          "tableFrom": "reddit_media",
-          "tableTo": "media",
-          "columnsFrom": [
-            "media_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "reddit_media_media_id_unique": {
-          "name": "reddit_media_media_id_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "media_id"
-          ]
-        }
-      },
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -191,12 +250,6 @@
           "name": "id",
           "type": "serial",
           "primaryKey": true,
-          "notNull": true
-        },
-        "media_id": {
-          "name": "media_id",
-          "type": "integer",
-          "primaryKey": false,
           "notNull": true
         },
         "description": {
@@ -219,31 +272,9 @@
         }
       },
       "indexes": {},
-      "foreignKeys": {
-        "youtube_media_media_id_media_id_fk": {
-          "name": "youtube_media_media_id_media_id_fk",
-          "tableFrom": "youtube_media",
-          "tableTo": "media",
-          "columnsFrom": [
-            "media_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "youtube_media_media_id_unique": {
-          "name": "youtube_media_media_id_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "media_id"
-          ]
-        }
-      },
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -257,7 +288,8 @@
         "short",
         "image",
         "video",
-        "photo"
+        "photo",
+        "self"
       ]
     }
   },

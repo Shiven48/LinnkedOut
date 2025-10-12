@@ -59,21 +59,22 @@
 // export const schema = { media, redditMedia, youtubeMedia };
 
 
+import { CaptionItem } from "@/services/common/types";
 import { relations } from "drizzle-orm";
 import { integer, jsonb, pgEnum, pgTable, serial, text, timestamp, varchar, vector } from "drizzle-orm/pg-core";
 
 // Media type enum
-export const mediaTypeEnum = pgEnum('type', ['short', 'image', 'video', 'photo']);
+export const mediaTypeEnum = pgEnum('type', ['short', 'image', 'video', 'photo', 'self']);
 
 // Generalized media table
 export const media = pgTable('media', {
   id: serial('id').primaryKey(),
   type: mediaTypeEnum('type').notNull(),
   platform: varchar('platform', { length: 30 }).notNull(),
-  thumbnailUrl: varchar('thumbnail_url', { length: 200 }),
+  thumbnailUrl: varchar('thumbnail_url', { length: 200 }).notNull().default(''),
   postUrl: varchar('post_url', { length: 500 }).notNull(),
   title: text('title').notNull(),
-  durationMs: integer('duration_ms').default(0),
+  durationMs: integer('duration_ms').notNull().default(0),
   postId: varchar('post_id', { length: 100 }).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
@@ -105,7 +106,7 @@ export const youtubeMedia = pgTable('youtube_media', {
 export const contentVectors = pgTable("media_embeddings", {
   id: serial("id").primaryKey(),
   content: text("content").notNull(),
-  contentEmbedding: vector("embedding", { dimensions: 1024 }).notNull(),
+  contentEmbedding: vector("embedding", { dimensions: 1024 }),
 });
 
 // Corrected relations
