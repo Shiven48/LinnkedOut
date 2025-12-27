@@ -13,6 +13,5 @@ Low Ranking (Worst):
 Prioritize actionable knowledge and information density.`;
 
 // API endpoint for fetching transcripts
-// Change this to your deployed URL in production
 export const TRANSCRIPT_API_URL =
-  "http://localhost:3000/api/extension/transcripts";
+  "https://linnked-out.vercel.app/api/extension/transcripts";
