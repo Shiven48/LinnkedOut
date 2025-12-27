@@ -12,16 +12,7 @@ const STORAGE_KEY_CHILL_UNLOCKED = "linnkedout_chill_unlocked";
 const CHILL_PHRASE =
   "I am choosing to take a break and will return to focused work after.";
 
-const DEFAULT_PROMPT = `Rate each video from 1-10 based on productivity value.
-
-Scoring guide:
-- 1-3: Pure entertainment, drama, gossip, reactions, gaming streams
-- 4-5: Mixed content, news, vlogs with some value
-- 6-7: Educational entertainment, informative content
-- 8-10: Tutorials, courses, lectures, skill-building
-
-Be strict. Most YouTube content is low value.
-Block entertainment disguised as education.`;
+import { DEFAULT_PROMPT } from "./constants";
 
 // DOM Elements
 const modeCards = document.querySelectorAll(
