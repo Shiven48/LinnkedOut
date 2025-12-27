@@ -13,7 +13,6 @@ export default defineConfig({
       input: {
         popup: resolve(__dirname, "popup.html"),
         info: resolve(__dirname, "info.html"),
-        offscreen: resolve(__dirname, "offscreen.html"),
         content: resolve(__dirname, "src/content.ts"),
         background: resolve(__dirname, "src/background.ts"),
       },
