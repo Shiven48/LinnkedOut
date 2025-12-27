@@ -1,0 +1,24 @@
+{
+  "name": "linnkedout",
+  "version": "2.0.0",
+  "description": "Control your YouTube experience with Focus, Personalized, and Chill modes",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && cp manifest.json dist/ && cp public/icon.svg dist/",
+    "preview": "vite preview"
+  },
+  "keywords": [
+    "youtube",
+    "productivity",
+    "extension"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/chrome": "^0.1.32",
+    "@types/node": "^25.0.3",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.0"
+  }
+}
