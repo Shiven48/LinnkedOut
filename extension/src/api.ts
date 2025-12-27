@@ -1,4 +1,11 @@
-// API Service - Backend for transcripts, local AI scoring
+// API Service - Using Vercel AI SDK for structured output
+
+import { generateObject } from "ai";
+import { createOpenAI } from "@ai-sdk/openai";
+import { createAnthropic } from "@ai-sdk/anthropic";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { z } from "zod";
+import { TRANSCRIPT_API_URL } from "./constants";
 
 export type AIProvider = "gemini" | "claude" | "openai";
 
@@ -9,184 +16,151 @@ export interface VideoData {
   transcript: string;
 }
 
-export interface VideoScore {
+export interface VideoRank {
   videoId: string;
-  score: number;
-  reason: string;
+  keep: boolean;
 }
 
-// Backend URL - update when deployed
-const BACKEND_URL = "https://your-app.vercel.app"; // TODO: Update after deploy
+// Simple schema: videoId and keep boolean
+const RankedVideosSchema = z.object({
+  rankings: z.array(
+    z.object({
+      videoId: z.string(),
+      keep: z.boolean(),
+    })
+  ),
+});
 
-// ============ BACKEND: Fetch Transcripts ============
+// ============ FETCH TRANSCRIPTS via Next.js API ============
 
 export async function fetchTranscripts(
   videoIds: string[]
 ): Promise<Record<string, string>> {
-  const res = await fetch(`${BACKEND_URL}/transcripts`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ videoIds }),
-  });
+  try {
+    console.log(
+      `LinnkedOut: Fetching transcripts from API for ${videoIds.length} videos`
+    );
 
-  if (!res.ok) {
-    throw new Error(`Backend error: ${await res.text()}`);
+    const response = await fetch(TRANSCRIPT_API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ videoIds }),
+    });
+
+    if (!response.ok) {
+      console.error(
+        `LinnkedOut: API error ${response.status}: ${response.statusText}`
+      );
+      return {};
+    }
+
+    const data = await response.json();
+
+    if (data.transcripts) {
+      const successCount = Object.values(data.transcripts).filter(
+        (t) => t
+      ).length;
+      console.log(
+        `LinnkedOut: Received ${successCount}/${videoIds.length} transcripts from API`
+      );
+
+      // Log first 200 chars of each transcript for debugging
+      for (const [videoId, transcript] of Object.entries(data.transcripts)) {
+        if (transcript) {
+          console.log(
+            `LinnkedOut: Transcript for ${videoId} (first 200 chars):`,
+            (transcript as string).slice(0, 200)
+          );
+        }
+      }
+
+      return data.transcripts;
+    }
+
+    return {};
+  } catch (error) {
+    console.error("LinnkedOut: Failed to fetch transcripts from API:", error);
+    return {};
   }
-
-  const data = await res.json();
-  return data.transcripts || {};
 }
 
-// ============ LOCAL: AI Scoring ============
+// ============ AI RANKING with Vercel AI SDK ============
 
-const DEFAULT_SYSTEM_PROMPT = `You are a productivity assistant that evaluates YouTube videos.
-Given a list of videos with their titles, channels, and transcripts, rate each video from 1-10 based on productivity value.
+function getModel(provider: AIProvider, apiKey: string) {
+  switch (provider) {
+    case "openai": {
+      const openai = createOpenAI({ apiKey });
+      return openai("gpt-4o-mini");
+    }
+    case "claude": {
+      const anthropic = createAnthropic({
+        apiKey,
+        headers: {
+          "anthropic-dangerous-direct-browser-access": "true",
+        },
+      });
+      return anthropic("claude-3-haiku-20240307");
+    }
+    case "gemini": {
+      const google = createGoogleGenerativeAI({ apiKey });
+      return google("gemini-2.0-flash");
+    }
+    default:
+      throw new Error(`Unknown provider: ${provider}`);
+  }
+}
 
-Return a JSON array with objects containing: videoId, score (1-10), reason (brief explanation).
-Only return valid JSON, no markdown or extra text.`;
-
-export async function scoreVideos(
+export async function rankVideos(
   videos: VideoData[],
   config: { provider: AIProvider; apiKey: string; prompt?: string }
-): Promise<VideoScore[]> {
-  const scoringCriteria = config.prompt || "";
-  const systemPrompt =
-    DEFAULT_SYSTEM_PROMPT +
-    (scoringCriteria ? `\n\nScoring criteria:\n${scoringCriteria}` : "");
+): Promise<VideoRank[]> {
+  const customCriteria = config.prompt || "";
 
-  const userPrompt = `Rate these ${videos.length} videos:
+  const videoList = videos
+    .map(
+      (v) =>
+        `- ID: ${v.videoId} | Title: ${v.title} | Channel: ${v.channel} | Transcript: ${v.transcript.slice(0, 1000) || "[None]"}`
+    )
+    .join("\n");
 
-${videos
-  .map(
-    (v, i) => `
-[Video ${i + 1}]
-ID: ${v.videoId}
-Title: ${v.title}
-Channel: ${v.channel}
-Transcript: ${v.transcript.slice(0, 500)}
-`
-  )
-  .join("\n")}
+  const prompt = `Evaluate these ${videos.length} YouTube videos based on productivity value.
+Determine if each video should be KEPT (genuinely educational/productive) or HIDDEN (entertainment/distraction). Set 'keep' to true or false.
 
-Return JSON array with videoId, score (1-10), and reason for each.`;
+${customCriteria ? `Criteria: ${customCriteria}\n` : ""}
+Videos:
+${videoList}
 
-  let response: string;
+Return array with videoId and keep boolean.`;
 
-  switch (config.provider) {
-    case "gemini":
-      response = await callGemini(config.apiKey, systemPrompt, userPrompt);
-      break;
-    case "claude":
-      response = await callClaude(config.apiKey, systemPrompt, userPrompt);
-      break;
-    case "openai":
-      response = await callOpenAI(config.apiKey, systemPrompt, userPrompt);
-      break;
-    default:
-      throw new Error(`Unknown provider: ${config.provider}`);
-  }
-
-  return parseResponse(response);
-}
-
-async function callGemini(
-  apiKey: string,
-  system: string,
-  prompt: string
-): Promise<string> {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: system + "\n\n" + prompt }] }],
-      generationConfig: { temperature: 0.1, maxOutputTokens: 2048 },
-    }),
-  });
-
-  if (!res.ok) throw new Error(`Gemini error: ${await res.text()}`);
-  const data = await res.json();
-  return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-}
-
-async function callClaude(
-  apiKey: string,
-  system: string,
-  prompt: string
-): Promise<string> {
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01",
-      "anthropic-dangerous-direct-browser-access": "true",
-    },
-    body: JSON.stringify({
-      model: "claude-3-haiku-20240307",
-      max_tokens: 2048,
-      system,
-      messages: [{ role: "user", content: prompt }],
-    }),
-  });
-
-  if (!res.ok) throw new Error(`Claude error: ${await res.text()}`);
-  const data = await res.json();
-  return data.content?.[0]?.text || "";
-}
-
-async function callOpenAI(
-  apiKey: string,
-  system: string,
-  prompt: string
-): Promise<string> {
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: "gpt-4o-mini",
-      messages: [
-        { role: "system", content: system },
-        { role: "user", content: prompt },
-      ],
-      temperature: 0.1,
-      max_tokens: 2048,
-    }),
-  });
-
-  if (!res.ok) throw new Error(`OpenAI error: ${await res.text()}`);
-  const data = await res.json();
-  return data.choices?.[0]?.message?.content || "";
-}
-
-function parseResponse(response: string): VideoScore[] {
-  let jsonStr = response.trim();
-  if (jsonStr.startsWith("```")) {
-    jsonStr = jsonStr
-      .replace(/```json?\n?/g, "")
-      .replace(/```$/g, "")
-      .trim();
-  }
+  console.log("LinnkedOut: Ranking videos...");
 
   try {
-    const parsed = JSON.parse(jsonStr);
-    if (Array.isArray(parsed)) {
-      return parsed.map(
-        (item: { videoId: string; score: number; reason?: string }) => ({
-          videoId: item.videoId,
-          score: Math.min(10, Math.max(1, item.score)),
-          reason: item.reason || "",
-        })
-      );
-    }
-  } catch (e) {
-    console.error("Parse error:", e);
+    const { object } = await generateObject({
+      model: getModel(config.provider, config.apiKey),
+      schema: RankedVideosSchema,
+      prompt,
+      temperature: 0.2,
+    });
+
+    console.log(
+      "LinnkedOut: AI Response - Full:",
+      JSON.stringify(object.rankings, null, 2)
+    );
+    console.log(
+      "LinnkedOut: AI Response - Kept Videos:",
+      object.rankings
+        .filter((r) => r.keep)
+        .map((r) => r.videoId)
+        .join(", ")
+    );
+
+    return object.rankings;
+  } catch (error) {
+    console.error("LinnkedOut: Ranking error:", error);
+    throw error;
   }
-  return [];
 }
 
 // ============ TEST API ============
@@ -196,24 +170,18 @@ export async function testAPI(
   apiKey: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const testPrompt = "Say OK";
-    let response: string;
+    const TestSchema = z.object({
+      message: z.string(),
+    });
 
-    switch (provider) {
-      case "gemini":
-        response = await callGemini(apiKey, "", testPrompt);
-        break;
-      case "claude":
-        response = await callClaude(apiKey, "", testPrompt);
-        break;
-      case "openai":
-        response = await callOpenAI(apiKey, "", testPrompt);
-        break;
-      default:
-        throw new Error("Unknown provider");
-    }
+    const { object } = await generateObject({
+      model: getModel(provider, apiKey),
+      schema: TestSchema,
+      prompt: "Say hello",
+      temperature: 0,
+    });
 
-    return { success: response.length > 0 };
+    return { success: object.message.length > 0 };
   } catch (err) {
     return { success: false, error: String(err) };
   }

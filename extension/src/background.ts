@@ -2,11 +2,12 @@
 
 import {
   fetchTranscripts,
-  scoreVideos,
+  rankVideos,
   testAPI,
   type AIProvider,
   type VideoData,
 } from "./api.js";
+import { DEFAULT_PROMPT } from "./constants";
 
 const STORAGE_KEY_API_KEY = "linnkedout_api_key";
 const STORAGE_KEY_PROVIDER = "linnkedout_provider";
@@ -29,8 +30,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 async function handleProcessVideos(
   videos: { videoId: string; title: string; channel: string }[]
 ): Promise<
-  | { scores: { videoId: string; score: number; reason: string }[] }
-  | { error: string }
+  { rankings: { videoId: string; keep: boolean }[] } | { error: string }
 > {
   try {
     const stored = await chrome.storage.local.get([
@@ -41,7 +41,7 @@ async function handleProcessVideos(
 
     const apiKey = stored[STORAGE_KEY_API_KEY] as string;
     const provider = (stored[STORAGE_KEY_PROVIDER] as AIProvider) || "gemini";
-    const prompt = (stored[STORAGE_KEY_PROMPT] as string) || "";
+    const prompt = (stored[STORAGE_KEY_PROMPT] as string) || DEFAULT_PROMPT;
 
     if (!apiKey) {
       return { error: "No API key configured" };
@@ -49,27 +49,44 @@ async function handleProcessVideos(
 
     console.log(`LinnkedOut: Processing ${videos.length} videos`);
 
-    // 1. Fetch transcripts from backend
-    console.log("LinnkedOut: Fetching transcripts from backend...");
+    // 1. Fetch transcripts
+    console.log("LinnkedOut: Fetching transcripts...");
     const videoIds = videos.map((v) => v.videoId);
     const transcripts = await fetchTranscripts(videoIds);
 
-    // 2. Merge transcripts with video data
-    const videosWithTranscripts: VideoData[] = videos.map((v) => ({
-      ...v,
-      transcript: transcripts[v.videoId] || "",
-    }));
+    // 2. Separate videos with transcripts from those without
+    const videosToProcess: VideoData[] = [];
+    const videosToBlock: { videoId: string; keep: boolean }[] = [];
 
-    // 3. Score with AI (done locally in extension)
-    console.log("LinnkedOut: Scoring with AI...");
-    const scores = await scoreVideos(videosWithTranscripts, {
+    videos.forEach((v) => {
+      const transcript = transcripts[v.videoId];
+      if (transcript) {
+        videosToProcess.push({ ...v, transcript });
+      } else {
+        console.log(`LinnkedOut: Blocking ${v.videoId} (no transcript found)`);
+        videosToBlock.push({ videoId: v.videoId, keep: false });
+      }
+    });
+
+    if (videosToProcess.length === 0) {
+      console.log("LinnkedOut: No videos with transcripts found.");
+      // Return all blocked videos so the frontend explicitly hides them
+      return { rankings: videosToBlock };
+    }
+
+    // 3. Rank with AI
+    console.log("LinnkedOut: Ranking with AI...");
+    const aiRankings = await rankVideos(videosToProcess, {
       provider,
       apiKey,
       prompt,
     });
 
-    console.log("LinnkedOut: Done!", scores);
-    return { scores };
+    // 4. Merge AI results with blocked videos
+    const finalRankings = [...aiRankings, ...videosToBlock];
+
+    console.log("LinnkedOut: Done!", finalRankings);
+    return { rankings: finalRankings };
   } catch (err) {
     console.error("LinnkedOut: Error:", err);
     return { error: String(err) };
