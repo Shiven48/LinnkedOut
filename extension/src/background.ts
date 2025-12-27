@@ -1,118 +1,79 @@
-  // Background script - manages offscreen document for persistent WebLLM
+// LinnkedOut Background Service Worker
 
-const STORAGE_KEY_PROMPT = "yt_filter_prompt";
-const STORAGE_KEY_MODEL = "yt_selected_model";
-const DEFAULT_MODEL = "Qwen2.5-1.5B-Instruct-q4f16_1-MLC";
+import {
+  fetchTranscripts,
+  scoreVideos,
+  testAPI,
+  type AIProvider,
+  type VideoData,
+} from "./api.js";
 
-let offscreenCreated = false;
+const STORAGE_KEY_API_KEY = "linnkedout_api_key";
+const STORAGE_KEY_PROVIDER = "linnkedout_provider";
+const STORAGE_KEY_PROMPT = "linnkedout_prompt";
 
-async function ensureOffscreen() {
-  if (offscreenCreated) return;
-
-  try {
-    const existingContexts = await chrome.runtime.getContexts({
-      contextTypes: [chrome.runtime.ContextType.OFFSCREEN_DOCUMENT],
-    });
-
-    if (existingContexts.length > 0) {
-      offscreenCreated = true;
-      return;
-    }
-
-    await chrome.offscreen.createDocument({
-      url: "offscreen.html",
-      reasons: [chrome.offscreen.Reason.WORKERS],
-      justification: "Run WebLLM for YouTube filtering",
-    });
-
-    offscreenCreated = true;
-    console.log("LinnkedOut BG: Offscreen document created");
-
-    // Initialize with stored settings
-    const stored = await chrome.storage.local.get([
-      STORAGE_KEY_MODEL,
-      STORAGE_KEY_PROMPT,
-    ]);
-    const modelId = (stored[STORAGE_KEY_MODEL] as string) || DEFAULT_MODEL;
-    const prompt = stored[STORAGE_KEY_PROMPT] as string | undefined;
-
-    // Send init message to offscreen
-    await chrome.runtime.sendMessage({
-      target: "offscreen",
-      type: "OFFSCREEN_INIT",
-      modelId,
-      prompt,
-    });
-  } catch (err) {
-    console.error("LinnkedOut BG: Failed to create offscreen", err);
-  }
-}
-
-// Listen for messages from content script
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-  if (message.target === "offscreen") return false;
-  if (message.target === "background") return false;
-
-  if (message.type === "CHECK_STATUS") {
-    (async () => {
-      await ensureOffscreen();
-      const response = await chrome.runtime.sendMessage({
-        target: "offscreen",
-        type: "OFFSCREEN_STATUS",
-      });
-      sendResponse(response);
-    })();
+  if (message.type === "PROCESS_VIDEOS") {
+    handleProcessVideos(message.videos).then(sendResponse);
     return true;
   }
 
-  if (message.type === "INIT_ENGINE") {
-    (async () => {
-      await ensureOffscreen();
-      const stored = await chrome.storage.local.get([
-        STORAGE_KEY_MODEL,
-        STORAGE_KEY_PROMPT,
-      ]);
-      const response = await chrome.runtime.sendMessage({
-        target: "offscreen",
-        type: "OFFSCREEN_INIT",
-        modelId: stored[STORAGE_KEY_MODEL] || DEFAULT_MODEL,
-        prompt: stored[STORAGE_KEY_PROMPT],
-      });
-      sendResponse(response);
-    })();
-    return true;
-  }
-
-  if (message.type === "FILTER_VIDEOS_BG") {
-    (async () => {
-      await ensureOffscreen();
-      // Get current prompt from storage and pass to offscreen
-      const stored = await chrome.storage.local.get(STORAGE_KEY_PROMPT);
-      const response = await chrome.runtime.sendMessage({
-        target: "offscreen",
-        type: "OFFSCREEN_FILTER",
-        videos: message.videos,
-        prompt: stored[STORAGE_KEY_PROMPT],
-      });
-      sendResponse(response);
-    })();
+  if (message.type === "TEST_API") {
+    testAPI(message.provider, message.apiKey).then(sendResponse);
     return true;
   }
 
   return false;
 });
 
-// Auto-create offscreen on install
-chrome.runtime.onInstalled.addListener(() => {
-  console.log("LinnkedOut: Installed");
-  ensureOffscreen();
-});
+async function handleProcessVideos(
+  videos: { videoId: string; title: string; channel: string }[]
+): Promise<
+  | { scores: { videoId: string; score: number; reason: string }[] }
+  | { error: string }
+> {
+  try {
+    const stored = await chrome.storage.local.get([
+      STORAGE_KEY_API_KEY,
+      STORAGE_KEY_PROVIDER,
+      STORAGE_KEY_PROMPT,
+    ]);
 
-// Auto-create offscreen on startup
-chrome.runtime.onStartup.addListener(() => {
-  console.log("LinnkedOut: Startup");
-  ensureOffscreen();
-});
+    const apiKey = stored[STORAGE_KEY_API_KEY] as string;
+    const provider = (stored[STORAGE_KEY_PROVIDER] as AIProvider) || "gemini";
+    const prompt = (stored[STORAGE_KEY_PROMPT] as string) || "";
 
-console.log("LinnkedOut: Background script loaded");
-ensureOffscreen();
+    if (!apiKey) {
+      return { error: "No API key configured" };
+    }
+
+    console.log(`LinnkedOut: Processing ${videos.length} videos`);
+
+    // 1. Fetch transcripts from backend
+    console.log("LinnkedOut: Fetching transcripts from backend...");
+    const videoIds = videos.map((v) => v.videoId);
+    const transcripts = await fetchTranscripts(videoIds);
+
+    // 2. Merge transcripts with video data
+    const videosWithTranscripts: VideoData[] = videos.map((v) => ({
+      ...v,
+      transcript: transcripts[v.videoId] || "",
+    }));
+
+    // 3. Score with AI (done locally in extension)
+    console.log("LinnkedOut: Scoring with AI...");
+    const scores = await scoreVideos(videosWithTranscripts, {
+      provider,
+      apiKey,
+      prompt,
+    });
+
+    console.log("LinnkedOut: Done!", scores);
+    return { scores };
+  } catch (err) {
+    console.error("LinnkedOut: Error:", err);
+    return { error: String(err) };
+  }
+}
+
+console.log("LinnkedOut: Background service worker started");
