@@ -7,6 +7,7 @@ import Loading from "./Loading";
 import NoContent from "./NoContent";
 import Card from "./Card";
 import { useSearchParams } from "next/navigation";
+import { SERVER_BASE_URL } from "@/services/common/constants";
 
 interface ExtendedMedia extends Media {
   platformId?: number;
@@ -17,6 +18,8 @@ interface HomeProps {
   pagination: PaginationInfo;
   pageHeader?: string;
 }
+
+console.log(`SERVER BASE URL: ${SERVER_BASE_URL}`);
 
 export default function Home({ media, pagination, pageHeader }: HomeProps) {
   const [isLoading, setIsLoading] = useState(false);
