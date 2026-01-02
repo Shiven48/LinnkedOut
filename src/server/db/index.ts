@@ -1,8 +1,16 @@
+// Force IPv4 resolution BEFORE any imports that might use network
+import dns from 'node:dns';
+dns.setDefaultResultOrder?.('ipv4first');
+
+// Also set via environment for extra safety
+process.env.NODE_OPTIONS = (process.env.NODE_OPTIONS || '') + ' --dns-result-order=ipv4first';
+
 import { drizzle as drizzlePostgres } from "drizzle-orm/postgres-js";
 import { config } from "dotenv";
 
 import * as schema from './schema';
 import postgres from 'postgres';
+
 config({ path: ".env" });
 
 // Lazy initialization to avoid build-time errors
@@ -15,7 +23,24 @@ function getDb() {
     throw new Error("REMOTE_DATABASE_URL is missing");
   }
 
-  const remoteClient = postgres(process.env.REMOTE_DATABASE_URL);
+  // Ensure the connection URL has proper SSL mode
+  let dbUrl = process.env.REMOTE_DATABASE_URL;
+  if (!dbUrl.includes('sslmode=')) {
+    dbUrl += (dbUrl.includes('?') ? '&' : '?') + 'sslmode=require';
+  }
+
+  // Configure postgres client with options to prefer IPv4
+  const remoteClient = postgres(dbUrl, {
+    connect_timeout: 10,
+    idle_timeout: 20,
+    max_lifetime: 60 * 30,
+    connection: {
+      application_name: 'linnkedout',
+    },
+    // Disable prepared statements which can cause issues
+    prepare: false,
+  });
+  
   _db = drizzlePostgres(remoteClient as any, { schema });
   return _db;
 }

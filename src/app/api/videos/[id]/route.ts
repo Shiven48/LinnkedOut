@@ -1,17 +1,20 @@
 import { getFromMediaById } from '@/server/functions/media'
 import { NextRequest, NextResponse } from "next/server"
 import { Media } from '@/services/common/types';;
+import { auth } from '@clerk/nextjs/server';
 
 export async function GET(
     request: NextRequest,
-    { params } : { params : {
-        id :string;
-    }}
+    { params }: { params: Promise<{ id: string }> }
 ) {
-    const { id } = await(params)
+    const { id } = await params;
     const videoId = parseInt(id) 
     try {
-        let fetchedVideo:Media = await getFromMediaById(videoId); 
+        const { userId } = await auth();
+        if (!userId) {
+            return NextResponse.json({ message: "Unauthorised" }, { status: 401 });
+        }
+        let fetchedVideo:Media = await getFromMediaById(videoId, userId); 
         if(!fetchedVideo){
             throw new Error(`Cannot get video from media by ${videoId}!`)
         }
