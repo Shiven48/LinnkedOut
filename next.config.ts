@@ -37,6 +37,13 @@ const nextConfig: NextConfig = {
   experimental: {
     // optimizeCss: true,
   },
+  webpack: (config) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      "webworker-threads": false,
+    };
+    return config;
+  },
 };
 
 export default nextConfig;
