@@ -2,7 +2,7 @@ name: Build and Deploy
 
 on:
   push:
-    branches: ["main"]
+    branches: ["koyeb"]
 
 env:
   REGISTRY: ghcr.io
@@ -27,9 +27,8 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Lowercase image name
-        id: string
         run: |
-          # This converts "User/Repo" to "user/repo" to satisfy Docker naming rules
+          # Use shell parameter expansion to lowercase the repo name
           echo "IMAGE_NAME=${RAW_IMAGE_NAME,,}" >> ${GITHUB_ENV}
 
       - name: Build and push Docker image
@@ -37,8 +36,11 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ env.REGISTRY Suk }}/${{ env.IMAGE_NAME }}:latest
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
           file: dockerfile
+          build-args: |
+            NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+            CLERK_SECRET_KEY=${{ secrets.CLERK_SECRET_KEY }}
 
   deploy-to-koyeb:
     needs: build-and-push
