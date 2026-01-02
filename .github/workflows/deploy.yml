@@ -1,0 +1,52 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: ["main"]
+
+env:
+  REGISTRY: ghcr.io
+  RAW_IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Lowercase image name
+        id: string
+        run: |
+          # This converts "User/Repo" to "user/repo" to satisfy Docker naming rules
+          echo "IMAGE_NAME=${RAW_IMAGE_NAME,,}" >> ${GITHUB_ENV}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ env.REGISTRY Suk }}/${{ env.IMAGE_NAME }}:latest
+          file: dockerfile
+
+  deploy-to-koyeb:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Koyeb Redeploy
+        run: |
+          curl -X POST "https://app.koyeb.com/v1/services/${{ secrets.KOYEB_SERVICE_ID }}/redeploy" \
+          -H "Authorization: Bearer ${{ secrets.KOYEB_API_TOKEN }}" \
+          -H "Content-Type: application/json" \
+          -d '{}'
