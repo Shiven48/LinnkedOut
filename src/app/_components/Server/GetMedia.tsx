@@ -1,9 +1,10 @@
 import { Media } from "@/services/common/types";
 import { utility } from "@/services/common/utils";
+import { SERVER_BASE_URL } from "@/services/common/constants";
 
 export default async function getMediaWithPlatformIds() {
   try {
-    const res = await fetch("http://localhost:3000/api/videos", {
+    const res = await fetch(`${SERVER_BASE_URL}/api/videos`, {
       cache: "no-store",
     });
 
