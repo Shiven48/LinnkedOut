@@ -34,7 +34,7 @@ interface Json3Data {
 export class YoutubeTranscriptService {
   private ytdlp: YTDlpWrap | null = null;
   private isYtdlpReady = false;
-  private binaryPath = path.join(process.cwd(), 'temp', 'yt-dlp');
+  private binaryPath = '/usr/local/bin/yt-dlp';
 
   constructor() {
     this.ensureYtdlp();
@@ -44,22 +44,15 @@ export class YoutubeTranscriptService {
     try {
       if (this.isYtdlpReady && this.ytdlp) return;
 
-      const tempDir = path.dirname(this.binaryPath);
-      if (!fs.existsSync(tempDir)) {
-        fs.mkdirSync(tempDir, { recursive: true });
-      }
-
       if (!fs.existsSync(this.binaryPath)) {
-        console.log('[YoutubeTranscriptService] yt-dlp binary not found, attempting to download...');
-        await YTDlpWrap.downloadFromGithub(this.binaryPath);
-        fs.chmodSync(this.binaryPath, 0o755);
-        console.log('[YoutubeTranscriptService] yt-dlp binary downloaded successfully.');
+        console.error('[YoutubeTranscriptService] System yt-dlp binary not found at /usr/local/bin/yt-dlp');
+        // We continue anyway as it might be in PATH, but ideally it should be at the absolute path
       }
       
       this.ytdlp = new YTDlpWrap(this.binaryPath);
       this.isYtdlpReady = true;
     } catch (error) {
-      console.error('[YoutubeTranscriptService] Failed to ensure yt-dlp binary:', error);
+      console.error('[YoutubeTranscriptService] Failed to initialize yt-dlp:', error);
     }
   }
 
@@ -119,15 +112,29 @@ export class YoutubeTranscriptService {
       const VIDEO_URL = `https://www.youtube.com/watch?v=${videoId}`;
       const SUBTITLE_LANG = 'en';
       
-      const metadataStr = await this.ytdlp.execPromise([
+      const args = [
         VIDEO_URL,
         '--dump-json',
         '--skip-download',
-        '--extractor-args', 'youtube:player_client=android',
+        '--extractor-args', 'youtube:player_client=ios,web',
         '--extractor-args', 'youtube:player_skip=webpage,configs,js',
         '--js-runtimes', 'node',
-        '--user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36'
-      ]);
+        '--user-agent', 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
+        '--sleep-interval', '1',
+        '--max-sleep-interval', '5',
+        '--cookies', '/app/youtube-cookies.txt'
+      ];
+
+      // Check for cookies file in root
+      const cookiesPath = path.join(process.cwd(), 'youtube-cookies.txt');
+      if (fs.existsSync(cookiesPath)) {
+        console.log(`[YtDlp] [${videoId}] Using cookies from ${cookiesPath}`);
+        args.splice(1, 0, '--cookies', cookiesPath);
+      } else {
+        console.warn(`[YtDlp] [${videoId}] No cookies.txt found. YouTube may block this request.`);
+      }
+
+      const metadataStr = await this.ytdlp.execPromise(args);
       
       const metadata = JSON.parse(metadataStr) as YtDlpMetadata;
       

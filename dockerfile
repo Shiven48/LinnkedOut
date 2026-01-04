@@ -33,7 +33,9 @@ RUN adduser --system --uid 1001 nextjs
 
 RUN mkdir .next
 RUN chown nextjs:nodejs .next
-RUN apk add --no-cache python3 ffmpeg coreutils
+RUN apk add --no-cache python3 ffmpeg coreutils curl
+RUN curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp
+RUN chmod a+rx /usr/local/bin/yt-dlp
 RUN ln -sf /usr/bin/python3 /usr/bin/python
 RUN mkdir -p temp && chown nextjs:nodejs temp
 
@@ -45,6 +47,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/natural ./node_modules/natural
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/stopwords-iso ./node_modules/stopwords-iso
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/natural/lib/natural/brill_pos_tagger/data ./node_modules/natural/lib/natural/brill_pos_tagger/data
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/natural/lib/natural/dictionaries ./node_modules/natural/lib/natural/dictionaries
 
 USER nextjs
 
@@ -52,4 +55,7 @@ EXPOSE 3000
 
 ENV PORT 3000
 
-CMD ["node", "server.js"]
+COPY entrypoint.sh ./
+RUN chmod +x entrypoint.sh
+
+CMD ["./entrypoint.sh"]
