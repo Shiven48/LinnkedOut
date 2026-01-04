@@ -42,6 +42,10 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
+# Manually copy dependencies that Next.js output trace might miss (e.g. dictionaries)
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/natural ./node_modules/natural
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/stopwords-iso ./node_modules/stopwords-iso
+
 USER nextjs
 
 EXPOSE 3000
