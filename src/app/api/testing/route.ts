@@ -233,7 +233,7 @@ export async function POST(request: NextRequest) {
     }
 
     console.log("Starting RootOrchestrator processing...");
-    const orchestratorResult = await HelperFunctions.testFlow(formData, userId);
+    const orchestratorResult = await HelperFunctions.orchestrateFlow(formData, userId);
     console.log("RootOrchestrator completed successfully");
     revalidatePath("/");
     return NextResponse.json(orchestratorResult);

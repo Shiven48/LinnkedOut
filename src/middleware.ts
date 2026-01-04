@@ -5,6 +5,8 @@ const isPublicRoute = createRouteMatcher([
   "/sign-up(.*)",
   "/api/webhooks/clerk(.*)",
   "/api/extension(.*)", // Allow extension API without auth
+  "/api/health(.*)",
+  "/api/transcribe(.*)",
 ]);
 
 export default clerkMiddleware(async (auth, req) => {

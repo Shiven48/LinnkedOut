@@ -149,6 +149,18 @@ export interface EmbeddingReturntype {
     embeddings: number[]
 }
 
+export interface EmbeddingOrchestratorReturntype {
+    cleanedAndProcessedContent: string;
+    contentEmbeddings: number[];
+    assignedCategory: string;
+}
+
+export interface EmbeddingOrchestratorInputType {
+    youtubeMetadata: YoutubeMetadata,
+    mediaData: Media,
+    youtubeData: YoutubeMedia
+}
+
 // Captions Related types (Whisper is used to generate captions)
 export interface WhisperJsonFile {
     text: string,

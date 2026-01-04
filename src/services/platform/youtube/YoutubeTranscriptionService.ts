@@ -63,33 +63,33 @@ export class YoutubeTranscriptService {
     }
   }
 
-  public async fetchTranscript(videoId: string, _title: string): Promise<CaptionItem[]> {
+  public async fetchTranscript(videoId: string, _title?: string): Promise<CaptionItem[]> {
     let transcript: CaptionItem[] = [];
     try {
-      console.log(`[YoutubeTranscriptService] Fetching transcripts for video: ${videoId}`);
+      console.log(`[YoutubeTranscriptService] [${videoId}] Fetching transcripts...`);
+
+      if(!_title) {
+        console.warn(`[YoutubeTranscriptService] [${videoId}] No title provided.`);
+      }
       
       // 1. Primary method: Using ytdlp-nodejs to get json3 transcripts (most reliable)
       transcript = await this.fetchTranscriptViaYtDlp(videoId);
       if (transcript && transcript.length > 0) {
-        console.log('[YoutubeTranscriptService] Successfully fetched transcripts via YtDlp (json3).');
+        console.log(`[YoutubeTranscriptService] [${videoId}] Successfully fetched ${transcript.length} transcripts via YtDlp (json3).`);
         return transcript;
       }
 
       // 2. Secondary method: Falling back to youtube-transcript package
-      console.log('[YoutubeTranscriptService] Falling back to youtube-transcript package...');
+      console.log(`[YoutubeTranscriptService] [${videoId}] YtDlp returned empty, falling back to youtube-transcript package...`);
       try {
         const transcriptItems: TranscriptResponse[] = await YoutubeTranscript.fetchTranscript(videoId);
         if (transcriptItems && transcriptItems.length > 0) {
-          console.log('[YoutubeTranscriptService] Found transcripts via youtube-transcript.');
+          console.log(`[YoutubeTranscriptService] [${videoId}] ✅ Found ${transcriptItems.length} transcripts via youtube-transcript.`);
           transcript = this.extractEnglishCaptions(transcriptItems);
         }
       } catch (ytError) {
-        console.warn('[YoutubeTranscriptService] youtube-transcript package failed:', ytError);
+        console.warn(`[YoutubeTranscriptService] [${videoId}] youtube-transcript package failed:`, ytError);
       }
-
-      // 3. Last resort: Generating transcripts via Whisper (slow, but "for sure" if video has audio)
-      // console.warn('[YoutubeTranscriptService] ⚠️ No native transcripts found. Generating transcripts via Whisper...'); 
-      // return await this.generateTranscriptsFromAudio(videoId, title);
       return transcript;
     } catch (error) {
       if (error instanceof Error && error.message.includes('Transcript is disabled')) {
@@ -110,17 +110,21 @@ export class YoutubeTranscriptService {
 
   private async fetchTranscriptViaYtDlp(videoId: string): Promise<CaptionItem[]> {
     await this.ensureYtdlp();
-    if (!this.ytdlp) return [];
+    if (!this.ytdlp) {
+      console.warn(`[YtDlp] [${videoId}] yt-dlp not initialized`);
+      return [];
+    }
 
     try {
       const VIDEO_URL = `https://www.youtube.com/watch?v=${videoId}`;
       const SUBTITLE_LANG = 'en';
       
-      // Get metadata using --dump-json
       const metadataStr = await this.ytdlp.execPromise([
         VIDEO_URL,
         '--dump-json',
-        '--skip-download'
+        '--skip-download',
+        '--extractor-args', 'youtube:player_client=android',
+        '--extractor-args', 'youtube:player_skip=webpage,configs,js'
       ]);
       
       const metadata = JSON.parse(metadataStr) as YtDlpMetadata;
@@ -129,6 +133,7 @@ export class YoutubeTranscriptService {
       const subtitleInfo = metadata.subtitles?.[SUBTITLE_LANG] || metadata.automatic_captions?.[SUBTITLE_LANG];
       
       if (!subtitleInfo) {
+        console.warn(`[YtDlp] [${videoId}] No English subtitles or automatic captions found`);
         return [];
       }
       
@@ -136,6 +141,7 @@ export class YoutubeTranscriptService {
       const json3Subtitle = subtitleInfo.find((sub: YtDlpSubtitle) => sub.ext === 'json3');
       
       if (!json3Subtitle || !json3Subtitle.url) {
+        console.warn(`[YtDlp] [${videoId}] No json3 format found in subtitles. Available formats: ${subtitleInfo.map((s: YtDlpSubtitle) => s.ext).join(', ')}`);
         return [];
       }
       
@@ -143,19 +149,21 @@ export class YoutubeTranscriptService {
       const rawResponse = await this.downloadFromUrl(transcriptUrl);
       
       if (rawResponse.trim().startsWith('<html>')) {
-        console.warn(`[YoutubeTranscriptService] Received HTML instead of JSON for transcript: ${videoId}`);
+        console.warn(`[YtDlp] [${videoId}] Received HTML instead of JSON for transcript`);
         return [];
       }
 
       try {
         const json3Data = JSON.parse(rawResponse) as Json3Data;
-        return this.parseJson3Transcript(json3Data, SUBTITLE_LANG);
+        const parsedTranscripts = this.parseJson3Transcript(json3Data, SUBTITLE_LANG);
+        console.log(`[YtDlp] [${videoId}] Parsed ${parsedTranscripts.length} transcript segments from json3`);
+        return parsedTranscripts;
       } catch (parseError) {
-        console.error(`[YoutubeTranscriptService] Failed to parse transcript JSON for ${videoId}:`, parseError);
+        console.error(`[YtDlp] [${videoId}] Failed to parse transcript JSON:`, parseError);
         return [];
       }
     } catch (error) {
-      console.error(`[YoutubeTranscriptService] YtDlp method failed:`, error);
+      console.error(`[YtDlp] [${videoId}] Method failed:`, error);
       return [];
     }
   }
@@ -289,7 +297,9 @@ export class YoutubeTranscriptService {
         '-f', 'bestaudio',
         '--extract-audio',
         '--audio-format', extension,
-        '-o', audioPath
+        '-o', audioPath,
+        '--extractor-args', 'youtube:player_client=android',
+        '--extractor-args', 'youtube:player_skip=webpage,configs,js'
       ])
       .on('error', (err) => {
         console.error('[YoutubeTranscriptService] yt-dlp error:', err);

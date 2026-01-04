@@ -4,12 +4,14 @@ import { Category, NavComponent, Platfrom, Resource } from "./types";
 export const YOUTUBE_BASE_URL: string = `https://www.googleapis.com/youtube/v3/videos`;
 export const REDDIT_BEARER_TOKEN_ENDPOINT: string = `https://www.reddit.com/api/v1/access_token`
 export const SERVER_BASE_URL: string = process.env.NEXT_PUBLIC_API_URL!;
-export const FORM_INSERT_API_URL:string = `/api/testing`
+export const FORM_INSERT_API_URL:string = `/api/videos/ingest`
+export const FLOW_TEST_API_URL:string = `/api/testing`
 export const SUMMARY_API_URL: string = `/api/summarize`;
 export const DESKTOPSIZE:number = 1080;
 export const MEDIA_PER_PAGE:number = 12;
 export const Summary_Template:string = "Summarize the main points or the main theme of the whole document such that it can be used as notes for revision of concept maintaining all the scientific concepts and terms and explaining and adding the core idea in summary: {context}";
 export const MEDIA_FETCH_LIMIT:number = 40
+export const testingMedia = `https://youtu.be/wSHmygPQukQ?si=1OsJAZnvW14vXWUB`;
 
 export const categories = (): Category[] => {
     const categories: Category[] = [

@@ -7,6 +7,7 @@ import {
   SimilarYT,
   YoutubeMedia,
   YoutubeMetadata,
+  CaptionItem,
 } from "@/services/common/types";
 import { SummaryService } from "@/services/content/summaryService";
 import { YoutubeAPIService } from "@/services/platform/youtube/YoutubeAPIService";
@@ -18,12 +19,27 @@ import { YoutubeMediaRepository } from "@/services/database/YoutubeMediaReposito
 import { YoutubeTranscriptService } from "@/services/platform/youtube/YoutubeTranscriptionService";
 
 export class HelperFunctions {
-  static async testFlow(data: FormDataType, userId: string) {
+  private static async fetchTranscripts(
+    videoId: string,
+    _title?: string
+  ): Promise<CaptionItem[]> {
+    try {
+      const transcriptService = new YoutubeTranscriptService();
+      const captions = await transcriptService.fetchTranscript(videoId, _title);
+      
+      console.log(`[fetchTranscripts] Successfully fetched ${captions.length} captions`);
+      return captions;
+    } catch (error) {
+      console.error(`[fetchTranscripts] Error fetching transcripts:`, error);
+      return [];
+    }
+  }
+
+  static async orchestrateFlow(data: FormDataType, userId: string) {
     const summaryService = new SummaryService();
     const youtubeAPIService = new YoutubeAPIService();
     const filterService = new YoutubeFilterService();
     const youtubeMetadataService = new YoutubeMetadataSevice();
-    const transcriptService = new YoutubeTranscriptService();
     
     // Destructuring the form data;
     const {
@@ -115,8 +131,8 @@ export class HelperFunctions {
           await youtubeMetadataService.parallelExtractYoutubeMedia([video])
         ).shift()!;
         
-        console.log(`[testFlow] Fetching transcripts for: ${result.mediaData.title}`);
-        result.youtubeData.englishCaptions = await transcriptService.fetchTranscript(
+        console.log(`[orchestrateFlow] Fetching transcripts for: ${result.mediaData.title}`);
+        result.youtubeData.englishCaptions = await this.fetchTranscripts(
           video.id, 
           result.mediaData.title
         );
@@ -200,7 +216,7 @@ export class HelperFunctions {
           youtubeData,
           userId
         );
-
+        
         return data;
       })
     );

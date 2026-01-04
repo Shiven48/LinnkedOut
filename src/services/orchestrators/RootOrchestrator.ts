@@ -131,28 +131,13 @@ export class RootOrchestrator {
   static parseLinksForPlatform(links: string[]): PlatformInfo {
     try {
       if (links && links.length >= 1) {
-        const linkMapper: Record<string, string> = {};
         // For a single link
-        if (links.length === 1) {
-          if (links[0].includes(`youtube`) || links[0].includes(`youtu.be`)) {
-            linkMapper[links[0]] = "youtube".toLowerCase().trim();
-          }
-          // else if (links[0].includes('www.reddit.com/r') || links[0].includes(`reddit`)) {
-          //     linkMapper[links[0]] = 'reddit'.toLowerCase().trim();
-          // }
-          return { platformLinkAndType: linkMapper, length: 1 };
+        if (links && links.length === 1) {
+          return RootOrchestrator.parseSingleLink(links[0]);
         }
         // For Multiple link
         else if (links.length > 1) {
-          links.forEach((link: string) => {
-            if (link.includes(`youtube`) || link.includes(`youtu.be`)) {
-              linkMapper[link] = "youtube".toLowerCase().trim();
-            }
-            // else if (link.includes('www.reddit.com/r') || link.includes(`reddit`)) {
-            //     linkMapper[link] = 'reddit'.toLowerCase().trim();
-            // }
-          });
-          return { platformLinkAndType: linkMapper, length: links.length };
+          return RootOrchestrator.parseMultipleLinks(links);
         }
       }
       throw new Error(`Invalid link format the links are empty`);
@@ -160,6 +145,49 @@ export class RootOrchestrator {
       console.error(`Unable to fetch platfrom type from link`, error);
       throw error;
     }
+  }
+
+  static parseSingleLink(link: string): PlatformInfo {
+    if (!link || link === undefined || link === null) {
+      throw new Error(`[URL Parsing Error]Invalid link format, URL: ${link}`);
+    }
+    try {
+      const linkMapper: Record<string, string> = {};
+
+      if (link.includes(`youtube`) || link.includes(`youtu.be`)) {
+        linkMapper[link] = "youtube".toLowerCase().trim();
+      } else if (link.includes('www.reddit.com/r') || link.includes(`reddit`)) {
+        linkMapper[link] = 'reddit'.toLowerCase().trim();
+      } 
+      return { platformLinkAndType: linkMapper, length: 1 };
+    } catch (error) {
+      console.error(`Unable to fetch platfrom type from link`, error);
+      throw error;
+    }
+  }
+
+  static parseMultipleLinks(links: string[]): PlatformInfo {
+    const linkMapper: Record<string, string> = {};
+    const linkParsingError: string[] = [];
+
+    links.forEach((link: string) => {
+      if (link.includes(`youtube`) || link.includes(`youtu.be`)) {
+        linkMapper[link] = "youtube".toLowerCase().trim();
+      } else if (link.includes('www.reddit.com/r') || link.includes(`reddit`)) {
+        linkMapper[link] = 'reddit'.toLowerCase().trim();
+      } else {
+        linkParsingError.push(link);
+      }
+    })
+
+    if(linkParsingError && linkParsingError.length > 0){
+      throw new Error(`
+        [URL Parsing Error]Invalid link format for ${linkParsingError.length} urls, 
+        ${linkParsingError.join(", ")} are Invalid
+      `);
+    }
+
+    return { platformLinkAndType: linkMapper, length: links.length };
   }
 
   static async OrchestratorCaller(
