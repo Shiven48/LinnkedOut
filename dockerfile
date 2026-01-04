@@ -47,7 +47,6 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/natural ./node_modules/natural
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/stopwords-iso ./node_modules/stopwords-iso
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/natural/lib/natural/brill_pos_tagger/data ./node_modules/natural/lib/natural/brill_pos_tagger/data
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/natural/lib/natural/dictionaries ./node_modules/natural/lib/natural/dictionaries
 
 COPY entrypoint.sh ./
 RUN chmod +x entrypoint.sh && chown nextjs:nodejs entrypoint.sh
