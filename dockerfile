@@ -17,15 +17,15 @@ ARG CLERK_SECRET_KEY
 ENV NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 ENV CLERK_SECRET_KEY=$CLERK_SECRET_KEY
 
-ENV NEXT_TELEMETRY_DISABLED 1
+ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN npm run build
 
 FROM base AS runner
 WORKDIR /app
 
-ENV NODE_ENV production
-ENV NEXT_TELEMETRY_DISABLED 1
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_OPTIONS="--max-old-space-size=400"
 
 RUN addgroup --system --gid 1001 nodejs
@@ -47,14 +47,15 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/natural ./node_modules/natural
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/stopwords-iso ./node_modules/stopwords-iso
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/natural/lib/natural/brill_pos_tagger/data ./node_modules/natural/lib/natural/brill_pos_tagger/data
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/natural/lib/natural/dictionaries ./node_modules/natural/lib/natural/dictionaries
+
+COPY entrypoint.sh ./
+RUN chmod +x entrypoint.sh && chown nextjs:nodejs entrypoint.sh
 
 USER nextjs
 
 EXPOSE 3000
 
-ENV PORT 3000
-
-COPY entrypoint.sh ./
-RUN chmod +x entrypoint.sh
+ENV PORT=3000
 
 CMD ["./entrypoint.sh"]
