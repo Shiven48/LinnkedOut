@@ -124,13 +124,13 @@ export class YoutubeTranscriptService {
         '--max-sleep-interval', '5'
       ];
 
-      // Check for cookies file in root
-      const cookiesPath = path.join(process.cwd(), 'youtube-cookies.txt');
+      // Check for cookies file - use absolute path to match entrypoint.sh
+      const cookiesPath = '/app/youtube-cookies.txt';
       if (fs.existsSync(cookiesPath)) {
-        console.log(`[YtDlp] [${videoId}] Using cookies from ${cookiesPath}`);
+        console.log(`[YtDlp] [${videoId}] ✅ Using cookies from ${cookiesPath}`);
         args.splice(1, 0, '--cookies', cookiesPath);
       } else {
-        console.warn(`[YtDlp] [${videoId}] No cookies.txt found. YouTube may block this request.`);
+        console.warn(`[YtDlp] [${videoId}] ⚠️  No cookies file found at ${cookiesPath}. YouTube may block this request.`);
       }
 
       const metadataStr = await this.ytdlp.execPromise(args);

@@ -32,6 +32,7 @@ RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
 RUN mkdir .next
+RUN chown -R nextjs:nodejs /app
 RUN chown nextjs:nodejs .next
 RUN apk add --no-cache python3 ffmpeg coreutils curl
 RUN curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp
