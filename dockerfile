@@ -33,18 +33,18 @@ RUN adduser --system --uid 1001 nextjs
 
 RUN mkdir .next
 RUN chown nextjs:nodejs .next
-
-RUN apk add --no-cache python3 ffmpeg
-
+RUN apk add --no-cache python3 ffmpeg coreutils
+RUN ln -sf /usr/bin/python3 /usr/bin/python
 RUN mkdir -p temp && chown nextjs:nodejs temp
 
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Manually copy dependencies that Next.js output trace might miss (e.g. dictionaries)
+# Manually copy full node_modules for specific packages to ensure assets are present
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/natural ./node_modules/natural
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/stopwords-iso ./node_modules/stopwords-iso
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/natural/lib/natural/brill_pos_tagger/data ./node_modules/natural/lib/natural/brill_pos_tagger/data
 
 USER nextjs
 

@@ -124,7 +124,9 @@ export class YoutubeTranscriptService {
         '--dump-json',
         '--skip-download',
         '--extractor-args', 'youtube:player_client=android',
-        '--extractor-args', 'youtube:player_skip=webpage,configs,js'
+        '--extractor-args', 'youtube:player_skip=webpage,configs,js',
+        '--js-runtimes', 'node',
+        '--user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36'
       ]);
       
       const metadata = JSON.parse(metadataStr) as YtDlpMetadata;
