@@ -103,6 +103,7 @@ export class YoutubeTranscriptService {
 
   private async fetchTranscriptViaYtDlp(videoId: string): Promise<CaptionItem[]> {
     await this.ensureYtdlp();
+    
     if (!this.ytdlp) {
       console.warn(`[YtDlp] [${videoId}] yt-dlp not initialized`);
       return [];
@@ -111,31 +112,33 @@ export class YoutubeTranscriptService {
     try {
       const VIDEO_URL = `https://www.youtube.com/watch?v=${videoId}`;
       const SUBTITLE_LANG = 'en';
+      const cookiesPath = '/app/youtube-cookies.txt';
       
+      // Build args array without duplicates
       const args = [
-        VIDEO_URL,
-        '--cookies', '/app/youtube-cookies.txt',
-        '--extractor-args', 'youtube:player_client=tv;player_skip=webpage',
+        '--dump-json',
+        '--no-simulate',
         '--no-check-certificates',
         '--prefer-free-formats',
         '--youtube-skip-dash-manifest',
-        '--dump-json',
-        '--no-simulate',
+        '--extractor-args', 'youtube:player_client=tv;player_skip=webpage',
       ];
 
-      // Check for cookies file - use absolute path to match entrypoint.sh
-      const cookiesPath = '/app/youtube-cookies.txt';
+      // Add cookies if file exists
       if (fs.existsSync(cookiesPath)) {
         console.log(`[YtDlp] [${videoId}] Using cookies from ${cookiesPath}`);
-        args.splice(1, 0, '--cookies', cookiesPath);
+        args.push('--cookies', cookiesPath);
       } else {
         console.warn(`[YtDlp] [${videoId}] No cookies file found at ${cookiesPath}. YouTube may block this request.`);
       }
+      args.push(VIDEO_URL);
+
+      console.log(`[YtDlp] [${videoId}] Executing with args:`, JSON.stringify(args, null, 2));
+      console.log(`[YtDlp] [${videoId}] Cookie file stats:`, fs.existsSync(cookiesPath) ? fs.statSync(cookiesPath) : 'NOT FOUND');
 
       const metadataStr = await this.ytdlp.execPromise(args);
-      
       const metadata = JSON.parse(metadataStr) as YtDlpMetadata;
-      
+
       // Look for subtitles or automatic captions in English
       const subtitleInfo = metadata.subtitles?.[SUBTITLE_LANG] || metadata.automatic_captions?.[SUBTITLE_LANG];
       
@@ -143,7 +146,7 @@ export class YoutubeTranscriptService {
         console.warn(`[YtDlp] [${videoId}] No English subtitles or automatic captions found`);
         return [];
       }
-      
+
       // Find the json3 format URL
       const json3Subtitle = subtitleInfo.find((sub: YtDlpSubtitle) => sub.ext === 'json3');
       
@@ -151,7 +154,7 @@ export class YoutubeTranscriptService {
         console.warn(`[YtDlp] [${videoId}] No json3 format found in subtitles. Available formats: ${subtitleInfo.map((s: YtDlpSubtitle) => s.ext).join(', ')}`);
         return [];
       }
-      
+
       const transcriptUrl = json3Subtitle.url;
       const rawResponse = await this.downloadFromUrl(transcriptUrl);
       
