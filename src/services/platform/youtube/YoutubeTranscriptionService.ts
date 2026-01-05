@@ -101,7 +101,7 @@ export class YoutubeTranscriptService {
     }
   }
 
-  private async fetchTranscriptViaYtDlp(videoId: string): Promise<CaptionItem[]> {
+private async fetchTranscriptViaYtDlp(videoId: string): Promise<CaptionItem[]> {
   await this.ensureYtdlp();
   
   if (!this.ytdlp) {
@@ -116,11 +116,7 @@ export class YoutubeTranscriptService {
     
     const args = [
       '--dump-json',
-      '--no-simulate',
-      '--no-check-certificates',
-      '--prefer-free-formats',
-      // REMOVED: '--youtube-skip-dash-manifest',  ❌ This is deprecated
-      '--extractor-args', 'youtube:player_client=android,web',
+      '--no-warnings',
     ];
 
     if (fs.existsSync(cookiesPath)) {
