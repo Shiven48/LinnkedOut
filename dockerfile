@@ -50,12 +50,11 @@ COPY --from=builder --chown=nextjs:nodejs /app/node_modules/stopwords-iso ./node
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/natural/lib/natural/brill_pos_tagger/data ./node_modules/natural/lib/natural/brill_pos_tagger/data
 
 COPY entrypoint.sh ./
-RUN chmod +x entrypoint.sh && chown nextjs:nodejs entrypoint.sh
+RUN chmod +x entrypoint.sh
+RUN chown -R nextjs:nodejs /app
 
 USER nextjs
 
 EXPOSE 3000
-
 ENV PORT=3000
-
 CMD ["./entrypoint.sh"]

@@ -1,14 +1,10 @@
 #!/bin/sh
-if [ -z "$YOUTUBE_COOKIES" ]; then
-    echo "Warning: YOUTUBE_COOKIES variable is empty."
+
+if [ -n "$YOUTUBE_COOKIES" ]; then
+    echo "$YOUTUBE_COOKIES" | base64 -d > /app/youtube-cookies.txt
+    echo "Cookies file recreated from Base64."
 else
-    # Use the /app/temp directory because it has the correct permissions
-    printf "%s" "$YOUTUBE_COOKIES" > /app/youtube-cookies.txt
-    if [ $? -eq 0 ]; then
-        echo "Cookies file successfully written to /app/youtube-cookies.txt"
-    else
-        echo "FAILED to write cookies file."
-    fi
+    echo "Warning: YOUTUBE_COOKIES secret is missing."
 fi
 
 export HOSTNAME=0.0.0.0

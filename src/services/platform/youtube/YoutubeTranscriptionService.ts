@@ -114,14 +114,13 @@ export class YoutubeTranscriptService {
       
       const args = [
         VIDEO_URL,
+        '--cookies', '/app/youtube-cookies.txt',
+        '--extractor-args', 'youtube:player_client=tv;player_skip=webpage',
+        '--no-check-certificates',
+        '--prefer-free-formats',
+        '--youtube-skip-dash-manifest',
         '--dump-json',
-        '--skip-download',
-        '--extractor-args', 'youtube:player_client=ios,web',
-        '--extractor-args', 'youtube:player_skip=webpage,configs,js',
-        '--js-runtimes', 'node',
-        '--user-agent', 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
-        '--sleep-interval', '1',
-        '--max-sleep-interval', '5'
+        '--no-simulate',
       ];
 
       // Check for cookies file - use absolute path to match entrypoint.sh
