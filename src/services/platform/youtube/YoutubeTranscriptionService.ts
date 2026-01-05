@@ -102,81 +102,73 @@ export class YoutubeTranscriptService {
   }
 
   private async fetchTranscriptViaYtDlp(videoId: string): Promise<CaptionItem[]> {
-    await this.ensureYtdlp();
-    
-    if (!this.ytdlp) {
-      console.warn(`[YtDlp] [${videoId}] yt-dlp not initialized`);
-      return [];
-    }
-
-    try {
-      const VIDEO_URL = `https://www.youtube.com/watch?v=${videoId}`;
-      const SUBTITLE_LANG = 'en';
-      const cookiesPath = '/app/youtube-cookies.txt';
-      
-      // Build args array without duplicates
-      const args = [
-        '--dump-json',
-        '--no-simulate',
-        '--no-check-certificates',
-        '--prefer-free-formats',
-        '--youtube-skip-dash-manifest',
-        '--extractor-args', 'youtube:player_client=tv;player_skip=webpage',
-      ];
-
-      // Add cookies if file exists
-      if (fs.existsSync(cookiesPath)) {
-        console.log(`[YtDlp] [${videoId}] Using cookies from ${cookiesPath}`);
-        args.push('--cookies', cookiesPath);
-      } else {
-        console.warn(`[YtDlp] [${videoId}] No cookies file found at ${cookiesPath}. YouTube may block this request.`);
-      }
-      args.push(VIDEO_URL);
-
-      console.log(`[YtDlp] [${videoId}] Executing with args:`, JSON.stringify(args, null, 2));
-      console.log(`[YtDlp] [${videoId}] Cookie file stats:`, fs.existsSync(cookiesPath) ? fs.statSync(cookiesPath) : 'NOT FOUND');
-
-      const metadataStr = await this.ytdlp.execPromise(args);
-      const metadata = JSON.parse(metadataStr) as YtDlpMetadata;
-
-      // Look for subtitles or automatic captions in English
-      const subtitleInfo = metadata.subtitles?.[SUBTITLE_LANG] || metadata.automatic_captions?.[SUBTITLE_LANG];
-      
-      if (!subtitleInfo) {
-        console.warn(`[YtDlp] [${videoId}] No English subtitles or automatic captions found`);
-        return [];
-      }
-
-      // Find the json3 format URL
-      const json3Subtitle = subtitleInfo.find((sub: YtDlpSubtitle) => sub.ext === 'json3');
-      
-      if (!json3Subtitle || !json3Subtitle.url) {
-        console.warn(`[YtDlp] [${videoId}] No json3 format found in subtitles. Available formats: ${subtitleInfo.map((s: YtDlpSubtitle) => s.ext).join(', ')}`);
-        return [];
-      }
-
-      const transcriptUrl = json3Subtitle.url;
-      const rawResponse = await this.downloadFromUrl(transcriptUrl);
-      
-      if (rawResponse.trim().startsWith('<html>')) {
-        console.warn(`[YtDlp] [${videoId}] Received HTML instead of JSON for transcript`);
-        return [];
-      }
-
-      try {
-        const json3Data = JSON.parse(rawResponse) as Json3Data;
-        const parsedTranscripts = this.parseJson3Transcript(json3Data, SUBTITLE_LANG);
-        console.log(`[YtDlp] [${videoId}] Parsed ${parsedTranscripts.length} transcript segments from json3`);
-        return parsedTranscripts;
-      } catch (parseError) {
-        console.error(`[YtDlp] [${videoId}] Failed to parse transcript JSON:`, parseError);
-        return [];
-      }
-    } catch (error) {
-      console.error(`[YtDlp] [${videoId}] Method failed:`, error);
-      return [];
-    }
+  await this.ensureYtdlp();
+  
+  if (!this.ytdlp) {
+    console.warn(`[YtDlp] [${videoId}] yt-dlp not initialized`);
+    return [];
   }
+
+  try {
+    const VIDEO_URL = `https://www.youtube.com/watch?v=${videoId}`;
+    const SUBTITLE_LANG = 'en';
+    const cookiesPath = '/app/youtube-cookies.txt';
+    
+    const args = [
+      '--dump-json',
+      '--no-simulate',
+      '--no-check-certificates',
+      '--prefer-free-formats',
+      // REMOVED: '--youtube-skip-dash-manifest',  ❌ This is deprecated
+      '--extractor-args', 'youtube:player_client=android,web',
+    ];
+
+    if (fs.existsSync(cookiesPath)) {
+      console.log(`[YtDlp] [${videoId}] Using cookies from ${cookiesPath}`);
+      args.push('--cookies', cookiesPath);
+    } else {
+      console.warn(`[YtDlp] [${videoId}] No cookies file found at ${cookiesPath}`);
+    }
+    
+    args.push(VIDEO_URL);
+
+    console.log(`[YtDlp] [${videoId}] Executing with args:`, JSON.stringify(args, null, 2));
+
+    const metadataStr = await this.ytdlp.execPromise(args);
+    const metadata = JSON.parse(metadataStr) as YtDlpMetadata;
+
+    const subtitleInfo = metadata.subtitles?.[SUBTITLE_LANG] || metadata.automatic_captions?.[SUBTITLE_LANG];
+    
+    if (!subtitleInfo) {
+      console.warn(`[YtDlp] [${videoId}] No English subtitles or automatic captions found`);
+      return [];
+    }
+
+    const json3Subtitle = subtitleInfo.find((sub: YtDlpSubtitle) => sub.ext === 'json3');
+    
+    if (!json3Subtitle || !json3Subtitle.url) {
+      console.warn(`[YtDlp] [${videoId}] No json3 format found. Available: ${subtitleInfo.map((s: YtDlpSubtitle) => s.ext).join(', ')}`);
+      return [];
+    }
+
+    const transcriptUrl = json3Subtitle.url;
+    const rawResponse = await this.downloadFromUrl(transcriptUrl);
+    
+    if (rawResponse.trim().startsWith('<html>')) {
+      console.warn(`[YtDlp] [${videoId}] Received HTML instead of JSON`);
+      return [];
+    }
+
+    const json3Data = JSON.parse(rawResponse) as Json3Data;
+    const parsedTranscripts = this.parseJson3Transcript(json3Data, SUBTITLE_LANG);
+    console.log(`[YtDlp] [${videoId}] ✓ Parsed ${parsedTranscripts.length} segments`);
+    return parsedTranscripts;
+    
+  } catch (error) {
+    console.error(`[YtDlp] [${videoId}] Method failed:`, error);
+    return [];
+  }
+}
 
   private downloadFromUrl(url: string): Promise<string> {
     return new Promise((resolve, reject) => {
