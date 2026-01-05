@@ -77,7 +77,7 @@ export class YoutubeTranscriptService {
       try {
         const transcriptItems: TranscriptResponse[] = await YoutubeTranscript.fetchTranscript(videoId);
         if (transcriptItems && transcriptItems.length > 0) {
-          console.log(`[YoutubeTranscriptService] [${videoId}] ✅ Found ${transcriptItems.length} transcripts via youtube-transcript.`);
+          console.log(`[YoutubeTranscriptService] [${videoId}] Found ${transcriptItems.length} transcripts via youtube-transcript.`);
           transcript = this.extractEnglishCaptions(transcriptItems);
         }
       } catch (ytError) {
@@ -127,10 +127,10 @@ export class YoutubeTranscriptService {
       // Check for cookies file - use absolute path to match entrypoint.sh
       const cookiesPath = '/app/youtube-cookies.txt';
       if (fs.existsSync(cookiesPath)) {
-        console.log(`[YtDlp] [${videoId}] ✅ Using cookies from ${cookiesPath}`);
+        console.log(`[YtDlp] [${videoId}] Using cookies from ${cookiesPath}`);
         args.splice(1, 0, '--cookies', cookiesPath);
       } else {
-        console.warn(`[YtDlp] [${videoId}] ⚠️  No cookies file found at ${cookiesPath}. YouTube may block this request.`);
+        console.warn(`[YtDlp] [${videoId}] No cookies file found at ${cookiesPath}. YouTube may block this request.`);
       }
 
       const metadataStr = await this.ytdlp.execPromise(args);
