@@ -10,7 +10,7 @@ export class YoutubeMetadataSevice {
         const { id } = youtubeMetaData;
         const { title, thumbnails } = youtubeMetaData.snippet;
         const { duration } = youtubeMetaData.contentDetails || {};
-        const durationMs: number = this.parseDurationToMs(duration)
+        const durationMs: number = this.parseDurationToMs(duration || "")
         const thumbnailUrl = this.getThumbnailUrl(thumbnails);
         const type:'short' | 'image' | 'video' | 'photo' | 'self' = this.determineVideoType(durationMs)
 
@@ -92,14 +92,14 @@ export class YoutubeMetadataSevice {
     }
 
     public extractStats = (youtubeMetaData: YoutubeMetadata): YTStatsAndTopics => {
-        const {statistics, topicDetails} = youtubeMetaData
+        const { statistics, topicDetails } = youtubeMetaData;
         return {
-            viewCount: statistics.viewCount,
-            likeCount: statistics.likeCount,
-            favoriteCount: statistics.favoriteCount,
-            commentCount: statistics.commentCount,
-            topicCategories: topicDetails.topicCategories
-        }
+            viewCount: statistics?.viewCount || '0',
+            likeCount: statistics?.likeCount || '0',
+            favoriteCount: statistics?.favoriteCount || '0',
+            commentCount: statistics?.commentCount || '0',
+            topicCategories: topicDetails?.topicCategories || []
+        };
     }
 
     public async batchEmbedYTVideos(

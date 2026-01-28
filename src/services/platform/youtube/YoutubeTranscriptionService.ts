@@ -5,8 +5,9 @@ import { Audio_Output_Directory } from '@/services/common/constants';
 import fs from "fs"
 import path from 'path';
 import YTDlpWrap from 'yt-dlp-wrap';
-import * as https from 'https';
 
+
+/*
 interface YtDlpSubtitle {
   ext?: string;
   url?: string;
@@ -30,6 +31,7 @@ interface Json3Event {
 interface Json3Data {
   events?: Json3Event[];
 }
+*/
 
 export class YoutubeTranscriptService {
   private ytdlp: YTDlpWrap | null = null;
@@ -64,34 +66,40 @@ export class YoutubeTranscriptService {
         console.warn(`[YoutubeTranscriptService] [${videoId}] No title provided.`);
       }
       
-      // 1. Primary method: yt-dlp (Most reliable local method)
-      console.log(`[YoutubeTranscriptService] [${videoId}] Attempting fetch via yt-dlp...`);
-      transcript = await this.fetchTranscriptViaYtDlp(videoId);
-      if (transcript && transcript.length > 0) {
-        console.log(`[YoutubeTranscriptService] [${videoId}] Successfully fetched ${transcript.length} transcripts via yt-dlp.`);
-        return transcript;
+      // 1. Primary method: Official youtube-transcript api
+      console.log(`[YoutubeTranscriptService] [${videoId}] Attempting fetch via youtube-transcript package...`);
+      try {
+        const transcriptItems: TranscriptResponse[] = await YoutubeTranscript.fetchTranscript(videoId);
+        if (transcriptItems && transcriptItems.length > 0) {
+          console.log(`[YoutubeTranscriptService] [${videoId}] Found ${transcriptItems.length} transcripts via youtube-transcript.`);
+          transcript = this.extractEnglishCaptions(transcriptItems);
+          if (transcript && transcript.length > 0) {
+            return transcript;
+          }
+        }
+      } catch (ytError) {
+        console.warn(`[YoutubeTranscriptService] [${videoId}] youtube-transcript package failed:`, ytError);
       }
 
-      // 2. Secondary method: Third-party service (youtube-transcript.io)
-      console.log(`[YoutubeTranscriptService] [${videoId}] yt-dlp returned none, falling back to Third-party service...`);
+      // 2. Fallback method: Third-party service (youtube-transcript.io)
+      console.log(`[YoutubeTranscriptService] [${videoId}] youtube-transcript failed, falling back to Third-party service...`);
       transcript = await this.fetchTranscriptViaThirdParty(videoId);
       if (transcript && transcript.length > 0) {
         console.log(`[YoutubeTranscriptService] [${videoId}] Successfully fetched ${transcript.length} transcripts via Third-party service.`);
         return transcript;
       }
 
-      // 3. Tertiary method: Falling back to youtube-transcript package
-      console.log(`[YoutubeTranscriptService] [${videoId}] Third-party returned empty, falling back to youtube-transcript package...`);
-      try {
-        const transcriptItems: TranscriptResponse[] = await YoutubeTranscript.fetchTranscript(videoId);
-        if (transcriptItems && transcriptItems.length > 0) {
-          console.log(`[YoutubeTranscriptService] [${videoId}] Found ${transcriptItems.length} transcripts via youtube-transcript.`);
-          transcript = this.extractEnglishCaptions(transcriptItems);
-        }
-      } catch (ytError) {
-        console.warn(`[YoutubeTranscriptService] [${videoId}] youtube-transcript package failed:`, ytError);
+      /*
+      // 3. Disabled method: yt-dlp (Most reliable local method)
+      console.log(`[YoutubeTranscriptService] [${videoId}] Attempting fetch via yt-dlp...`);
+      transcript = await this.fetchTranscriptViaYtDlp(videoId);
+      if (transcript && transcript.length > 0) {
+        console.log(`[YoutubeTranscriptService] [${videoId}] Successfully fetched ${transcript.length} transcripts via yt-dlp.`);
+        return transcript;
       }
-      return transcript;
+      */
+
+      return [];
     } catch (error) {
       if (error instanceof Error && error.message.includes('Transcript is disabled')) {
         console.error('[YoutubeTranscriptService] Transcripts are disabled for this video');
@@ -149,6 +157,7 @@ export class YoutubeTranscriptService {
     }
   }
 
+  /*
   private async fetchTranscriptViaYtDlp(videoId: string): Promise<CaptionItem[]> {
     await this.ensureYtdlp();
     
@@ -213,9 +222,11 @@ export class YoutubeTranscriptService {
       return [];
     }
   }
+  */
 
 
 
+  /*
   private downloadFromUrl(url: string): Promise<string> {
     return new Promise((resolve, reject) => {
       const options = {
@@ -254,6 +265,7 @@ export class YoutubeTranscriptService {
     }
     return transcriptItems;
   }
+  */
 
   public async generateTranscriptsFromAudio(videoId:string, title:string): Promise<CaptionItem[]>{
     const tempFiles: string[] = [];

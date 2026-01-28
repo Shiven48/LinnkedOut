@@ -72,9 +72,9 @@ export class YoutubeAPIService {
                 'Content-Type': 'application/json' 
             },
         }
-        const response:any = await utility.apicaller(url, options, 5, 1000);
+        const response = await utility.apicaller(url, options, 5, 1000);
         if (!response.ok) throw new Error(`YouTube API error: ${response.status} ${response.statusText}`);
-        const data:YouTubeVideoResponse = await response.json();
+        const data: YouTubeVideoResponse = await response.json() as YouTubeVideoResponse;
         if (!data.items || data.items.length === 0) throw new Error('No video data found in the YouTube response');
         return data.items[0];
     } catch (error) {
@@ -84,7 +84,40 @@ export class YoutubeAPIService {
     }
 
     public async searchVideos(query: string, categoryId?:string, topicId?: string): Promise<YoutubeMetadata[]> {
+        const fetchWithParams = async (params: URLSearchParams) => {
+            console.log('🔍 Search URL:', `${this.YOUTUBE_SEARCH_URL}?${params.toString()}`);
+            const response = await utility.apicaller(`${this.YOUTUBE_SEARCH_URL}?${params.toString()}`, { 
+                method: 'GET', 
+                headers: { 'Content-Type': 'application/json' }
+            }, 3, 1000);
+            
+            const data = await response.json();        
+            if (data.error) {
+                console.error('Search API Error:', data.error);
+                return [];
+            }
+            return data.items || [];
+        }
+
         const params = new URLSearchParams({
+            part: 'snippet',
+            q: query,
+            type: 'video',
+            videoDuration: 'medium',
+            order: 'relevance',
+            maxResults: '20',
+            key: this.apikey!
+        });
+
+        if (categoryId) params.append('videoCategoryId', categoryId);
+        if (topicId) params.append('topicId', topicId);
+
+        let items = await fetchWithParams(params);
+        
+        // Fallback 1: Remove category and topic filters
+        if (items.length === 0 && (categoryId || topicId)) {
+            console.warn(`⚠️ No results for "${query}" with category/topic filters. Retrying without them...`);
+            const fallbackParams = new URLSearchParams({
                 part: 'snippet',
                 q: query,
                 type: 'video',
@@ -92,27 +125,25 @@ export class YoutubeAPIService {
                 order: 'relevance',
                 maxResults: '20',
                 key: this.apikey!
-        });
-        if (categoryId) {
-            params.append('videoCategoryId', categoryId);
-        }
-        if (topicId) {
-            params.append('topicId', topicId);
+            });
+            items = await fetchWithParams(fallbackParams);
         }
 
-        console.log('🔍 Search URL:', `${this.YOUTUBE_SEARCH_URL}?${params.toString()}`);
-        const response = await utility.apicaller(`${this.YOUTUBE_SEARCH_URL}?${params.toString()}`, { 
-            method: 'GET', 
-            headers: { 'Content-Type': 'application/json' }
-        }, 5, 1000);
-        
-        const data = await response.json();        
-        if (data.error) {
-            console.error('Search API Error:', data.error);
-            return [];
+        // Fallback 2: Remove duration filter
+        if (items.length === 0) {
+            console.warn(`⚠️ Still no results for "${query}". Retrying without duration constraint...`);
+            const finalParams = new URLSearchParams({
+                part: 'snippet',
+                q: query,
+                type: 'video',
+                order: 'relevance',
+                maxResults: '20',
+                key: this.apikey!
+            });
+            items = await fetchWithParams(finalParams);
         }
         
-        const videoIds:string[] = data.items?.map((item: any) => item.id.videoId) || [];
+        const videoIds: string[] = items.map((item: any) => item.id.videoId).filter(Boolean);
         return this.getAllVideosByID(videoIds);
     }
 
@@ -139,7 +170,7 @@ export class YoutubeAPIService {
         return videoItems;
     }
 
-    public async testSimpleSearch(query: string): Promise<any[]> {
+    public async testSimpleSearch(query: string): Promise<YoutubeMetadata[]> {
         console.log('🧪 Testing simple search for:', query);
         
         const params = new URLSearchParams({
@@ -172,7 +203,7 @@ export class YoutubeAPIService {
         return [];
     }
 
-    public async getHighQualityTechContent(query: string): Promise<any[]> {
+    public async getHighQualityTechContent(query: string): Promise<YoutubeMetadata[]> {
         console.log('🚀 Starting FIXED search for:', query);
         
         const qualityQueries = [
@@ -181,7 +212,7 @@ export class YoutubeAPIService {
             `${query} expert`
         ];
         
-        const allResults: any[] = [];
+        const allResults: YoutubeMetadata[] = [];
         
         for (const searchQuery of qualityQueries) {
             console.log(`\n🔍 Searching: "${searchQuery}"`);
@@ -224,13 +255,13 @@ export class YoutubeAPIService {
         return uniqueResults;
     }
 
-    public processStatistics(apiResponse: any): any[] {
-        const processedVideos = apiResponse.items.map((video: any) => {
+    public processStatistics(apiResponse: YouTubeVideoResponse): (YoutubeMetadata & { qualityMetrics: any })[] {
+        const processedVideos = apiResponse.items.map((video: YoutubeMetadata) => {
             // Calculate engagement metrics
-            const stats = video.statistics || {};
-            const views = parseInt(stats.viewCount || '0');
-            const likes = parseInt(stats.likeCount || '0');
-            const comments = parseInt(stats.commentCount || '0');
+            const stats = video.statistics;
+            const views = parseInt(stats?.viewCount || '0');
+            const likes = parseInt(stats?.likeCount || '0');
+            const comments = parseInt(stats?.commentCount || '0');
             
             // Calculate quality metrics
             const likeToViewRatio = views > 0 ? (likes / views) * 100 : 0;

@@ -240,9 +240,9 @@ export interface YTTopicDetails {
 export interface YoutubeMetadata {
   id: string;
   snippet: YTVideoSnippet;
-  contentDetails: YTContentDetails;
-  statistics: YTStatistics;
-  topicDetails: YTTopicDetails;
+  contentDetails?: YTContentDetails;
+  statistics?: YTStatistics;
+  topicDetails?: YTTopicDetails;
 }
 
 export interface YouTubeVideoResponse {

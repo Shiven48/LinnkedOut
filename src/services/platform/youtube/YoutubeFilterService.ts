@@ -27,9 +27,9 @@ export class YoutubeFilterService {
       }
 
       const uniqueVideos = filteringPipelineResult.videos;
-      if (uniqueVideos.length < 1) {
+      if (uniqueVideos.length === 0) {
         throw new Error(
-          `Critical shortage: Only ${uniqueVideos.length} unique videos, need minimum 9`
+          `Critical shortage: No unique videos found for the given queries after filtering.`
         );
       }
 
@@ -97,14 +97,14 @@ export class YoutubeFilterService {
     stats: YTStatsAndTopics,
     metadata: YoutubeMetadata
   ): QualityMetrics {
-    const { likeCount, viewCount, commentCount, favoriteCount } = stats;
+    const { likeCount, viewCount, commentCount } = stats;
 
     const likes = parseInt(likeCount);
     const views = parseInt(viewCount);
     const comments = parseInt(commentCount);
     const duration =
       this.youtubeMetadataService.parseDurationToMs(
-        metadata.contentDetails.duration
+        metadata.contentDetails?.duration || ""
       ) / 1000;
 
     const likeToViewRatio = views > 0 ? (likes / views) * 100 : 0;
