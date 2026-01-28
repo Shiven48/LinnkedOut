@@ -1,5 +1,4 @@
 {
-<<<<<<< HEAD
   "[css]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
@@ -16,46 +15,11 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "[markdown]": {
-=======
-  "sqltools.connections": [
-    {
-      "ssh": "Disabled",
-      "previewLimit": 50,
-      "server": "db.tuvpmuwhvlwpoxmvjayh.supabase.co",
-      "port": 5432,
-      "driver": "PostgreSQL",
-      "database": "postgres",
-      "username": "postgres",
-      "name": "linnkedout"
-    }
-  ],
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "editor.formatOnSave": true,
-  "editor.formatOnPaste": true,
-  "editor.formatOnType": false,
-  "[javascript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "[typescript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "[javascriptreact]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "[typescriptreact]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "[json]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "[css]": {
->>>>>>> e333934b43ecaf911d0c1b61e1203e6602e45112
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "[scss]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-<<<<<<< HEAD
   "[typescript]": {
     "editor.defaultFormatter": "denoland.vscode-deno"
   },
@@ -97,12 +61,4 @@
       "username": "postgres"
     }
   ]
-=======
-  "[html]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "[markdown]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  }
->>>>>>> e333934b43ecaf911d0c1b61e1203e6602e45112
 }

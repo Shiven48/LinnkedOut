@@ -14,7 +14,7 @@ export async function GET(
         if (!userId) {
             return NextResponse.json({ message: "Unauthorised" }, { status: 401 });
         }
-        const fetchedVideo:Media = await getFromMediaById(videoId, userId); 
+        let fetchedVideo:Media = await getFromMediaById(videoId, userId); 
         if(!fetchedVideo){
             throw new Error(`Cannot get video from media by ${videoId}!`)
         }
