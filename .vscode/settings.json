@@ -1,4 +1,22 @@
 {
+<<<<<<< HEAD
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[markdown]": {
+=======
   "sqltools.connections": [
     {
       "ssh": "Disabled",
@@ -31,15 +49,60 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "[css]": {
+>>>>>>> e333934b43ecaf911d0c1b61e1203e6602e45112
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "[scss]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
+<<<<<<< HEAD
+  "[typescript]": {
+    "editor.defaultFormatter": "denoland.vscode-deno"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "deno.enablePaths": [
+    "supabase/functions"
+  ],
+  "deno.lint": true,
+  "deno.unstable": [
+    "bare-node-builtins",
+    "byonm",
+    "sloppy-imports",
+    "unsafe-proto",
+    "webgpu",
+    "broadcast-channel",
+    "worker-options",
+    "cron",
+    "kv",
+    "ffi",
+    "fs",
+    "http",
+    "net"
+  ],
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnPaste": true,
+  "editor.formatOnSave": true,
+  "editor.formatOnType": false,
+  "sqltools.connections": [
+    {
+      "database": "postgres",
+      "driver": "PostgreSQL",
+      "name": "linnkedout",
+      "port": 5432,
+      "previewLimit": 50,
+      "server": "db.tuvpmuwhvlwpoxmvjayh.supabase.co",
+      "ssh": "Disabled",
+      "username": "postgres"
+    }
+  ]
+=======
   "[html]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "[markdown]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   }
+>>>>>>> e333934b43ecaf911d0c1b61e1203e6602e45112
 }
