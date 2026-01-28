@@ -46,7 +46,6 @@ export class YoutubeTranscriptService {
 
       if (!fs.existsSync(this.binaryPath)) {
         console.error('[YoutubeTranscriptService] System yt-dlp binary not found at /usr/local/bin/yt-dlp');
-        // We continue anyway as it might be in PATH, but ideally it should be at the absolute path
       }
       
       this.ytdlp = new YTDlpWrap(this.binaryPath);
@@ -65,15 +64,24 @@ export class YoutubeTranscriptService {
         console.warn(`[YoutubeTranscriptService] [${videoId}] No title provided.`);
       }
       
-      // 1. Primary method: Using ytdlp-nodejs to get json3 transcripts (most reliable)
+      // 1. Primary method: yt-dlp (Most reliable local method)
+      console.log(`[YoutubeTranscriptService] [${videoId}] Attempting fetch via yt-dlp...`);
       transcript = await this.fetchTranscriptViaYtDlp(videoId);
       if (transcript && transcript.length > 0) {
-        console.log(`[YoutubeTranscriptService] [${videoId}] Successfully fetched ${transcript.length} transcripts via YtDlp (json3).`);
+        console.log(`[YoutubeTranscriptService] [${videoId}] Successfully fetched ${transcript.length} transcripts via yt-dlp.`);
         return transcript;
       }
 
-      // 2. Secondary method: Falling back to youtube-transcript package
-      console.log(`[YoutubeTranscriptService] [${videoId}] YtDlp returned empty, falling back to youtube-transcript package...`);
+      // 2. Secondary method: Third-party service (youtube-transcript.io)
+      console.log(`[YoutubeTranscriptService] [${videoId}] yt-dlp returned none, falling back to Third-party service...`);
+      transcript = await this.fetchTranscriptViaThirdParty(videoId);
+      if (transcript && transcript.length > 0) {
+        console.log(`[YoutubeTranscriptService] [${videoId}] Successfully fetched ${transcript.length} transcripts via Third-party service.`);
+        return transcript;
+      }
+
+      // 3. Tertiary method: Falling back to youtube-transcript package
+      console.log(`[YoutubeTranscriptService] [${videoId}] Third-party returned empty, falling back to youtube-transcript package...`);
       try {
         const transcriptItems: TranscriptResponse[] = await YoutubeTranscript.fetchTranscript(videoId);
         if (transcriptItems && transcriptItems.length > 0) {
@@ -90,81 +98,123 @@ export class YoutubeTranscriptService {
         return [];
       } 
       console.error('[YoutubeTranscriptService] Error during transcript fetch:', error);
-      // Final attempt with whisper if everything else fails with an error
-      // try {
-      //   return await this.generateTranscriptsFromAudio(videoId, title);
-      // } catch (whisperError) {
-      //   console.error('[YoutubeTranscriptService] Whisper generation also failed:', whisperError);
-      //   return [];
-      // }
       return [];
     }
   }
 
-private async fetchTranscriptViaYtDlp(videoId: string): Promise<CaptionItem[]> {
-  await this.ensureYtdlp();
-  
-  if (!this.ytdlp) {
-    console.warn(`[YtDlp] [${videoId}] yt-dlp not initialized`);
-    return [];
+  private async fetchTranscriptViaThirdParty(videoId: string): Promise<CaptionItem[]> {
+    try {
+      const token = process.env.TRANSCRIPT_SERVICE_TOKEN;
+      if (!token) {
+        console.warn('[YoutubeTranscriptService] No TRANSCRIPT_SERVICE_TOKEN found in environment');
+        return [];
+      }
+
+      const response = await fetch("https://www.youtube-transcript.io/api/transcripts", {
+        method: "POST",
+        headers: {
+          "Authorization": `Basic ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ 
+          ids: [videoId], 
+        })
+      });
+
+      if (!response.ok) {
+        console.warn(`[YoutubeTranscriptService] [${videoId}] Third-party service request failed: ${response.status}`);
+        return [];
+      }
+
+      const data = await response.json();
+      
+      // The service typically returns { "videoId": [segments] } or similar
+      const rawSegments = data[videoId] || (data.results && data.results[videoId]) || [];
+      
+      if (!Array.isArray(rawSegments) || rawSegments.length === 0) {
+        console.warn(`[YoutubeTranscriptService] [${videoId}] No transcript segments found in third-party response`);
+        return [];
+      }
+
+      return rawSegments.map((seg: { text?: string; content?: string; lang?: string; language?: string; offset?: number; start?: number; duration?: number; end?: number }) => ({
+        text: seg.text || seg.content || '',
+        lang: seg.lang || seg.language || 'en',
+        offset: seg.offset || seg.start || 0,
+        duration: seg.duration || (seg.end !== undefined && seg.start !== undefined ? seg.end - seg.start : 0)
+      }));
+
+    } catch (error) {
+      console.error(`[YoutubeTranscriptService] [${videoId}] Error fetching from third-party service:`, error);
+      return [];
+    }
   }
 
-  try {
-    const VIDEO_URL = `https://www.youtube.com/watch?v=${videoId}`;
-    const SUBTITLE_LANG = 'en';
-    const cookiesPath = '/app/youtube-cookies.txt';
+  private async fetchTranscriptViaYtDlp(videoId: string): Promise<CaptionItem[]> {
+    await this.ensureYtdlp();
     
-    const args = [
-      '--dump-json',
-      '--no-warnings',
-    ];
-
-    if (fs.existsSync(cookiesPath)) {
-      console.log(`[YtDlp] [${videoId}] Using cookies from ${cookiesPath}`);
-      args.push('--cookies', cookiesPath);
-    } else {
-      console.warn(`[YtDlp] [${videoId}] No cookies file found at ${cookiesPath}`);
-    }
-    
-    args.push(VIDEO_URL);
-
-    console.log(`[YtDlp] [${videoId}] Executing with args:`, JSON.stringify(args, null, 2));
-
-    const metadataStr = await this.ytdlp.execPromise(args);
-    const metadata = JSON.parse(metadataStr) as YtDlpMetadata;
-
-    const subtitleInfo = metadata.subtitles?.[SUBTITLE_LANG] || metadata.automatic_captions?.[SUBTITLE_LANG];
-    
-    if (!subtitleInfo) {
-      console.warn(`[YtDlp] [${videoId}] No English subtitles or automatic captions found`);
+    if (!this.ytdlp) {
+      console.warn(`[YtDlp] [${videoId}] yt-dlp not initialized`);
       return [];
     }
 
-    const json3Subtitle = subtitleInfo.find((sub: YtDlpSubtitle) => sub.ext === 'json3');
-    
-    if (!json3Subtitle || !json3Subtitle.url) {
-      console.warn(`[YtDlp] [${videoId}] No json3 format found. Available: ${subtitleInfo.map((s: YtDlpSubtitle) => s.ext).join(', ')}`);
+    try {
+      const VIDEO_URL = `https://www.youtube.com/watch?v=${videoId}`;
+      const SUBTITLE_LANG = 'en';
+      const cookiesPath = '/app/youtube-cookies.txt';
+      
+      const args = [
+        '--dump-json',
+        '--no-warnings',
+      ];
+
+      if (fs.existsSync(cookiesPath)) {
+        console.log(`[YtDlp] [${videoId}] Using cookies from ${cookiesPath}`);
+        args.push('--cookies', cookiesPath);
+      } else {
+        console.warn(`[YtDlp] [${videoId}] No cookies file found at ${cookiesPath}`);
+      }
+      
+      args.push(VIDEO_URL);
+
+      console.log(`[YtDlp] [${videoId}] Executing with args:`, JSON.stringify(args, null, 2));
+
+      const metadataStr = await this.ytdlp.execPromise(args);
+      const metadata = JSON.parse(metadataStr) as YtDlpMetadata;
+
+      const subtitleInfo = metadata.subtitles?.[SUBTITLE_LANG] || metadata.automatic_captions?.[SUBTITLE_LANG];
+      
+      if (!subtitleInfo) {
+        console.warn(`[YtDlp] [${videoId}] No English subtitles or automatic captions found`);
+        return [];
+      }
+
+      const json3Subtitle = subtitleInfo.find((sub: YtDlpSubtitle) => sub.ext === 'json3');
+      
+      if (!json3Subtitle || !json3Subtitle.url) {
+        console.warn(`[YtDlp] [${videoId}] No json3 format found. Available: ${subtitleInfo.map((s: YtDlpSubtitle) => s.ext).join(', ')}`);
+        return [];
+      }
+
+      const transcriptUrl = json3Subtitle.url;
+      const rawResponse = await this.downloadFromUrl(transcriptUrl);
+      
+      if (rawResponse.trim().startsWith('<html>')) {
+        console.warn(`[YtDlp] [${videoId}] Received HTML instead of JSON`);
+        return [];
+      }
+
+      const json3Data = JSON.parse(rawResponse) as Json3Data;
+      const parsedTranscripts = this.parseJson3Transcript(json3Data, SUBTITLE_LANG);
+      console.log(`[YtDlp] [${videoId}] ✓ Parsed ${parsedTranscripts.length} segments`);
+      return parsedTranscripts;
+      
+    } catch (error) {
+      console.error(`[YtDlp] [${videoId}] Method failed:`, error);
       return [];
     }
-
-    const transcriptUrl = json3Subtitle.url;
-    const rawResponse = await this.downloadFromUrl(transcriptUrl);
-    
-    if (rawResponse.trim().startsWith('<html>')) {
-      console.warn(`[YtDlp] [${videoId}] Received HTML instead of JSON`);
-      return [];
-    }
-
-    const json3Data = JSON.parse(rawResponse) as Json3Data;
-    const parsedTranscripts = this.parseJson3Transcript(json3Data, SUBTITLE_LANG);
-    console.log(`[YtDlp] [${videoId}] ✓ Parsed ${parsedTranscripts.length} segments`);
-    return parsedTranscripts;
-    
-  } catch (error) {
-    console.error(`[YtDlp] [${videoId}] Method failed:`, error);
-    return [];
   }
-}
+
+
 
   private downloadFromUrl(url: string): Promise<string> {
     return new Promise((resolve, reject) => {
