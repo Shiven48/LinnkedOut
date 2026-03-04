@@ -18,7 +18,7 @@ export default {
 		'68': '17rem'
       },
   		colors: {
-			'dark': 'var(--dark',
+			'dark': 'var(--col-dark)',
 			'golden': 'var(--col-golden)',
 			'dark-golden': 'var(--col-dark-golden)',
   			background: 'hsl(var(--background))',
