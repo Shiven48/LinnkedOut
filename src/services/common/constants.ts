@@ -84,6 +84,12 @@ export const navComponents = (): NavComponent[] => {
             'title': 'insert',
             'url': '/navs/insert',
             'icon': 'insert'
+        },
+        {
+            'id': 3,
+            'title': 'tests',
+            'url': '/tests',
+            'icon': 'tests'
         }
     ];
     return navs as NavComponent[];
