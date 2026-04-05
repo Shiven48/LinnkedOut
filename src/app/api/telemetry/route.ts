@@ -56,7 +56,8 @@ export async function GET(request: NextRequest) {
     const totalTokensProcessed = Math.round(totalCount * avgTokensPerVideo);
 
     // Pipeline Cost based strictly on processed tokens
-    const costPerToken = 2.50 / 1000000;
+    // Using a far more cost-effective model equivalent (e.g. $0.15 / 1M tokens instead of $2.50)
+    const costPerToken = 0.15 / 1000000;
     const estimatedCost = (totalTokensProcessed * costPerToken).toFixed(4);
 
     // RAG Semantic Retrieval Score improving with corpus size
