@@ -54,7 +54,7 @@ const chartData = [
 const linePoints = chartData.map((p) => `${p.x},${p.y}`).join(" ");
 const areaPoints = `0,98 ${linePoints} 100,98`;
 
-export const Dashboard = () => {
+export const Dashboard = ({ isGlobal = false }: { isGlobal?: boolean }) => {
   const [mounted, setMounted] = useState(false);
   const [liveData, setLiveData] = useState<any>({
     totalProcessed: 0,
@@ -70,7 +70,7 @@ export const Dashboard = () => {
 
   useEffect(() => {
     setMounted(true);
-    fetch("/api/telemetry")
+    fetch(`/api/telemetry?scope=${isGlobal ? "global" : "user"}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.success && data.data) {
@@ -165,13 +165,13 @@ export const Dashboard = () => {
           <div className="flex items-center gap-3 mb-2">
             <Activity className="w-7 h-7 text-dark-golden" />
             <h1 className="text-3xl md:text-4xl font-bold text-dark-golden tracking-tight">
-              Application Telemetry & Analytics
+              {isGlobal ? "Global Application Telemetry & Analytics" : "Your Personal Telemetry & Analytics"}
             </h1>
           </div>
           <p className="text-gray-400 text-base max-w-3xl">
-            Live evaluation metrics — recommendation accuracy, video ingestion
-            rates, P99 latency bounds, and user-time savings derived from
-            production database interactions.
+            {isGlobal
+              ? "Live evaluation metrics — recommendation accuracy, video ingestion rates, P99 latency bounds, and user-time savings derived from production database interactions."
+              : "Your personal usage metrics — recommendations tailored to you, videos ingested, processing latency, and total time saved from your interactions."}
           </p>
         </motion.div>
 
