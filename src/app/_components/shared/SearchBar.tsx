@@ -111,7 +111,7 @@ export default function SearchBar() {
             {queryResult.map((item) => (
               <Link
                 className="flex justify-between cursor-pointer mt-4 border-l-1 border-yellow-500 hover:bg-gray-800 hover:bg-opacity-60"
-                href={`/video/${item.platform}/${item.id}`}
+                href={`/video/${item.platform}/${item.platform === 'youtube' ? item.youtubeId : item.redditId}/${item.id}`}
                 key={item.id}
               >
                 <p
