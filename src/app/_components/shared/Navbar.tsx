@@ -21,13 +21,13 @@ export default function App() {
       (category) => category.url === pathname
     );
     setActiveNavComponent(currentCategory ? currentCategory.title : "");
-  }, [pathname, navComponents]);
+  }, [pathname, navComponent]);
 
   return (
-    <nav className="h-12 bg-dark sticky-top-0 w-full flex items-center justify-between px-4 border border-white z-10">
+    <nav className="h-14 mt-4 mx-auto w-[95%] bg-white/5 backdrop-blur-xl sticky top-4 flex items-center justify-between px-6 border border-white/10 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] z-50 transition-all">
       <div className="flex items-center h-full">
         <button
-          className={`bg-white rounded-xl w-8 h-8 absolute bg-golden border border-white transition-all duration-200 ease-in-out flex items-center justify-center hover-side`}
+          className={`bg-golden rounded-xl w-10 h-10 absolute border border-white/5 shadow-md transition-all duration-200 ease-in-out flex items-center justify-center hover-side hover:shadow-accentHi hover:shadow-lg`}
           onClick={toggle}
         >
           <Image
@@ -52,10 +52,10 @@ export default function App() {
           >
             <Link
               href={nav.url}
-              className={`p-[2px] rounded-large duration-300 ease-out hover:scale-110 ${
+              className={`p-[4px] rounded-xl duration-300 ease-out hover:scale-105 ${
                 activeNavComponent === nav.title
-                  ? "bg-[#484848] text-dark-golden border border-white"
-                  : "text-gray-300 hover:text-dark-golden hover:bg-[#484848] hover:bg-opacity-25 hover:rounded-large"
+                  ? "bg-dark-golden text-white shadow-[0_0_15px_rgba(139,92,246,0.3)] border border-white/10"
+                  : "text-gray-400 hover:text-white hover:bg-white/5"
               }`}
             >
               <Image

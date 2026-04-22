@@ -72,25 +72,24 @@ export default function SearchBar() {
   console.log(query);
 
   return (
-    <div className="relative w-[90%]">
+    <div className="relative w-full max-w-md mx-auto">
       <form
-        className="flex items-center p-2 rounded-medium justify-center"
+        className="flex items-center rounded-xl justify-center group"
         onSubmit={handleFormSubmit}
       >
         <input
           type="text"
-          className="flex-1 text-white h-8 bg-gray-500 bg-opacity-20 placeholder-white border-none outline-none p-2 rounded-l-small"
-          placeholder="search"
+          className="flex-1 text-white h-10 bg-white/5 placeholder-gray-400 border border-white/10 outline-none px-4 rounded-l-xl focus:bg-white/10 focus:border-[var(--col-dark-golden)] transition-all backdrop-blur-md shadow-inner"
+          placeholder="Search..."
           value={query}
           ref={searchRef}
           onChange={handleInputChange}
         />
         <button
           type="submit"
-          className="bg-golden h-8 text-white px-4 py-2 rounded-r-medium"
-          // onClick={HandleSearchSubmit}
+          className="bg-dark-golden h-10 text-white px-5 rounded-r-xl border border-l-0 border-white/10 transition-all shadow-md group-hover:shadow-[0_0_15px_rgba(139,92,246,0.3)] flex items-center justify-center cursor-pointer"
         >
-          <Image width={20} height={20} src="/search.svg" alt="searchBarIcon" />
+          <Image width={18} height={18} src="/search.svg" alt="searchBarIcon" className="brightness-200" />
         </button>
       </form>
 
@@ -105,18 +104,17 @@ export default function SearchBar() {
       )}
 
       {!loading && !error && searchState && queryResult.length > 0 && (
-        <div className="absolute top-14 bg-dark bg-opacity-90 w-full rounded p-2 shadow-lg z-10 border border-golden">
-          <p className="text-golden mb-2">Found {queryResult.length} results</p>
+        <div className="absolute top-14 bg-dark/90 backdrop-blur-xl w-full rounded-xl p-3 shadow-2xl z-50 border border-white/10">
+          <p className="text-[var(--col-dark-golden)] font-semibold mb-3 text-sm px-1">Found {queryResult.length} results</p>
           <div className="max-h-60 overflow-y-auto">
             {queryResult.map((item) => (
               <Link
-                className="flex justify-between cursor-pointer mt-4 border-l-1 border-yellow-500 hover:bg-gray-800 hover:bg-opacity-60"
+                className="flex items-center justify-between cursor-pointer mt-2 p-2 rounded-lg border-l-2 border-transparent hover:border-[var(--col-dark-golden)] hover:bg-white/5 transition-all"
                 href={`/video/${item.platform}/${item.platform === 'youtube' ? item.youtubeId : item.redditId}/${item.id}`}
                 key={item.id}
               >
                 <p
-                  key={item.id}
-                  className="p-2 text-sm rounded cursor-pointer text-golden"
+                  className="text-sm font-medium text-gray-200 line-clamp-2 pr-4"
                 >
                   {item.title}
                 </p>

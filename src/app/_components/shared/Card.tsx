@@ -16,8 +16,8 @@ export default function Card({ video }: CardProps) {
     // className={`card-green-glass h-64 my-8 smallScreenCard w-[30%]`}
     >
       {/* For video thumbnail */}
-      <div className="flex gap-4 justify-center">
-        <div className="aspect-video -z-90 rounded-2xl overflow-hidden">
+      <div className="flex gap-4 justify-center group-hover:scale-[1.02] transition-transform duration-300 w-full">
+        <div className="relative w-full aspect-video -z-90 rounded-2xl overflow-hidden shadow-md">
           <Link
             href={`/video/${video.platform || ""}/${utility.getIdOfplatform(
               video
@@ -38,40 +38,40 @@ export default function Card({ video }: CardProps) {
       </div>
 
       {/* For video duration and platform */}
-      <div className="span-prop relative flex top-68 rounded-[5px] text-white">
-        <div className="w-10 h-6 absolute -top-14 end-2 bg-black bg-opacity-80 rounded text-center text-sm">
-          <span className="text-white flex items-center justify-center pt-1">
+      <div className="relative flex top-68 rounded-xl text-white px-3 mt-4">
+        <div className="px-2 h-6 absolute -top-[4rem] right-2 bg-black/60 backdrop-blur-md border border-white/10 rounded overflow-hidden flex items-center justify-center text-xs font-semibold shadow-md">
+          <span className="text-white drop-shadow-md">
             {utility.viewTime(video.durationMs!)}
           </span>
         </div>
 
         {/* For Showing if the video is HD or not */}
-        <div className="w-10 h-6 absolute -top-64 start-2 bg-darker rounded text-center text-sm">
-          <span className="text-golden flex items-center justify-center pt-1">
+        <div className="px-2 h-6 absolute -top-[16rem] left-2 bg-dark/60 backdrop-blur-md border border-[var(--col-dark-golden)] rounded flex items-center justify-center text-xs shadow-[0_0_10px_rgba(139,92,246,0.2)]">
+          <span className="text-[var(--col-dark-golden)] font-bold tracking-wider pt-[2px]">
             HD
           </span>
         </div>
 
         {/* Title and Video type */}
-        <div className="flex flex-col justify-evenly">
-          <span className="md:text-medium sm:text-large smallScreenFont text-white line-clamp-2 -mt-2">
+        <div className="flex flex-col justify-evenly w-full">
+          <span className="md:text-base sm:text-lg text-sm text-gray-100 line-clamp-2 -mt-3 font-semibold tracking-wide drop-shadow-sm group-hover:text-white transition-colors">
             {utility.getTitle(video.title)}
           </span>
           <div className="flex items-center mb-1.5 justify-evenly">
-            <div className="flex items-center justify-evently bg-opacity-70 bg-gray-800 rounded-full px-2 py-0.5 border border-white absolute -top-14 start-2">
+            <div className="flex items-center justify-evenly bg-white/10 backdrop-blur-md rounded-full px-[8px] py-[3px] border border-white/20 absolute -top-[4rem] left-2 shadow-lg">
               <Image
                 src={utility.getPlatformIcon(video.platform)}
-                width={16}
-                height={16}
+                width={14}
+                height={14}
                 alt={video.platform}
-                className="mr-1"
+                className="mr-1.5 drop-shadow-md"
               />
-              <span className="text-xs smallScreenFont text-gray-300">
+              <span className="text-[11px] font-medium text-gray-200 capitalize">
                 {video.platform}
               </span>
             </div>
           </div>
-          <span className="text-medium text-gray-400">{video.type}</span>
+          <span className="text-xs text-gray-400 font-medium uppercase tracking-wider">{video.type}</span>
         </div>
       </div>
     </div>

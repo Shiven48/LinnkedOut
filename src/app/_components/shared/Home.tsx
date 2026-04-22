@@ -110,7 +110,7 @@ export default function Home({ media, pagination, pageHeader }: HomeProps) {
           displayMedia.map((video: any, index) => (
             <div
               key={video.id || index}
-              className={`card-green-glass h-64 mt-4 mb-16 mediumScreenCard smallScreenCard w-[32%]`}
+              className={`card-green-glass h-64 mt-4 mb-16 mediumScreenCard smallScreenCard w-[32%] group`}
             >
               <Card video={video} />
             </div>
