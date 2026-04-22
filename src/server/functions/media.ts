@@ -7,7 +7,7 @@ import {
   RedditMedia,
   YoutubeMedia,
 } from "@/services/common/types";
-import { and, count, desc, eq, sql } from "drizzle-orm";
+import { and, count, desc, eq, sql, ilike } from "drizzle-orm";
 import { MEDIA_PER_PAGE } from "@/services/common/constants";
 import * as schema from "../db/schema";
 
@@ -287,7 +287,7 @@ export const getMediaFromQuery = async (
       .from(media)
       .where(
         and(
-          sql`${media.title} ILIKE ${"%" + query + "%"}`,
+          ilike(media.title, "%" + query + "%"),
           eq(media.userId, userId)
         )
       )
