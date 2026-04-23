@@ -8,29 +8,29 @@ export class YoutubeMediaRepository {
     userId: string
   ): Promise<void> {
     try {
+      console.log(`[YoutubeMediaRepository] Saving YouTube metadata for video...`);
       const { id: youtubeId } = await this.insert_YoutubeMedia(youtubeData);
-      if (
-        youtubeId === undefined ||
-        youtubeId === null ||
-        isNaN(youtubeId) ||
-        youtubeId <= 0
-      )
-        throw new Error("Error saving metadata to the database");
+      
+      if (!youtubeId || isNaN(youtubeId) || youtubeId <= 0) {
+        throw new Error("Failed to retrieve a valid YouTube Media ID after insertion.");
+      }
+      
       mediaData.youtubeId = youtubeId;
+      console.log(`[YoutubeMediaRepository] YouTube metadata saved with ID: ${youtubeId}`);
 
+      console.log(`[YoutubeMediaRepository] Saving generalized media data...`);
       const { id: mediaId } = await this.insert_Media(mediaData, userId);
-      if (
-        mediaId === undefined ||
-        mediaId === null ||
-        isNaN(mediaId) ||
-        mediaId <= 0
-      )
-        throw new Error("Error saving metadata to the database");
+      
+      if (!mediaId || isNaN(mediaId) || mediaId <= 0) {
+        throw new Error("Failed to retrieve a valid Media ID after insertion.");
+      }
+      
       mediaData.id = mediaId;
-      console.log(`Stored media and YT data: ${mediaId} : ${youtubeId}`);
+      console.log(`[YoutubeMediaRepository] Media and YT data linked successfully: Media ID ${mediaId}, YT ID ${youtubeId}`);
     } catch (error) {
-      console.error("Error saving media data to database:", error);
-      throw error;
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      console.error(`[YoutubeMediaRepository] Storage failed: ${errorMessage}`, error);
+      throw new Error(`Database storage failed in YoutubeMediaRepository: ${errorMessage}`);
     }
   }
 

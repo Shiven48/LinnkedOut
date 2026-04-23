@@ -172,7 +172,8 @@ export class HelperFunctions {
         const batchResults: SimilarYT[] = await this.storeDataInBatches(
           ytVideos,
           fetchedYTVideosEmbeddings,
-          userId
+          userId,
+          onLog
         );
         emitLog("Orchestration complete! Redirecting to feed...");
         eventBus.emit(`complete-${userId}`);
@@ -193,7 +194,8 @@ export class HelperFunctions {
       preprocessedContents: string[];
       contentEmbeddings: number[][];
     },
-    userId: string
+    userId: string,
+    onLog?: (msg: string) => void
   ): Promise<SimilarYT[]> {
     const embeddingRepository = new EmbeddingRepository();
     const youtubeRepository = new YoutubeMediaRepository();
@@ -201,28 +203,43 @@ export class HelperFunctions {
     const { contentEmbeddings, preprocessedContents } =
       fetchedYTVideosEmbeddings;
 
-    return Promise.all(
-      batch.map(async (data, index) => {
-        const { mediaData, youtubeData } = data;
-        const preprocessedContent = preprocessedContents[index];
-        const contentEmbedding = contentEmbeddings[index];
+    const results: SimilarYT[] = [];
+    const emitLog = (msg: string) => {
+      console.log(msg);
+      if (onLog) onLog(msg);
+    };
 
+    for (let i = 0; i < batch.length; i++) {
+      const data = batch[i];
+      const { mediaData, youtubeData } = data;
+      const preprocessedContent = preprocessedContents[i];
+      const contentEmbedding = contentEmbeddings[i];
+
+      emitLog(`Processing video ${i + 1}/${batch.length}: ${mediaData.title}`);
+
+      try {
         // Store embeddings
+        emitLog(`[${i + 1}] Storing content embeddings...`);
         mediaData.embeddingId = await embeddingRepository.storeContent(
           preprocessedContent,
           contentEmbedding
         );        
-        console.log(`Stored embeddingId: ${mediaData.embeddingId}`);
-
+        
         // Store media and YT data
+        emitLog(`[${i + 1}] Storing media and metadata...`);
         await youtubeRepository.saveYoutubeMediaData(
           mediaData,
           youtubeData,
           userId
         );
         
-        return data;
-      })
-    );
+        results.push(data);
+      } catch (error) {
+        emitLog(`Error storing video ${i + 1}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        // We continue with other videos even if one fails
+      }
+    }
+    
+    return results;
   }
 }
