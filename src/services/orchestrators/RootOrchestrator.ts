@@ -9,97 +9,6 @@ import { ProcessingService } from "../vector/PreprocessingService";
 import YoutubeOrchestrator from "./YoutubeOrchestrator";
 
 export class RootOrchestrator {
-  // static async RootOrchestrator(data: FormDataType): Promise<any> {
-  //     const summaryService = new SummaryService();
-  //     const youtubeAPIService = new YoutubeAPIService();
-  //     const redditAPIService = new RedditAPIService();
-
-  //     // Destructuring the form data;
-  //     const {
-  //         url: links,
-  //         category,
-  //         customTags,
-  //         fetchSimilar,
-  //         similarityLevel
-  //     } = data;
-
-  //     // saved the link data in database using appropriate orchestrator
-  //     const platfromInfo:PlatformInfo = this.parseLinksForPlatform(links);
-  //     const orchestratorResult = await this.OrchestratorCaller(platfromInfo);
-
-  //     // Convert the fetched data into array, if already an array then just return it
-  //     const videos: GlobalMetadata[] = Array.isArray(orchestratorResult)
-  //         ? orchestratorResult
-  //         : [orchestratorResult];
-
-  //     // Parallelly generate search queries for each video
-  //     const videoProcessingPromises = videos.map(async (video:GlobalMetadata) => {
-  //     const embeddings:number[] = video.embeddingsType.embeddings;
-  //     const searchQuery = await summaryService.generateSearchQuery(
-  //             category,
-  //             customTags,
-  //             similarityLevel
-  //         );
-  //         return { video, embeddings, searchQuery };
-  //     });
-  //     const processedVideos = await Promise.all(videoProcessingPromises);
-
-  //     // Combining and Cleaning the generated search queries
-  //     const searchQuery:string =  this.combineSearchQueries(
-  //         processedVideos.map(pv => pv.searchQuery)
-  //     );
-
-  //     // Calling Youtube api for getting 10-20 videos based on search query
-  //     const multipleYtVideos: any[] = await youtubeAPIService.fetchMultipleYtVideosFromQuery(searchQuery);
-
-  //     // Calling Reddit api for getting 10-20 videos based on search query
-  //     const fullRedditResponse:any[] = await redditAPIService.fetchMultipleRDTVideosFromQuery(searchQuery);
-  //     const multipleRedditVideos = fullRedditResponse.map((post: any) =>{
-  //         const redditMetadata = post.data.children
-  //         return redditMetadata.data
-  //     });
-
-  //     // Structuring the fetched videos according to defined types
-  //     const extractedYTVideoData : { mediaData: Media, youtubeData: YoutubeMedia }[] = await this.parallelExtractYoutubeMedia(multipleYtVideos);
-  //     const extractedRDTVideoData: { mediaData: Media, redditData:  RedditMedia  }[] = await this.parallelExtractRedditMedia(fullRedditResponse, multipleRedditVideos);
-
-  //     // const length = extractedYTVideoData.length + extractedRDTVideoData.length
-  //     // return { extractedYTVideoData, extractedRDTVideoData, length }
-  //     if (fetchSimilar) {
-  //         // generating embeddings of extracted structured videos
-  //         const fetchedYTVideosEmbeddings : number[][] = await this.batchEmbedYTVideos(extractedYTVideoData);
-  //         const fetchedRDTVideosEmbeddings: number[][] = await this.batchEmbedRDTVideos(extractedRDTVideoData);
-
-  //         // Sorting videos by Similarity with the input link
-  //         const allInputEmbeddings:number[][] = processedVideos.map(pv => pv.embeddings);
-  //         const ytVideos : SimilarYT[]  = this.extractTopYoutubeVideos(allInputEmbeddings, fetchedYTVideosEmbeddings, extractedYTVideoData);
-  //         const rdtVideos: SimilarRDT[] = this.extractTopRedditVideos(allInputEmbeddings, fetchedRDTVideosEmbeddings, extractedRDTVideoData);
-
-  //         // Returning Media
-  //         return this.extractTopTenMedias(ytVideos, rdtVideos);
-  //     } else {
-  //         const topTenMedias = [];
-  //         const mediaPerPlatfrom:number = 20;
-  //         const inputMedias = [...extractedYTVideoData, ...extractedRDTVideoData] // 40
-  //         const noOfPlatforms = Math.ceil(inputMedias.length / mediaPerPlatfrom); // 2
-  //         const allowedMediaPerPlatfrom = Math.ceil(mediaPerPlatfrom / noOfPlatforms); // 10
-  //         console.log(noOfPlatforms, mediaPerPlatfrom, allowedMediaPerPlatfrom);
-
-  //         // let platform = 0;
-  //         // for(platform; platform < noOfPlatforms; platform++){
-  //         //     let initialIndex = platform * mediaPerPlatfrom
-  //         //     let finalIndex = (platform * mediaPerPlatfrom) + mediaPerPlatfrom;
-  //         //     topTenMedias.push(
-  //         //         ...inputMedias
-  //         //             .slice(initialIndex, finalIndex)
-  //         //             .slice(0,allowedMediaPerPlatfrom)
-  //         //             .map(media => media.mediaData)
-  //         //     );
-  //         // }
-  //         // return topTenMedias;
-  //     }
-  //     return orchestratorResult;
-  // }
 
   static getIdOfplatform = (media: Media): number => {
     if (!media || media === undefined || media === null) {
@@ -190,7 +99,7 @@ export class RootOrchestrator {
     return { platformLinkAndType: linkMapper, length: links.length };
   }
 
-  static async OrchestratorCaller(
+  static async SingleLinkOrchestratorCaller(
     platfromInfo: PlatformInfo,
     userId: string
   ): Promise<GlobalMetadata | GlobalMetadata[]> {
@@ -210,12 +119,12 @@ export class RootOrchestrator {
     // handling single link
     if (length === 1) {
       const [key, platform] = entries[0];
-      return await this.processOrchestrator(key, platform, userId);
+      return await this.processSingleLink(key, platform, userId);
     }
 
     // handling multiple links
     const orchestratorPromises = entries.map(([key, platform]) =>
-      this.processOrchestrator(key, platform, userId)
+      this.processSingleLink(key, platform, userId)
     );
 
     try {
@@ -226,7 +135,7 @@ export class RootOrchestrator {
     }
   }
 
-  static async processOrchestrator(
+  static async processSingleLink(
     key: string,
     platform: string,
     userId: string
@@ -238,11 +147,11 @@ export class RootOrchestrator {
     switch (normalizedPlatform) {
       case "youtube":
         const youtubeOrchestrator = new YoutubeOrchestrator();
-        return await youtubeOrchestrator.mainYoutubeOrchestrator(key, userId);
+        return await youtubeOrchestrator.processLink(key, userId);
 
       // case 'reddit':
       //     const redditOrchestrator = new RedditOrchestrator();
-      //     return await redditOrchestrator.mainRedditOrchestrator(key);
+      //     return await redditOrchestrator.processLink(key);
 
       default:
         throw new Error(`Unsupported platform type: ${platform}`);

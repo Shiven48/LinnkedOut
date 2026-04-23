@@ -38,11 +38,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log("Starting RootOrchestrator processing...");
-    const orchestratorResult = await HelperFunctions.orchestrateFlow(formData, userId);
-    console.log("RootOrchestrator completed successfully");
+    console.log("Starting OrchestrateIngestionPipeline...");
+    const ingestionPipelineResult = await HelperFunctions.OrchestrateIngestionPipeline(formData, userId);
+    console.log("OrchestrateIngestionPipeline completed successfully");
     revalidatePath("/");
-    return NextResponse.json(orchestratorResult);
+    return NextResponse.json(ingestionPipelineResult);
   } catch (error: any) {
     console.error("Error processing form submission:", error);
 

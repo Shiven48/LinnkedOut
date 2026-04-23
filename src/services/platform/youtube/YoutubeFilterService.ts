@@ -17,7 +17,7 @@ export class YoutubeFilterService {
     this.youtubeMetadataService = new YoutubeMetadataSevice();
   }
 
-  public processVideos(rawVideos: YoutubeMetadata[]): ScoreExtractionResult[] {
+  public filterYoutubeVideos(rawVideos: YoutubeMetadata[]): ScoreExtractionResult[] {
     try {
       const filteringPipelineResult:PipelineStageResult = this.removeDuplicateVideos(rawVideos);
       const {inputCount, outputCount, filteringReason, stage} = filteringPipelineResult;

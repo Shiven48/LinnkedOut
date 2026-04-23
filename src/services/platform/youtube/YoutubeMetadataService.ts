@@ -152,19 +152,13 @@ export class YoutubeMetadataSevice {
         extractedVideoData: { mediaData: Media, youtubeData: YoutubeMedia }[]
     ):SimilarYT[] {
         const vecStore = new VectorStore()
-        // This scoredVideos is giving top videos for a single link so map is giving an array
         const scoredVideos = extractedVideoData.map((videoData, index) => {
-                // Video to embedding map
                 const fetchedEmbedding = fetchedEmbeddings[index];
-                
-                // Each fetched media's embedding similarity is being calculated with the user input media
-                // For each pass it will work N times so for N passes it will work N X N times
                 const maxSimilarity = Math.max(
                     ...inputEmbeddings.map(inputEmbedding => 
                         vecStore.cosineSimilarity(inputEmbedding, fetchedEmbedding)
                     )
                 );
-                
                 return {
                     ...videoData,
                     similarityScore: maxSimilarity,

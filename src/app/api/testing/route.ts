@@ -18,7 +18,7 @@ import { revalidatePath } from "next/cache";
 //     const apiService = new RedditAPIService();
 //     const redditMetadataService = new RedditMetadataSevice();
 
-//     const mappedVideo = await youtubeOrchestrator.mainYoutubeOrchestrator(
+//     const mappedVideo = await youtubeOrchestrator.processLink(
 //       Resources()[13].link,
 //       userId
 //     );
@@ -233,7 +233,7 @@ export async function POST(request: NextRequest) {
     }
 
     console.log("Starting RootOrchestrator processing...");
-    const orchestratorResult = await HelperFunctions.orchestrateFlow(formData, userId);
+    const orchestratorResult = await HelperFunctions.OrchestrateIngestionPipeline(formData, userId);
     console.log("RootOrchestrator completed successfully");
     revalidatePath("/");
     return NextResponse.json(orchestratorResult);

@@ -13,6 +13,7 @@ import Image from "next/image";
 import React, { ChangeEvent, useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Toast } from "./Toast";
+import { useAuth } from "@clerk/nextjs";
 
 type UrlValidation = {
   isValid: boolean | null;
@@ -48,9 +49,17 @@ export const PostInputForm: React.FC = () => {
   });
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
+  const [showEventLogToast, setShowEventLogToast] = useState(false);
+  const [eventLogToastMessage, setEventLogToastMessage] = useState("");
+  const [logs, setLogs] = useState<string[]>([]);
+  const { userId } = useAuth();
 
   const handleCloseToast = useCallback(() => {
     setShowToast(false);
+  }, []);
+
+  const handleCloseEventLogToast = useCallback(() => {
+    setShowEventLogToast(false);
   }, []);
 
   const platformIconsObj: Record<string, string> = {};
@@ -130,12 +139,35 @@ export const PostInputForm: React.FC = () => {
     e.preventDefault();
 
     if (formData.url.length === 0) {
-      setToastMessage("Please add at least one URL in the Content URL section before submitting.");
+      setToastMessage(
+        "Please add at least one URL in the Content URL section before submitting.",
+      );
       setShowToast(true);
       return;
     }
 
     setIsSubmitting(true);
+    setLogs([]);
+
+    // Establish SSE connection for real-time logs
+    const eventSource = new EventSource(`/api/logs?userId=${userId}`);
+
+    eventSource.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.message) {
+        setLogs((prev) => [...prev, data.message]);
+        setEventLogToastMessage(data.message);
+        setShowEventLogToast(true);
+      }
+      if (data.done) {
+        eventSource.close();
+      }
+    };
+
+    eventSource.onerror = () => {
+      console.error("SSE Connection failed");
+      eventSource.close();
+    };
 
     const options = {
       method: "POST",
@@ -179,6 +211,7 @@ export const PostInputForm: React.FC = () => {
       console.error("Submission error:", error);
     } finally {
       setIsSubmitting(false);
+      eventSource.close();
     }
   };
 
@@ -449,6 +482,49 @@ export const PostInputForm: React.FC = () => {
               )}
             </button>
           </div>
+
+          {/* Real-time Logs Display */}
+          {(isSubmitting || logs.length > 0) && (
+            <div className="mt-8 bg-black/40 rounded-2xl p-6 border border-gray-800 backdrop-blur-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-2 h-2 bg-golden rounded-full animate-pulse" />
+                <h3 className="text-white font-semibold">
+                  Processing Pipeline
+                </h3>
+              </div>
+              <div className="space-y-3 font-mono text-sm">
+                {logs.map((log, index) => (
+                  <div
+                    key={index}
+                    className="flex gap-3 text-gray-300 animate-in fade-in slide-in-from-left-2 duration-300"
+                    style={{ animationDelay: `${index * 50}ms` }}
+                  >
+                    <span className="text-golden shrink-0">
+                      [
+                      {new Date().toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        second: "2-digit",
+                      })}
+                      ]
+                    </span>
+                    <span>{log}</span>
+                  </div>
+                ))}
+                {isSubmitting && (
+                  <div className="flex gap-3 text-golden animate-pulse">
+                    <span className="shrink-0">[_]</span>
+                    <span className="flex items-center gap-1">
+                      Waiting for next step
+                      <span className="animate-bounce">.</span>
+                      <span className="animate-bounce delay-100">.</span>
+                      <span className="animate-bounce delay-200">.</span>
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
       <Toast
@@ -457,6 +533,13 @@ export const PostInputForm: React.FC = () => {
         type="warning"
         visible={showToast}
         onClose={handleCloseToast}
+      />
+      <Toast
+        title="LinnkedOut Processing"
+        message={eventLogToastMessage}
+        type="info"
+        visible={showEventLogToast}
+        onClose={handleCloseEventLogToast}
       />
     </div>
   );

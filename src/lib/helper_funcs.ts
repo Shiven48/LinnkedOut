@@ -17,6 +17,7 @@ import { YoutubeFilterService } from "@/services/platform/youtube/YoutubeFilterS
 import { EmbeddingRepository } from "@/services/database/EmbeddingRepository";
 import { YoutubeMediaRepository } from "@/services/database/YoutubeMediaRepository";
 import { YoutubeTranscriptService } from "@/services/platform/youtube/YoutubeTranscriptionService";
+import { eventBus } from "@/services/common/eventBus";
 
 export class HelperFunctions {
   private static async fetchTranscripts(
@@ -35,154 +36,153 @@ export class HelperFunctions {
     }
   }
 
-  static async orchestrateFlow(data: FormDataType, userId: string) {
-    const summaryService = new SummaryService();
-    const youtubeAPIService = new YoutubeAPIService();
-    const filterService = new YoutubeFilterService();
-    const youtubeMetadataService = new YoutubeMetadataSevice();
-    
-    // Destructuring the form data;
-    const {
-      url: links,
-      category,
-      customTags,
-      fetchSimilar,
-      similarityLevel,
-    } = data;
+  static async OrchestrateIngestionPipeline(data: FormDataType, userId: string) {
+    try {
+      const summaryService = new SummaryService();
+      const youtubeAPIService = new YoutubeAPIService();
+      const filterService = new YoutubeFilterService();
+      const youtubeMetadataService = new YoutubeMetadataSevice();
+      
+      const emitLog = (msg: string) => {
+        console.log(msg);
+        eventBus.emit(`log-${userId}`, msg);
+      };
+      
+      // ========== Step 1: Destructuring the form data ========== 
+      const {
+        url: links,
+        category,
+        customTags,
+        fetchSimilar,
+        similarityLevel,
+      } = data;
+      emitLog("[Message] Destructuring the form data");
 
-    // saved the link data in database using appropriate orchestrator
-    const platformInfo: PlatformInfo =
-      RootOrchestrator.parseLinksForPlatform(links);
-    const orchestratorResult = await RootOrchestrator.OrchestratorCaller(
-      platformInfo,
-      userId
-    );
-    const userInputProcessingResult: GlobalMetadata[] = Array.isArray(
-      orchestratorResult
-    )
-      ? orchestratorResult
-      : [orchestratorResult];
-
-    // If 1 video array then process for 1 else process for N
-    // Parallely generate search queries for each video
-    const inputVideoProcessingPromises = userInputProcessingResult.map(
-      async (processedVideo: GlobalMetadata) => {
-        const embeddings: number[] = processedVideo.embeddingsType.embeddings;
-
-        const queryAnalysis = await summaryService.generateSearchQuery(
-          category,
-          customTags,
-          similarityLevel,
-          { includeAlternatives: true, maxAlternatives: 3 }
-        );
-
-        processedVideo.media.category = queryAnalysis.categoryName;
-        return {
-          processedVideo,
-          embeddings,
-          searchQueryResult: queryAnalysis.primary,
-          alternatives: queryAnalysis.alternatives,
-          qualityMetrics: queryAnalysis.qualityMetrics,
-        };
-      }
-    );
-    const inputProcessedVideos = await Promise.all(
-      inputVideoProcessingPromises
-    );
-
-    const video = inputProcessedVideos[0];
-    const categoryId: string = video.searchQueryResult.categoryId;
-    const topicId: string = video.searchQueryResult.topicId;
-    const primaryQuery: string = video.searchQueryResult.searchQuery;
-    const alternativeQueries: string[] = video.alternatives;
-
-    console.log(`QueryProcessorResult: ${JSON.stringify(video, null, 2)}`);
-    const allQueries = [primaryQuery, ...alternativeQueries].slice(0, 3);
-
-    // Three queries each will return YoutubeMetadata[]
-    const fetchPromises:Promise<YoutubeMetadata[]>[] = allQueries.map(async (query, index) => {
-      console.log(
-        `Fetching videos for query ${
-          index + 1
-        }: "${query}": ${categoryId} : ${topicId}`
-      );
-      return await youtubeAPIService.searchVideos(query, categoryId, topicId);
-    });
-
-    const videoResults: YoutubeMetadata[][] = (
-      await Promise.all(fetchPromises)
-    )
-
-    const videoResultsFlattened: YoutubeMetadata[] = videoResults.flat();
-    console.log(`Fetched ${videoResultsFlattened.length} videos from the youtube search api`);
-
-    // Filtering
-    const filteredVideos: ScoreExtractionResult[] =
-      filterService.processVideos(videoResultsFlattened);
-
-    // Option 2: Process all at once (more efficient)
-    const extractedYTVideoData: {
-      mediaData: Media;
-      youtubeData: YoutubeMedia;
-    }[] = await Promise.all(
-      filteredVideos.map(async (scoreResult: ScoreExtractionResult) => {
-        const { video } = scoreResult;
-        const result = (
-          await youtubeMetadataService.parallelExtractYoutubeMedia([video])
-        ).shift()!;
-        
-        console.log(`[orchestrateFlow] Fetching transcripts for: ${result.mediaData.title}`);
-        result.youtubeData.englishCaptions = await this.fetchTranscripts(
-          video.id, 
-          result.mediaData.title
-        );
-        
-        return result;
-      })
-    );
-
-    // Semantic matching
-    let ytVideos: SimilarYT[] = [];
-    let fetchedYTVideosEmbeddings: {
-      preprocessedContents: string[];
-      contentEmbeddings: number[][];
-    } | null = null;
-    if (fetchSimilar) {
-      const allInputEmbeddings: number[][] = [video.embeddings];
-      // batch embedding fetched videos (N because we fetched N links from api)
-      fetchedYTVideosEmbeddings =
-        await youtubeMetadataService.batchEmbedYTVideos(extractedYTVideoData);
-
-      console.log("Batch Embedding Successful");
-
-      // Here i have return 20 videos with their extracted data as well as embedding and similarity score with input media
-      const contentEmbedding = fetchedYTVideosEmbeddings.contentEmbeddings;
-      ytVideos = youtubeMetadataService.extractTopYoutubeVideos(
-        allInputEmbeddings,
-        contentEmbedding,
-        extractedYTVideoData
-      );
-      console.log(`Must be 12: ${ytVideos.length}`);
-    }
-
-    // This batch is for saving all the data
-    if (fetchedYTVideosEmbeddings) {
-      const batchResults: SimilarYT[] = await this.processBatch(
-        ytVideos,
-        fetchedYTVideosEmbeddings,
+      // ========== Step 2: Saving the link data in database using appropriate orchestrator ==========
+      const platformInfo: PlatformInfo =
+        RootOrchestrator.parseLinksForPlatform(links);
+      emitLog("[Message] Parsing the link data for platform");
+      
+      const orchestratorResult:GlobalMetadata | GlobalMetadata[] = await RootOrchestrator.SingleLinkOrchestratorCaller(
+        platformInfo,
         userId
       );
+      
+      const userInputProcessingResult: GlobalMetadata[] = Array.isArray(
+        orchestratorResult
+      )
+        ? orchestratorResult
+        : [orchestratorResult];
+      emitLog("[Message] Saving the link data in database using appropriate orchestrator");
 
-      return batchResults;
-    } else {
-      console.error("fetched yt videos embeddings are null");
-      throw new Error(
-        `property 'fetchedYTVideosEmbeddings' is : ${fetchedYTVideosEmbeddings}`
+      // ========== Step 3: Parallely generate search queries ========== 
+      const inputVideoProcessingPromises = userInputProcessingResult.map(
+        async (processedVideo: GlobalMetadata) => {
+          const embeddings: number[] = processedVideo.embeddingsType.embeddings;
+
+          const queryAnalysis = await summaryService.generateSearchQuery(
+            category,
+            customTags,
+            similarityLevel,
+            { includeAlternatives: true, maxAlternatives: 3 }
+          );
+
+          processedVideo.media.category = queryAnalysis.categoryName;
+          return {
+            processedVideo,
+            embeddings,
+            searchQueryResult: queryAnalysis.primary,
+            alternatives: queryAnalysis.alternatives,
+            qualityMetrics: queryAnalysis.qualityMetrics,
+          };
+        }
       );
+      const inputProcessedVideos = await Promise.all(
+        inputVideoProcessingPromises
+      );
+      emitLog("[Message] Generating search queries for content discovery");
+
+      const video = inputProcessedVideos[0];
+      const categoryId: string = video.searchQueryResult.categoryId;
+      const topicId: string = video.searchQueryResult.topicId;
+      const primaryQuery: string = video.searchQueryResult.searchQuery;
+      const alternativeQueries: string[] = video.alternatives;
+      const allQueries = [primaryQuery, ...alternativeQueries].slice(0, 3);
+      emitLog(`[Message] Searching for similar content across ${allQueries.length} queries`); 
+      
+      // ========== Step 4: fetching top similar videos from Youtube API ========== 
+      const videoResults: YoutubeMetadata[][] = await Promise.all(allQueries.map(async (query) => {
+        return await youtubeAPIService.searchVideos(query, categoryId, topicId);
+      }));
+      const videoResultsFlattened: YoutubeMetadata[] = videoResults.flat();
+      emitLog(`[Message] Found ${videoResultsFlattened.length} potential matches. Filtering for quality...`);
+
+      // ========== Step 5: Filtering and removing duplicates or unwanted videos ==========
+      const filteredVideos: ScoreExtractionResult[] =
+        filterService.filterYoutubeVideos(videoResultsFlattened);
+      emitLog(`[Message] Filtering successful`);
+
+      // ========== Step 6: Extracting metadata and transcripts ==========
+      const extractedYTVideoData: {
+        mediaData: Media;
+        youtubeData: YoutubeMedia;
+      }[] = await Promise.all(
+        filteredVideos.map(async (scoreResult: ScoreExtractionResult) => {
+          const { video } = scoreResult;
+          const result = (
+            await youtubeMetadataService.parallelExtractYoutubeMedia([video])
+          ).shift()!;
+          
+          result.youtubeData.englishCaptions = await this.fetchTranscripts(
+            video.id, 
+            result.mediaData.title
+          );
+          return result;
+        })
+      );
+      emitLog(`[Message] Extracting metadata and transcripts successful`);
+
+      let ytVideos: SimilarYT[] = [];
+      let fetchedYTVideosEmbeddings: { preprocessedContents: string[], contentEmbeddings: number[][]} | null = null;
+      
+      if (fetchSimilar) {
+        // ========== Step 7: Batch Embedding the fetched yt videos ==========  
+        const allInputEmbeddings: number[][] = [video.embeddings];
+        fetchedYTVideosEmbeddings = await youtubeMetadataService.batchEmbedYTVideos(extractedYTVideoData);
+        emitLog(`[Message] Successfully embedded ${extractedYTVideoData.length} videos for similarity comparison`);
+
+        // ========== Step 8: Extracting top videos based on Semantic Similarity Score ==========
+        const contentEmbedding = fetchedYTVideosEmbeddings.contentEmbeddings;
+        ytVideos = youtubeMetadataService.extractTopYoutubeVideos(
+          allInputEmbeddings,
+          contentEmbedding,
+          extractedYTVideoData
+        );
+        emitLog(`[Message] Successfully identified ${ytVideos.length} highly relevant similar videos.`);
+      }
+
+      // ========== Step 9: Saving all the data in batches ==========
+      if (fetchedYTVideosEmbeddings) {
+        emitLog(`[Message] Storing all data in batches...`);
+        const batchResults: SimilarYT[] = await this.storeDataInBatches(
+          ytVideos,
+          fetchedYTVideosEmbeddings,
+          userId
+        );
+        emitLog("[Message] Orchestration complete! Redirecting to feed...");
+        eventBus.emit(`complete-${userId}`);
+        return batchResults;
+      } else {
+        throw new Error("fetched yt videos embeddings are null");
+      }
+    } catch (error) {
+      console.error("orchestrateFlow error:", error);
+      eventBus.emit(`complete-${userId}`);
+      throw error;
     }
   }
 
-  static async processBatch(
+  static async storeDataInBatches(
     batch: SimilarYT[],
     fetchedYTVideosEmbeddings: {
       preprocessedContents: string[];
@@ -206,8 +206,7 @@ export class HelperFunctions {
         mediaData.embeddingId = await embeddingRepository.storeContent(
           preprocessedContent,
           contentEmbedding
-        );
-
+        );        
         console.log(`Stored embeddingId: ${mediaData.embeddingId}`);
 
         // Store media and YT data
