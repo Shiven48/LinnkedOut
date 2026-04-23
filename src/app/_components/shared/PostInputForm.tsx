@@ -8,7 +8,6 @@ import {
 } from "@/services/common/constants";
 import { Category, Platfrom } from "@/services/common/types";
 import { Plus, Link2, Hash, Sparkles, Filter, Search, X } from "lucide-react";
-import { utility } from "@/services/common/utils";
 import Image from "next/image";
 import React, { ChangeEvent, useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -148,25 +147,7 @@ export const PostInputForm: React.FC = () => {
 
     setIsSubmitting(true);
     setLogs([]);
-
-    // Establish SSE connection for real-time logs
-    const eventSource = new EventSource(`/api/logs?userId=${userId}`);
-
-    eventSource.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.message) {
-        setLogs((prev) => [...prev, data.message]);
-        setShowEventLogToast(true);
-      }
-      if (data.done) {
-        eventSource.close();
-      }
-    };
-
-    eventSource.onerror = () => {
-      console.error("SSE Connection failed");
-      eventSource.close();
-    };
+    setShowEventLogToast(true);
 
     const options = {
       method: "POST",
@@ -177,45 +158,65 @@ export const PostInputForm: React.FC = () => {
     };
 
     try {
-      const response = await utility.apicaller(FORM_INSERT_API_URL, options);
-      const res = await response.json();
+      const response = await fetch(FORM_INSERT_API_URL, options);
 
-      // The API returns the direct data, let's check its structure
-      const body = res.body || res;
-      const status = res.status || (response.ok ? 200 : 400);
+      if (!response.body) {
+        throw new Error("No response body");
+      }
 
-      if (status === 200) {
-        console.log("Success! Received data:", body);
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
 
-        // If body is an array of SimilarYT, wrap it or handle accordingly
-        const videos = Array.isArray(body) ? body : body.videos || [];
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
 
-        sessionStorage.setItem("processedVideos", JSON.stringify(videos));
-        sessionStorage.setItem("formSubmissionData", JSON.stringify(formData));
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
 
-        setFormData({
-          url: [],
-          category: "",
-          customTags: [],
-          fetchSimilar: true,
-          similarityLevel: "medium",
-          contentType: "auto",
-        });
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          try {
+            const update = JSON.parse(line);
+            if (update.type === "log") {
+              setLogs((prev) => [...prev, update.message]);
+            } else if (update.type === "done") {
+              const body = update.data;
+              const videos = Array.isArray(body) ? body : body.videos || [];
 
-        // Use router.push to go back home. Revalidation happened on server.
-        router.push("/?page=1&newContent=true");
-        return; // Exit early on success
-      } else {
-        setToastMessage(body.error || "An unexpected error occurred during processing.");
-        setShowToast(true);
+              sessionStorage.setItem("processedVideos", JSON.stringify(videos));
+              sessionStorage.setItem("formSubmissionData", JSON.stringify(formData));
+
+              setFormData({
+                url: [],
+                category: "",
+                customTags: [],
+                fetchSimilar: true,
+                similarityLevel: "medium",
+                contentType: "auto",
+              });
+
+              router.push("/?page=1&newContent=true");
+              return;
+            } else if (update.type === "error") {
+              setToastMessage(update.message || "An error occurred.");
+              setShowToast(true);
+            }
+          } catch (e) {
+            console.error("Error parsing stream chunk:", e);
+          }
+        }
       }
     } catch (error) {
       console.error("Submission error:", error);
-      setToastMessage("Failed to submit form. Please check your connection and try again.");
+      setToastMessage(
+        "Failed to submit form. Please check your connection and try again.",
+      );
       setShowToast(true);
     } finally {
       setIsSubmitting(false);
-      eventSource.close();
     }
   };
 

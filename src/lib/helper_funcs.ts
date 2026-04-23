@@ -36,7 +36,11 @@ export class HelperFunctions {
     }
   }
 
-  static async OrchestrateIngestionPipeline(data: FormDataType, userId: string) {
+  static async OrchestrateIngestionPipeline(
+    data: FormDataType, 
+    userId: string,
+    onLog?: (msg: string) => void
+  ) {
     try {
       const summaryService = new SummaryService();
       const youtubeAPIService = new YoutubeAPIService();
@@ -45,6 +49,7 @@ export class HelperFunctions {
       
       const emitLog = (msg: string) => {
         console.log(msg);
+        if (onLog) onLog(msg);
         eventBus.emit(`log-${userId}`, msg);
       };
       
