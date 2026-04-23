@@ -39,20 +39,19 @@ export default class YoutubeOrchestrator {
   ): Promise<GlobalMetadata> {
     const emitLog = (msg: string) => {
       console.log(msg);
-      eventBus.emit(`log-${userId}`, msg.replace('[Message] ', ''));
+      eventBus.emit(`log-${userId}`, msg);
     };
 
     try {
       // ========== Step 2.1: Parse the link to get the video id ==========
-      // emitLog("[Message] Starting Orchestrator...");
       const videoId = this.youtubeAPIService.parseVideoId(link);
-      // emitLog("[Message] Parsed the video id");
+      emitLog("Parsed the video id");
 
       // ========== Step 2.2: Get the actual video from YT servers ==========
       const fetchedYoutubeMetadata: YoutubeMetadata =
         await this.youtubeAPIService.fetchVideoMetadata(videoId);
 
-      emitLog("[Message] Fetching the best available metadata from the video...");
+      emitLog("Fetching the best available metadata from the video...");
 
       // ========== Step 2.3: Extract the required fields from the fetched video ==========
       const { mediaData, youtubeData } = (
@@ -60,7 +59,6 @@ export default class YoutubeOrchestrator {
           fetchedYoutubeMetadata,
         ])
       ).shift()!;
-      // emitLog("[Message] Extracting the required data from the fetched metadata");
 
       // ========== Step 2.4: Generate embeddings for the preprocessed content ==========
       const embeddingOrchestratorInput: EmbeddingOrchestratorInputType = {
@@ -70,31 +68,26 @@ export default class YoutubeOrchestrator {
       }
       const { cleanedAndProcessedContent, contentEmbeddings } =
         await this.embeddingOrchestrator(embeddingOrchestratorInput);
-      // emitLog("[Message] Generating embeddings for the preprocessed content");
-
-      console.log("Skipping Storage Calls....");
-      mediaData.embeddingId = 100;
 
       // ========== Step 2.5: Store the embeddings in the database ==========
-      // mediaData.embeddingId = await this.embeddingRepository.storeContent(
-      //   cleanedAndProcessedContent,
-      //   contentEmbeddings
-      // );
-      // emitLog("[Message] Storing the embeddings in the database");
+      mediaData.embeddingId = await this.embeddingRepository.storeContent(
+        cleanedAndProcessedContent,
+        contentEmbeddings
+      );
       
       // ========== Step 2.6: Store the media data and youtube data in the database ==========
-      // await this.youtubeRepository.saveYoutubeMediaData(
-      //     mediaData,
-      //     youtubeData,
-      //     userId
-      //   );
+      await this.youtubeRepository.saveYoutubeMediaData(
+          mediaData,
+          youtubeData,
+          userId
+        );
         
-      // console.log("Final Orchestrator Output", {
-      //   mediaData: mediaData.id,
-      //   embeddingId: mediaData.embeddingId,
-      //   category: mediaData.category,
-      //   userId
-      // });
+      console.log("Final Orchestrator Output", {
+        mediaData: mediaData.id,
+        embeddingId: mediaData.embeddingId,
+        category: mediaData.category,
+        userId
+      });
       
       return { 
         media: mediaData,

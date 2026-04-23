@@ -13,6 +13,7 @@ import Image from "next/image";
 import React, { ChangeEvent, useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Toast } from "./Toast";
+import { EventLogsToast } from "./EventLogsToast";
 import { useAuth } from "@clerk/nextjs";
 
 type UrlValidation = {
@@ -50,7 +51,6 @@ export const PostInputForm: React.FC = () => {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [showEventLogToast, setShowEventLogToast] = useState(false);
-  const [eventLogToastMessage, setEventLogToastMessage] = useState("");
   const [logs, setLogs] = useState<string[]>([]);
   const { userId } = useAuth();
 
@@ -156,7 +156,6 @@ export const PostInputForm: React.FC = () => {
       const data = JSON.parse(event.data);
       if (data.message) {
         setLogs((prev) => [...prev, data.message]);
-        setEventLogToastMessage(data.message);
         setShowEventLogToast(true);
       }
       if (data.done) {
@@ -534,10 +533,9 @@ export const PostInputForm: React.FC = () => {
         visible={showToast}
         onClose={handleCloseToast}
       />
-      <Toast
+      <EventLogsToast
         title="LinnkedOut Processing"
-        message={eventLogToastMessage}
-        type="info"
+        logs={logs}
         visible={showEventLogToast}
         onClose={handleCloseEventLogToast}
       />

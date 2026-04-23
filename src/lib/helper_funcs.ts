@@ -56,12 +56,12 @@ export class HelperFunctions {
         fetchSimilar,
         similarityLevel,
       } = data;
-      emitLog("[Message] Destructuring the form data");
+      emitLog("Destructuring the form data");
 
       // ========== Step 2: Saving the link data in database using appropriate orchestrator ==========
       const platformInfo: PlatformInfo =
         RootOrchestrator.parseLinksForPlatform(links);
-      emitLog("[Message] Parsing the link data for platform");
+      emitLog("Parsing the link data for platform");
       
       const orchestratorResult:GlobalMetadata | GlobalMetadata[] = await RootOrchestrator.SingleLinkOrchestratorCaller(
         platformInfo,
@@ -73,7 +73,7 @@ export class HelperFunctions {
       )
         ? orchestratorResult
         : [orchestratorResult];
-      emitLog("[Message] Saving the link data in database using appropriate orchestrator");
+      emitLog("Saving the link data in database using appropriate orchestrator");
 
       // ========== Step 3: Parallely generate search queries ========== 
       const inputVideoProcessingPromises = userInputProcessingResult.map(
@@ -100,7 +100,7 @@ export class HelperFunctions {
       const inputProcessedVideos = await Promise.all(
         inputVideoProcessingPromises
       );
-      emitLog("[Message] Generating search queries for content discovery");
+      emitLog("Generating search queries for content discovery");
 
       const video = inputProcessedVideos[0];
       const categoryId: string = video.searchQueryResult.categoryId;
@@ -108,19 +108,19 @@ export class HelperFunctions {
       const primaryQuery: string = video.searchQueryResult.searchQuery;
       const alternativeQueries: string[] = video.alternatives;
       const allQueries = [primaryQuery, ...alternativeQueries].slice(0, 3);
-      emitLog(`[Message] Searching for similar content across ${allQueries.length} queries`); 
+      emitLog(`Searching for similar content across ${allQueries.length} queries`); 
       
       // ========== Step 4: fetching top similar videos from Youtube API ========== 
       const videoResults: YoutubeMetadata[][] = await Promise.all(allQueries.map(async (query) => {
         return await youtubeAPIService.searchVideos(query, categoryId, topicId);
       }));
       const videoResultsFlattened: YoutubeMetadata[] = videoResults.flat();
-      emitLog(`[Message] Found ${videoResultsFlattened.length} potential matches. Filtering for quality...`);
+      emitLog(`Found ${videoResultsFlattened.length} potential matches. Filtering for quality...`);
 
       // ========== Step 5: Filtering and removing duplicates or unwanted videos ==========
       const filteredVideos: ScoreExtractionResult[] =
         filterService.filterYoutubeVideos(videoResultsFlattened);
-      emitLog(`[Message] Filtering successful`);
+      emitLog(`Filtering successful`);
 
       // ========== Step 6: Extracting metadata and transcripts ==========
       const extractedYTVideoData: {
@@ -140,7 +140,7 @@ export class HelperFunctions {
           return result;
         })
       );
-      emitLog(`[Message] Extracting metadata and transcripts successful`);
+      emitLog(`Extracting metadata and transcripts successful`);
 
       let ytVideos: SimilarYT[] = [];
       let fetchedYTVideosEmbeddings: { preprocessedContents: string[], contentEmbeddings: number[][]} | null = null;
@@ -149,7 +149,7 @@ export class HelperFunctions {
         // ========== Step 7: Batch Embedding the fetched yt videos ==========  
         const allInputEmbeddings: number[][] = [video.embeddings];
         fetchedYTVideosEmbeddings = await youtubeMetadataService.batchEmbedYTVideos(extractedYTVideoData);
-        emitLog(`[Message] Successfully embedded ${extractedYTVideoData.length} videos for similarity comparison`);
+        emitLog(`Successfully embedded ${extractedYTVideoData.length} videos for similarity comparison`);
 
         // ========== Step 8: Extracting top videos based on Semantic Similarity Score ==========
         const contentEmbedding = fetchedYTVideosEmbeddings.contentEmbeddings;
@@ -158,18 +158,18 @@ export class HelperFunctions {
           contentEmbedding,
           extractedYTVideoData
         );
-        emitLog(`[Message] Successfully identified ${ytVideos.length} highly relevant similar videos.`);
+        emitLog(`Successfully identified ${ytVideos.length} highly relevant similar videos.`);
       }
 
       // ========== Step 9: Saving all the data in batches ==========
       if (fetchedYTVideosEmbeddings) {
-        emitLog(`[Message] Storing all data in batches...`);
+        emitLog(`Storing all data in batches...`);
         const batchResults: SimilarYT[] = await this.storeDataInBatches(
           ytVideos,
           fetchedYTVideosEmbeddings,
           userId
         );
-        emitLog("[Message] Orchestration complete! Redirecting to feed...");
+        emitLog("Orchestration complete! Redirecting to feed...");
         eventBus.emit(`complete-${userId}`);
         return batchResults;
       } else {
