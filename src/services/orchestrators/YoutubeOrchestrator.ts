@@ -12,6 +12,7 @@ import { categoryDefinitions } from "@/services/common/constants";
 import { ProcessingService } from "../vector/PreprocessingService";
 import { VectorStore } from "../content/VectorStoreService";
 import { YoutubeMediaRepository } from "../database/YoutubeMediaRepository";
+import { eventBus } from "../common/eventBus";
 
 export default class YoutubeOrchestrator {
   private youtubeAPIService: YoutubeAPIService;
@@ -36,20 +37,30 @@ export default class YoutubeOrchestrator {
     link: string,
     userId: string
   ): Promise<GlobalMetadata> {
+    const emitLog = (msg: string) => {
+      console.log(msg);
+      eventBus.emit(`log-${userId}`, msg.replace('[Message] ', ''));
+    };
+
     try {
       // parse the link to get the video id
+      emitLog("[Message] Starting Orchestrator...");
       const videoId = this.youtubeAPIService.parseVideoId(link);
-      
+      emitLog("[Message] Parsed the video id");
+
       // Get the actual video from YT servers 
       const fetchedYoutubeMetadata: YoutubeMetadata =
         await this.youtubeAPIService.fetchVideoMetadata(videoId);
-      
+
+      emitLog("[Message] Fetching the best available metadata from the video...");
+
       // Extract the required fields from the fetched video
       const { mediaData, youtubeData } = (
         await this.youtubeMetadataService.parallelExtractYoutubeMedia([
           fetchedYoutubeMetadata,
         ])
       ).shift()!;
+      emitLog("[Message] Extracting the required data from the fetched metadata");
 
       // Generate embeddings for the preprocessed content
       const embeddingOrchestratorInput: EmbeddingOrchestratorInputType = {
@@ -59,12 +70,14 @@ export default class YoutubeOrchestrator {
       }
       const { cleanedAndProcessedContent, contentEmbeddings } =
         await this.embeddingOrchestrator(embeddingOrchestratorInput);
+      emitLog("[Message] Generating embeddings for the preprocessed content");
 
       // Store the embeddings in the database
       mediaData.embeddingId = await this.embeddingRepository.storeContent(
         cleanedAndProcessedContent,
         contentEmbeddings
       );
+      emitLog("[Message] Storing the embeddings in the database");
       
       // Store the media data and youtube data in the database
       await this.youtubeRepository.saveYoutubeMediaData(
@@ -72,6 +85,7 @@ export default class YoutubeOrchestrator {
           youtubeData,
           userId
         );
+      emitLog("[Message] Storing the media data and youtube data in the database");
         
       // console.log("Skipping Storage Calls....");
       // console.log("Final Orchestrator Output", {
@@ -81,6 +95,7 @@ export default class YoutubeOrchestrator {
       //   userId
       // });
       
+      eventBus.emit(`complete-${userId}`);
       return { 
         media: mediaData,
         embeddingsType: {
@@ -90,6 +105,7 @@ export default class YoutubeOrchestrator {
       };
     } catch (error) {
       console.error(`Error Orchestrating youtube video`, error);
+      eventBus.emit(`complete-${userId}`);
       throw error;
     }
   }

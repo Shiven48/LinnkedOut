@@ -12,6 +12,8 @@ import { utility } from "@/services/common/utils";
 import Image from "next/image";
 import React, { ChangeEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@clerk/nextjs";
+import { ProcessingToast } from "./ProcessingToast";
 
 type UrlValidation = {
   isValid: boolean | null;
@@ -29,6 +31,7 @@ export interface FormDataType {
 
 export const PostInputForm: React.FC = () => {
   const router = useRouter();
+  const { userId } = useAuth();
 
   const [formData, setFormData] = useState<FormDataType>({
     url: [],
@@ -41,6 +44,7 @@ export const PostInputForm: React.FC = () => {
   const [newTag, setNewTag] = useState<string>("");
   const [newUrl, setNewUrl] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentLog, setCurrentLog] = useState<string | null>(null);
   const [urlValidation, setUrlValidation] = useState<UrlValidation>({
     isValid: null,
     platform: null,
@@ -122,6 +126,26 @@ export const PostInputForm: React.FC = () => {
   const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setCurrentLog(null);
+
+    let eventSource: EventSource | null = null;
+    if (userId) {
+      eventSource = new EventSource(`/api/videos/logs?userId=${userId}`);
+      eventSource.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.done) {
+            eventSource?.close();
+            setCurrentLog(null);
+          } else if (data.message) {
+            setCurrentLog(data.message);
+          }
+        } catch {}
+      };
+      eventSource.onerror = () => {
+        eventSource?.close();
+      };
+    }
 
     const options = {
       method: "POST",
@@ -165,6 +189,8 @@ export const PostInputForm: React.FC = () => {
       console.error("Submission error:", error);
     } finally {
       setIsSubmitting(false);
+      eventSource?.close();
+      setCurrentLog(null);
     }
   };
 
@@ -422,21 +448,15 @@ export const PostInputForm: React.FC = () => {
               }
               className="px-8 py-4 bg-golden text-black font-bold rounded-xl hover:bg-dark-golden transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-3 text-lg"
             >
-              {isSubmitting ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
-                  Processing...
-                </>
-              ) : (
-                <>
-                  <Search className="w-5 h-5" />
-                  Submit & Find Content
-                </>
-              )}
+              <Search className="w-5 h-5" />
+              Submit & Find Content
             </button>
           </div>
         </div>
       </div>
+
+      {/* Toast Notification for Logs */}
+      <ProcessingToast isSubmitting={isSubmitting} currentLog={currentLog} />
     </div>
   );
 };
