@@ -205,9 +205,14 @@ export const PostInputForm: React.FC = () => {
         // Use router.push to go back home. Revalidation happened on server.
         router.push("/?page=1&newContent=true");
         return; // Exit early on success
+      } else {
+        setToastMessage(body.error || "An unexpected error occurred during processing.");
+        setShowToast(true);
       }
     } catch (error) {
       console.error("Submission error:", error);
+      setToastMessage("Failed to submit form. Please check your connection and try again.");
+      setShowToast(true);
     } finally {
       setIsSubmitting(false);
       eventSource.close();
@@ -526,6 +531,7 @@ export const PostInputForm: React.FC = () => {
           )}
         </div>
       </div>
+
       <Toast
         title="URL Required"
         message={toastMessage}
@@ -533,6 +539,7 @@ export const PostInputForm: React.FC = () => {
         visible={showToast}
         onClose={handleCloseToast}
       />
+
       <EventLogsToast
         title="LinnkedOut Processing"
         logs={logs}

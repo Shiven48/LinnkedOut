@@ -13,11 +13,14 @@ import postgres from 'postgres';
 
 config({ path: ".env" });
 
-// Lazy initialization to avoid build-time errors
-let _db: ReturnType<typeof drizzlePostgres> | null = null;
+// Singleton pattern for Next.js development
+const globalForDb = global as unknown as {
+  db: ReturnType<typeof drizzlePostgres> | undefined;
+  client: ReturnType<typeof postgres> | undefined;
+};
 
 function getDb() {
-  if (_db) return _db;
+  if (globalForDb.db) return globalForDb.db;
 
   if (!process.env.REMOTE_DATABASE_URL) {
     throw new Error("REMOTE_DATABASE_URL is missing");
@@ -31,18 +34,25 @@ function getDb() {
 
   // Configure postgres client with options to prefer IPv4
   const remoteClient = postgres(dbUrl, {
-    connect_timeout: 10,
+    connect_timeout: 10000, // 10 seconds
     idle_timeout: 20,
     max_lifetime: 60 * 30,
+    max: 10, // Limit pool size
     connection: {
       application_name: 'linnkedout',
     },
-    // Disable prepared statements which can cause issues
+    // Disable prepared statements which can cause issues with some pooling solutions
     prepare: false,
   });
   
-  _db = drizzlePostgres(remoteClient as any, { schema });
-  return _db;
+  const dbInstance = drizzlePostgres(remoteClient as any, { schema });
+  
+  if (process.env.NODE_ENV !== 'production') {
+    globalForDb.db = dbInstance;
+    globalForDb.client = remoteClient;
+  }
+  
+  return dbInstance;
 }
 
 // Proxy that lazily initializes the database connection
