@@ -18,6 +18,9 @@ import { EmbeddingRepository } from "@/services/database/EmbeddingRepository";
 import { YoutubeMediaRepository } from "@/services/database/YoutubeMediaRepository";
 import { YoutubeTranscriptService } from "@/services/platform/youtube/YoutubeTranscriptionService";
 import { eventBus } from "@/services/common/eventBus";
+import { categoryDefinitions } from "@/services/common/constants";
+import { VectorStore } from "@/services/content/VectorStoreService";
+import { EmbeddingService } from "@/services/vector/EmbeddingService";
 
 export class HelperFunctions {
   private static async fetchTranscripts(
@@ -199,9 +202,10 @@ export class HelperFunctions {
   ): Promise<SimilarYT[]> {
     const embeddingRepository = new EmbeddingRepository();
     const youtubeRepository = new YoutubeMediaRepository();
+    const embeddingService = new EmbeddingService();
+    const vectorStore = new VectorStore();
 
-    const { contentEmbeddings, preprocessedContents } =
-      fetchedYTVideosEmbeddings;
+    const { preprocessedContents } = fetchedYTVideosEmbeddings;
 
     const results: SimilarYT[] = [];
     const emitLog = (msg: string) => {
@@ -209,37 +213,62 @@ export class HelperFunctions {
       if (onLog) onLog(msg);
     };
 
-    for (let i = 0; i < batch.length; i++) {
-      const data = batch[i];
-      const { mediaData, youtubeData } = data;
-      const preprocessedContent = preprocessedContents[i];
-      const contentEmbedding = contentEmbeddings[i];
+    try {
+      emitLog("Initializing category embeddings for classification...");
+      const categoryEmbeddings = await embeddingService.initializeEmbeddings(
+        categoryDefinitions
+      );
 
-      emitLog(`Processing video ${i + 1}/${batch.length}: ${mediaData.title}`);
+      for (let i = 0; i < batch.length; i++) {
+        const data = batch[i];
+        const { mediaData, youtubeData, embeddings: contentEmbedding } = data;
+        const preprocessedContent = preprocessedContents[i];
 
-      try {
-        // Store embeddings
-        emitLog(`[${i + 1}] Storing content embeddings...`);
-        mediaData.embeddingId = await embeddingRepository.storeContent(
-          preprocessedContent,
-          contentEmbedding
-        );        
-        
-        // Store media and YT data
-        emitLog(`[${i + 1}] Storing media and metadata...`);
-        await youtubeRepository.saveYoutubeMediaData(
-          mediaData,
-          youtubeData,
-          userId
-        );
-        
-        results.push(data);
-      } catch (error) {
-        emitLog(`Error storing video ${i + 1}: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        // We continue with other videos even if one fails
+        emitLog(`Processing video ${i + 1}/${batch.length}: ${mediaData.title}`);
+
+        try {
+          // Classify the video category
+          if (!mediaData.category || mediaData.category === "") {
+            emitLog(`[${i + 1}] Classifying video category...`);
+            mediaData.category = vectorStore.classifyEmbedding(
+              contentEmbedding,
+              categoryEmbeddings
+            );
+            emitLog(`[${i + 1}] Assigned Category: ${mediaData.category}`);
+          }
+
+          // Store embeddings
+          emitLog(`[${i + 1}] Storing content embeddings...`);
+          mediaData.embeddingId = await embeddingRepository.storeContent(
+            preprocessedContent,
+            contentEmbedding
+          );
+
+          // Store media and YT data
+          emitLog(`[${i + 1}] Storing media and metadata...`);
+          await youtubeRepository.saveYoutubeMediaData(
+            mediaData,
+            youtubeData,
+            userId
+          );
+
+          results.push(data);
+        } catch (error) {
+          emitLog(
+            `Error storing video ${i + 1}: ${
+              error instanceof Error ? error.message : "Unknown error"
+            }`
+          );
+        }
       }
+    } catch (error) {
+      emitLog(
+        `Fatal error in batch storage: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
     }
-    
+
     return results;
   }
 }
