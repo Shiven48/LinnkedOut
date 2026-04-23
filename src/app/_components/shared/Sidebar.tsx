@@ -47,9 +47,7 @@ export default function AppSidebar() {
 
   // Breakpoints for the screen
   useEffect(() => {
-    windowSize <= DESKTOPSIZE
-      ? useSidebarState.getState().setIsOpen(false)
-      : useSidebarState.getState().setIsOpen(true);
+    useSidebarState.getState().setIsOpen(windowSize > DESKTOPSIZE);
   }, [windowSize]);
 
   const handlePlatformAccordianClick = () => {
