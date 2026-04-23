@@ -1,7 +1,6 @@
 import Image from "next/image";
 import { useRef, useState, useEffect } from "react";
 import { Media } from "@/services/common/types";
-import Loading from "@/app/_components/shared/Loading";
 import { debounce } from "lodash";
 import NoContent from "@/app/_components/shared/NoContent";
 import Link from "next/link";
@@ -29,7 +28,7 @@ export default function SearchBar() {
       try {
         setLoading(true);
         const res = await fetch(
-          `/api/videos/query?query=${encodeURIComponent(searchQuery)}`
+          `/api/videos/query?query=${encodeURIComponent(searchQuery)}`,
         );
         if (!res.ok)
           throw new Error(`Error fetching videos: ${res.statusText}`);
@@ -45,7 +44,7 @@ export default function SearchBar() {
       } finally {
         setLoading(false);
       }
-    }, 300)
+    }, 300),
   ).current;
 
   useEffect(() => {
@@ -95,36 +94,66 @@ export default function SearchBar() {
       </form>
 
       {loading && (
-        <div className="absolute top-12 w-full">
-          <Loading />
+        <div className="absolute top-14 bg-dark bg-opacity-95 w-full rounded-xl p-4 shadow-lg z-10 border border-golden flex items-center justify-center gap-3">
+          <div className="w-5 h-5 rounded-full animate-spin border-2 border-[var(--col-dark-golden)] border-t-transparent" />
+          <span className="text-gray-400 text-sm">Searching...</span>
         </div>
       )}
 
       {error && (
-        <div className="text-red-500 mt-2 absolute top-12 w-full">{error}</div>
+        <div className="text-red-500 mt-2 absolute top-14 w-full bg-dark bg-opacity-95 rounded-xl p-4 shadow-lg z-10 border border-red-500/30">
+          {error}
+        </div>
       )}
 
       {!loading && !error && searchState && queryResult.length > 0 && (
-        <div className="absolute top-14 bg-dark bg-opacity-90 w-full rounded p-2 shadow-lg z-10 border border-golden">
-          <p className="text-golden mb-2">Found {queryResult.length} results</p>
-          <div className="max-h-60 overflow-y-auto">
+        <div className="absolute top-14 bg-dark bg-opacity-95 w-full rounded-xl p-3 shadow-lg z-10 border border-golden">
+          <p className="text-golden text-sm mb-3 px-2">
+            Found {queryResult.length} results
+          </p>
+          <div className="max-h-80 overflow-y-auto scrollbar-hide">
             {queryResult.map((item) => (
               <Link
-                className="flex justify-between cursor-pointer mt-4 border-l-1 border-yellow-500 hover:bg-gray-800 hover:bg-opacity-60"
-                href={`/video/${item.platform}/${item.platform === 'youtube' ? item.youtubeId : item.redditId}/${item.id}`}
+                className="flex items-center gap-3 cursor-pointer px-3 py-3 rounded-lg hover:bg-gray-800/60 transition-colors group"
+                href={`/video/${item.platform}/${item.platform === "youtube" ? item.youtubeId : item.redditId}/${item.id}`}
                 key={item.id}
               >
-                <p
-                  key={item.id}
-                  className="p-2 text-sm rounded cursor-pointer text-golden"
+                {/* Clock/History SVG icon */}
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-5 h-5 flex-shrink-0 text-gray-500 group-hover:text-[var(--col-dark-golden)] transition-colors"
                 >
+                  <path
+                    d="M22 12C22 17.52 17.52 22 12 22C6.48 22 2 17.52 2 12C2 6.48 6.48 2 12 2C17.52 2 22 6.48 22 12Z"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M15.71 15.18L12.61 13.33C12.07 13.01 11.63 12.24 11.63 11.61V7.51"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+
+                {/* Title */}
+                <p className="flex-1 text-base text-gray-300 group-hover:text-[var(--col-dark-golden)] transition-colors line-clamp-1">
                   {item.title}
                 </p>
+
+                {/* Thumbnail */}
                 <Image
                   src={item.thumbnailUrl || ""}
                   alt=""
                   width={80}
-                  height={80}
+                  height={45}
+                  className="rounded-md object-cover flex-shrink-0"
+                  style={{ width: 80, height: 45 }}
                 />
               </Link>
             ))}

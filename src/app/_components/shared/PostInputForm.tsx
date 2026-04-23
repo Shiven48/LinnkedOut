@@ -10,8 +10,9 @@ import { Category, Platfrom } from "@/services/common/types";
 import { Plus, Link2, Hash, Sparkles, Filter, Search, X } from "lucide-react";
 import { utility } from "@/services/common/utils";
 import Image from "next/image";
-import React, { ChangeEvent, useState } from "react";
+import React, { ChangeEvent, useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Toast } from "./Toast";
 
 type UrlValidation = {
   isValid: boolean | null;
@@ -45,6 +46,12 @@ export const PostInputForm: React.FC = () => {
     isValid: null,
     platform: null,
   });
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+
+  const handleCloseToast = useCallback(() => {
+    setShowToast(false);
+  }, []);
 
   const platformIconsObj: Record<string, string> = {};
   Platforms().forEach((platform: Platfrom) => {
@@ -121,6 +128,13 @@ export const PostInputForm: React.FC = () => {
 
   const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
+
+    if (formData.url.length === 0) {
+      setToastMessage("Please add at least one URL in the Content URL section before submitting.");
+      setShowToast(true);
+      return;
+    }
+
     setIsSubmitting(true);
 
     const options = {
@@ -423,10 +437,10 @@ export const PostInputForm: React.FC = () => {
               className="px-8 py-4 bg-golden text-black font-bold rounded-xl hover:bg-dark-golden transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-3 text-lg"
             >
               {isSubmitting ? (
-                <>
+                <div className="flex items-center gap-3">
                   <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
-                  Processing...
-                </>
+                  <span>Processing...</span>
+                </div>
               ) : (
                 <>
                   <Search className="w-5 h-5" />
@@ -437,6 +451,13 @@ export const PostInputForm: React.FC = () => {
           </div>
         </div>
       </div>
+      <Toast
+        title="URL Required"
+        message={toastMessage}
+        type="warning"
+        visible={showToast}
+        onClose={handleCloseToast}
+      />
     </div>
   );
 };
