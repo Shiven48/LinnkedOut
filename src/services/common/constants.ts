@@ -73,14 +73,14 @@ export const Platforms = (): Platfrom[] => {
 
 export const navComponents = (): NavComponent[] => {
     const navs: NavComponent[] = [
+        // {
+        //     'id': 1, 
+        //     'title': 'dashboard',
+        //     'url': `/navs/dashboard`,
+        //     'icon': 'dashboard'
+        // },
         {
-            'id': 1, 
-            'title': 'dashboard',
-            'url': `/navs/dashboard`,
-            'icon': 'dashboard'
-        },
-        {
-            'id': 2,
+            'id': 1,
             'title': 'insert',
             'url': '/navs/insert',
             'icon': 'insert'

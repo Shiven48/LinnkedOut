@@ -78,8 +78,8 @@ export default function SearchBar() {
       >
         <input
           type="text"
-          className="flex-1 text-white h-8 bg-gray-500 bg-opacity-20 placeholder-white border-none outline-none p-2 rounded-l-small"
-          placeholder="search"
+          className="flex-1 text-white h-8 bg-gray-700 bg-opacity-30 placeholder-gray-400 border-none outline-none pl-4 rounded-l-medium"
+          placeholder="Explore your curated universe..."
           value={query}
           ref={searchRef}
           onChange={handleInputChange}
