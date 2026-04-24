@@ -45,10 +45,6 @@ export const Page = ({
   const setIsPlaying = usePlayingState((state) => state.setIsPlaying);
   const playerRef = useRef<any>(null);
   const [isHidden, setIsHidden] = useState<boolean>(true);
-  const [isSummarizing, setIsSummarizing] = useState<boolean>(false);
-  const [summary, setSummary] = useState<string>("");
-  const [isSummaryOpen, setIsSummaryOpen] = useState(false);
-  const [inputQuery, setInputQuery] = useState<string>("");
 
   // This is for the media
   useEffect(() => {
@@ -82,9 +78,9 @@ export const Page = ({
   }, [mediaId]);
 
   useEffect(() => {
-    const fetchYoutubeData = async (youtubeId: number) => {
+    const fetchYoutubeData = async (id: number) => {
       try {
-        const res = await fetch(`/api/videos/media/youtube/${youtubeId}`);
+        const res = await fetch(`/api/videos/media/youtube/${id}`);
 
         if (!res.ok) {
           throw new Error(`Error: ${res.statusText}`);
@@ -100,9 +96,11 @@ export const Page = ({
       }
     };
 
-    fetchYoutubeData(youtubeId);
-    console.log(`YT: ${youtubeId}`); // youtube
-  }, [youtubeId]);
+    if (mediaId) {
+      fetchYoutubeData(mediaId);
+      console.log(`YT (mediaId): ${mediaId}`); // youtube
+    }
+  }, [mediaId]);
 
   // This is for creating iframe for youtube
   useEffect(() => {
@@ -162,85 +160,19 @@ export const Page = ({
     setIsHidden((prev) => !prev);
   };
 
-  const extractCaptions = (captions: CaptionItem[]): string => {
-    return captions.map((captObj) => captObj.text).join(" ");
-  };
-
-  const handleSummarizeClick = async () => {
-    try {
-      setIsSummarizing(true);
-      setSummary("");
-
-      const captions: CaptionItem[] | undefined = youtubeVideo?.englishCaptions;
-      if (
-        !captions ||
-        captions === undefined ||
-        captions === null ||
-        captions.length <= 0
-      ) {
-        setSummary("captions are not present");
-        return;
-      }
-
-      const captionsbody: string = extractCaptions(captions);
-      const CaptionsData = {
-        captionbody: captionsbody,
-      };
-
-      // Making request to the summarize endpoint
-      const response = await fetch(`/api/summarize`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(CaptionsData),
-      });
-
-      if (!response.ok || !response.body) {
-        throw new Error(`Error: ${response.status} ${response.statusText}`);
-      }
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let accSummary = "";
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) {
-          break;
-        }
-
-        const chunk = decoder.decode(value, { stream: true });
-        accSummary += chunk;
-        setSummary(accSummary);
-      }
-    } catch (error) {
-      console.error(`Error Summarizing video`, error);
-      setSummary("Failed to generate summary.");
-    } finally {
-      setIsSummarizing(false);
-    }
-  };
-
-  const handleuserInputQuery = async () => {};
-
-  const closeSummary = () => {
-    setIsSummaryOpen(false);
-  };
-
   return (
     <div
-      className={`overflow-y-auto pb-10 bg-dark flex flex-row smallScreenPlatform w-screen h-screen
+      className={`overflow-y-auto pb-10 bg-transparent flex flex-row smallScreenPlatform w-screen h-screen
     ${
       isPlaying
-        ? "bg-darker transition-all duration-500"
+        ? "bg-black/60 transition-all duration-500"
         : "transition-all duration-500"
     }
   `}
     >
       {/* The First half of the section */}
       <div
-        className="ml-10 smallFirstHalfComponents w-full lg:w-[70%] h-[calc(100vh-48px)] overflow-y-auto scrollbar-hide bg-dark"
+        className="ml-10 smallFirstHalfComponents w-full lg:w-[70%] h-[calc(100vh-48px)] overflow-y-auto scrollbar-hide"
         id="For left Handed Components"
       >
         {/* Youtube Player */}
@@ -264,25 +196,41 @@ export const Page = ({
           <YoutubeMetadataDisplay video={video} />
 
           {youtubeVideo?.description && (
-            <div className="flex justify-between smallDescription">
-              <div className={`mt-4 text-white max-h-40 w-full`}>
-                <div className="flex gap-4 h-8">
-                  <h3 className="text-xl text-gray-400">Description</h3>
+            <div className="mt-8 w-full block">
+              <div
+                className="flex items-center gap-3 cursor-pointer group w-fit px-5 py-2.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 transition-all duration-300 shadow-sm hover:shadow-md"
+                onClick={handleHidden}
+              >
+                <span className="text-sm font-medium text-gray-300 group-hover:text-white transition-colors tracking-wide">
+                  {isHidden ? "View Description" : "Hide Description"}
+                </span>
+                <div className="bg-white/10 p-1.5 rounded-full group-hover:bg-golden/30 transition-colors">
                   <Image
-                    src={`${isHidden ? "/right.svg" : "/down.svg"}`}
-                    alt=""
-                    width={5}
-                    height={5}
-                    className={`bg-white rounded-full h-5 w-5 cursor-pointer mt-1`}
-                    onClick={handleHidden}
+                    src={isHidden ? "/right.svg" : "/down.svg"}
+                    alt="Toggle Description"
+                    width={10}
+                    height={10}
+                    className="opacity-90"
                   />
                 </div>
-                <p
-                  className={`text-gray-300 mt-2 bg-dark p-2 rounded-xl border-l-2 border-l-golden shadow-golden shadow-xl
-                        ${isHidden ? "hidden" : "whitespace-pre-wrap"} `}
-                >
-                  {youtubeVideo.description}
-                </p>
+              </div>
+
+              <div
+                className={`transition-all duration-700 ease-in-out overflow-hidden ${
+                  isHidden ? "max-h-0 opacity-0 mt-0" : "max-h-[3000px] opacity-100 mt-5"
+                }`}
+              >
+                <div className="relative p-6 md:p-8 rounded-3xl bg-[#111113]/90 backdrop-blur-2xl border border-white/5 shadow-2xl overflow-hidden group/desc">
+                  {/* Subtle background glow effect */}
+                  <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-golden/[0.04] rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none transition-opacity duration-700 opacity-50 group-hover/desc:opacity-100"></div>
+                  
+                  {/* Decorative accent line */}
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-1/2 bg-gradient-to-b from-transparent via-golden/50 to-transparent opacity-50 rounded-r-full"></div>
+                  
+                  <p className="text-[14px] md:text-[15px] text-gray-300/85 leading-[1.8] whitespace-pre-wrap font-light relative z-10 selection:bg-golden/30 selection:text-white">
+                    {youtubeVideo.description}
+                  </p>
+                </div>
               </div>
             </div>
           )}

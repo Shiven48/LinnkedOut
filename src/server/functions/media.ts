@@ -202,11 +202,13 @@ export const getAllMediaWherePlatformYoutube = async (
   offset: number = 1,
   userId: string
 ): Promise<Media[]> => {
+  // 'use server'
   try {
     return await db
       .select()
       .from(media)
       .where(and(eq(media.platform, "youtube"), eq(media.userId, userId)))
+      .orderBy(desc(media.createdAt))
       .limit(MEDIA_PER_PAGE)
       .offset(offset);
   } catch (error) {

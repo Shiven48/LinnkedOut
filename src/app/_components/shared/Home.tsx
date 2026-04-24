@@ -64,7 +64,7 @@ export default function Home({ media, pagination, pageHeader }: HomeProps) {
           // Update header based on submission data
           if (submissionData?.category) {
             setCurrentPageHeader(
-              `AI-Curated ${submissionData.category} Content`
+              `AI-Curated ${submissionData.category} Content`,
             );
           } else {
             setCurrentPageHeader("AI-Curated Content Based on Your Submission");
@@ -91,11 +91,11 @@ export default function Home({ media, pagination, pageHeader }: HomeProps) {
 
   return (
     <div
-      className={`h-[calc(100vh-48px)] overflow-y-auto flex-1 w-full bg-dark scrollbar-hide
+      className={`h-[calc(100vh-48px)] overflow-y-auto flex-1 w-full bg-transparent scrollbar-hide
             ${
               isPlaying
-                ? "bg-blend-darken brightness-50 bg-darker transition-all duration-500"
-                : "bg-dark transition-all duration-500"
+                ? "bg-blend-darken brightness-50 bg-black/60 transition-all duration-500"
+                : "transition-all duration-500"
             }
         `}
     >
@@ -105,12 +105,13 @@ export default function Home({ media, pagination, pageHeader }: HomeProps) {
       )}
 
       {/* This is for displaying Card of each media */}
-      <div className="flex justify-evenly mt-2 flex-wrap">
+      <div className="flex justify-center gap-6 md:gap-8 mt-6 mb-8 flex-wrap px-2 md:px-6">
         {displayMedia.length > 0 ? (
           displayMedia.map((video: any, index) => (
             <div
               key={video.id || index}
-              className={`card-green-glass h-64 mt-4 mb-16 mediumScreenCard smallScreenCard w-[32%]`}
+              className={`card-green-glass flex flex-col w-full sm:w-[48%] md:w-[31%] lg:w-[23%] xl:w-[22%] group hover:border-dark-golden transition-colors duration-300 overflow-hidden animate-fade-in-up`}
+              style={{ animationDelay: `${index * 100}ms` }}
             >
               <Card video={video} />
             </div>

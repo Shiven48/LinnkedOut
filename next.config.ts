@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
   },
   images: {
     unoptimized: true,
+    qualities: [25, 50, 75, 95, 100],
     remotePatterns: [
       {
         protocol: "https",
@@ -36,6 +37,11 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     // optimizeCss: true,
+  },
+  turbopack: {
+    resolveAlias: {
+      "webworker-threads": "./empty-mock.js",
+    },
   },
   webpack: (config) => {
     config.resolve.alias = {

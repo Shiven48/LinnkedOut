@@ -32,16 +32,16 @@ function getDb() {
     dbUrl += (dbUrl.includes('?') ? '&' : '?') + 'sslmode=require';
   }
 
-  // Configure postgres client with options to prefer IPv4
+  // Configure postgres client with options optimized for serverless
   const remoteClient = postgres(dbUrl, {
     connect_timeout: 10000, // 10 seconds
-    idle_timeout: 20,
-    max_lifetime: 60 * 30,
-    max: 10, // Limit pool size
+    idle_timeout: 1,        // Close idle connections almost immediately
+    max_lifetime: 60 * 5,   // 5 minutes max for a connection
+    max: 1,                 // CRITICAL: Set to 1 for serverless/pooling stability
     connection: {
       application_name: 'linnkedout',
     },
-    // Disable prepared statements which can cause issues with some pooling solutions
+    // Disable prepared statements - required for many pooling solutions (like PgBouncer/Neon)
     prepare: false,
   });
   

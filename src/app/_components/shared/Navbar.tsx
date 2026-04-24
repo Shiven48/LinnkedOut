@@ -52,10 +52,10 @@ export default function App() {
           >
             <Link
               href={nav.url}
-              className={`p-[2px] rounded-large duration-300 ease-out hover:scale-110 ${
+              className={`p-[2px] rounded-large duration-300 ease-out hover:scale-110 transition-all ${
                 activeNavComponent === nav.title
-                  ? "bg-[#484848] text-dark-golden border border-white"
-                  : "text-gray-300 hover:text-dark-golden hover:bg-[#484848] hover:bg-opacity-25 hover:rounded-large"
+                  ? "bg-[#484848] border border-[#e3ec58]/80 shadow-[0_0_12px_rgba(227,236,88,0.3)]"
+                  : "border border-transparent hover:bg-[#e3ec58]/10 hover:border-[#e3ec58]/50 hover:shadow-[0_0_15px_rgba(227,236,88,0.4)]"
               }`}
             >
               <Image

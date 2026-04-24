@@ -90,23 +90,28 @@ body {
 }
 /* New golden glass card component */
 .card-green-glass {
-  /* background-color: hsla(63, 18%, 51%, 0.242); */
-  border: 3px solid hsla(62, 100%, 50%, 0.2);
+  border: 1px solid rgba(227, 236, 88, 0.35);
   border-radius: 13px;
-  box-shadow: 0px -3px 4px 0px var(--textDim) inset,
-              0px 5px 15px rgba(0, 0, 0, 0.1);
-  color: var(--primaryFg);
-  backdrop-filter: blur(8px);
-  transition: all 0.3s ease;
+  box-shadow: 
+    0 0 12px rgba(227, 236, 88, 0.15),
+    inset 0 1px 1px rgba(255, 255, 255, 0.05),
+    0 4px 6px -1px rgba(0, 0, 0, 0.5),
+    0 10px 15px -3px rgba(0, 0, 0, 0.6);
+  color: var(--text);
+  background-color: rgba(20, 20, 20, 0.7);
+  backdrop-filter: blur(12px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .card-green-glass:hover {
-  background-color: hsla(64, 44%, 47%, 0.495);
-  box-shadow: 0px -3px 8px 0px var(--col-golden) inset,
-              0px 8px 20px rgba(0, 0, 0, 0.15);
-  border-width: 3px;
+  background-color: rgba(30, 30, 30, 0.85);
   border-color: var(--col-dark-golden);
-  transform: translateY(-3px);
+  box-shadow: 
+    0 0 20px rgba(227, 236, 88, 0.35),
+    inset 0 1px 1px rgba(255, 255, 255, 0.1),
+    0 10px 15px -3px rgba(0, 0, 0, 0.6),
+    0 20px 25px -5px rgba(0, 0, 0, 0.7);
+  transform: translateY(-4px);
 }
 
 @media (max-width: 600px) {
@@ -238,7 +243,7 @@ body {
 }
 
 .MainHeaderTitle {
-  @apply text-dark-golden font-sans flex relative top-5 justify-center;
+  @apply text-transparent bg-clip-text bg-gradient-to-r from-dark-golden to-white text-2xl md:text-3xl font-bold tracking-wide flex justify-center w-full mt-10 mb-4 pb-4 relative drop-shadow-lg;
 }
 
 #youtube-player {
@@ -255,4 +260,49 @@ body {
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  opacity: 0;
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+
+@keyframes drift-slow {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -50px) scale(1.05); }
+  66% { transform: translate(-20px, 20px) scale(0.95); }
+}
+
+@keyframes drift-reverse {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(-40px, 30px) scale(0.95); }
+  66% { transform: translate(20px, -40px) scale(1.05); }
+}
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 0.1; transform: scale(1); }
+  50% { opacity: 0.2; transform: scale(1.1); }
+}
+
+.animate-drift-slow {
+  animation: drift-slow 20s ease-in-out infinite;
+}
+
+.animate-drift-reverse {
+  animation: drift-reverse 25s ease-in-out infinite;
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 8s ease-in-out infinite;
 }
